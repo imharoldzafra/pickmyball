@@ -26,7 +26,7 @@ export default function Home() {
   useEffect(() => {
     if (!profile || !user) return;
     
-    // Firebase removed, mocking empty matches
+    // Backend removed, mocking empty matches
     setRecentMatches([]);
     setLoadingMatches(false);
   }, [profile, user]);

@@ -15,9 +15,9 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  // Match Finish endpoint - Stubbed out since we removed Firebase
+  // Match Finish endpoint - Stubbed out since we removed database
   app.post("/api/matches/:matchId/finish", async (req, res) => {
-    res.json({ success: true, message: "Stubbed - Firebase removed" });
+    res.json({ success: true, message: "Stubbed - Backend removed" });
   });
 
   // Vite middleware for development
