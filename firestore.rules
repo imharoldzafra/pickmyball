@@ -1,0 +1,127 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() { return request.auth != null; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'level', 'xp', 'rating', 'rank', 'wins', 'losses', 'battles', 'currentStreak', 'longestStreak', 'highestRating', 'createdAt'])
+        && data.uid is string && data.uid.size() <= 128
+        && data.displayName is string && data.displayName.size() <= 64
+        && data.level is number
+        && data.xp is number
+        && data.rating is number
+        && data.rank is string && data.rank.size() <= 32
+        && data.wins is number
+        && data.losses is number
+        && data.battles is number
+        && data.currentStreak is number
+        && data.longestStreak is number
+        && data.highestRating is number
+        && data.createdAt is number;
+    }
+
+    function isValidMatch(data) {
+      return data.keys().hasAll(['id', 'creatorId', 'status', 'teamA', 'teamB', 'currentGame', 'teamAScore', 'teamBScore', 'teamAGamesWon', 'teamBGamesWon', 'servingTeam', 'serverNumber', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() <= 128
+        && data.creatorId is string && data.creatorId.size() <= 128
+        && data.status is string && data.status in ['WAITING', 'READY', 'IN_PROGRESS', 'FINISHED']
+        && data.teamA is list && data.teamA.size() <= 2
+        && data.teamB is list && data.teamB.size() <= 2
+        && data.currentGame is number
+        && data.teamAScore is number
+        && data.teamBScore is number
+        && data.teamAGamesWon is number
+        && data.teamBGamesWon is number
+        && data.servingTeam is string && data.servingTeam in ['A', 'B', 'NONE']
+        && data.serverNumber is number
+        && data.createdAt is number
+        && data.updatedAt is number;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() 
+                    && request.auth.uid == userId 
+                    && isValidId(userId)
+                    && isValidUserProfile(incoming()) 
+                    && incoming().uid == request.auth.uid
+                    && incoming().level == 1
+                    && incoming().xp == 0
+                    && incoming().rating == 0
+                    && incoming().wins == 0
+                    && incoming().losses == 0
+                    && incoming().battles == 0;
+      allow update: if isSignedIn() 
+                    && request.auth.uid == userId 
+                    && isValidUserProfile(incoming())
+                    && incoming().uid == existing().uid
+                    && incoming().createdAt == existing().createdAt
+                    // Allow fixing initial stats and updating displayName
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'rating', 'rank', 'highestRating']);
+    }
+
+    match /matches/{matchId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && (
+        resource.data.creatorId == request.auth.uid ||
+        request.auth.uid in resource.data.teamA ||
+        request.auth.uid in resource.data.teamB ||
+        resource.data.refereeId == request.auth.uid
+      );
+      
+      allow create: if isSignedIn()
+                    && isValidId(matchId)
+                    && isValidMatch(incoming())
+                    && incoming().creatorId == request.auth.uid
+                    && incoming().status == 'WAITING';
+                    
+      // For updates, the referee can update score, users can join a waiting match.
+      allow update: if isSignedIn()
+                    && isValidMatch(incoming())
+                    && incoming().id == existing().id
+                    && incoming().creatorId == existing().creatorId
+                    && incoming().createdAt == existing().createdAt
+                    && (
+                      // Action: Join Match (Waiting)
+                      (existing().status == 'WAITING' 
+                        && incoming().diff(existing()).affectedKeys().hasAny(['teamA', 'teamB', 'refereeId', 'status', 'updatedAt'])
+                        && (!('teamA' in incoming().diff(existing()).affectedKeys()) || (incoming().teamA.size() <= 2))
+                        && (!('teamB' in incoming().diff(existing()).affectedKeys()) || (incoming().teamB.size() <= 2))
+                        // The user must be adding themselves to the match or a referee
+                      )
+                      ||
+                      // Action: Referee Updates Score
+                      (existing().status in ['READY', 'IN_PROGRESS']
+                        && request.auth.uid == existing().refereeId
+                        && incoming().diff(existing()).affectedKeys().hasAny(['status', 'currentGame', 'teamAScore', 'teamBScore', 'teamAGamesWon', 'teamBGamesWon', 'servingTeam', 'serverNumber', 'gameResults', 'matchWinner', 'updatedAt'])
+                      )
+                    );
+    }
+    
+    // Simplistic friend rules
+    match /friendRequests/{requestId} {
+      allow get, list: if isSignedIn() && (resource.data.fromId == request.auth.uid || resource.data.toId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(requestId)
+                    && incoming().keys().hasAll(['fromId', 'toId', 'status', 'createdAt'])
+                    && incoming().fromId == request.auth.uid
+                    && incoming().status == 'PENDING';
+      allow update: if isSignedIn() && incoming().keys().hasAll(['fromId', 'toId', 'status', 'createdAt'])
+                    && existing().toId == request.auth.uid
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['status']);
+    }
+    
+    match /users/{userId}/friends/{friendId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Only server manages actual friend relationships
+    }
+  }
+}
