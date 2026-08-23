@@ -1,190 +1,333 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { User, Flame, Trophy, Swords, Zap, Activity, ShieldAlert, Sparkles, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
-import { Match, UserProfile } from '../types';
 
-const getRankIcon = (rank: string) => {
+const getRankBadge = (rank: string) => {
   switch (rank.toLowerCase()) {
-    case 'rookie': return '🌱';
-    case 'challenger': return '🏓';
-    case 'contender': return '🏓';
-    case 'ace': return '⭐';
-    case 'veteran': return '🏆';
-    case 'expert': return '💎';
-    case 'legend': return '👑';
-    default: return '🌱';
+    case 'rookie': return { icon: '🌱', label: 'Rookie' };
+    case 'challenger': return { icon: '🏓', label: 'Challenger' };
+    case 'veteran': return { icon: '🏆', label: 'Veteran' };
+    case 'expert': return { icon: '💎', label: 'Expert' };
+    case 'legend': return { icon: '👑', label: 'Legend' };
+    default: return { icon: '🌱', label: 'Rookie' };
   }
 };
 
 export default function Home() {
-  const { profile, user, logoutMock } = useAuth();
-  const [recentMatches, setRecentMatches] = useState<Match[]>([]);
-  const [loadingMatches, setLoadingMatches] = useState(true);
-  const [playerNames, setPlayerNames] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    if (!profile || !user) return;
-    
-    // Backend removed, mocking empty matches
-    setRecentMatches([]);
-    setLoadingMatches(false);
-  }, [profile, user]);
+  const { profile } = useAuth();
 
   if (!profile) return null;
 
-
   const xpRequired = profile.level * 1000;
   const progressPercent = Math.min(100, Math.round((profile.xp / xpRequired) * 100));
+  const rankBadge = getRankBadge(profile.rank);
+
+  const winRate = profile.battles > 0 ? Math.round((profile.wins / profile.battles) * 100) : 0;
+  const lossRate = profile.battles > 0 ? Math.round((profile.losses / profile.battles) * 100) : 0;
+
+  const stats = [
+    {
+      label: 'Total Matches',
+      value: profile.battles,
+      icon: Activity,
+      tag: 'Recorded',
+      accentColor: 'text-sky-400',
+      glowBg: 'bg-sky-500/15',
+      glowBorder: 'border-sky-500/30',
+      glowShadow: 'shadow-[0_0_20px_rgba(56,189,248,0.2)]',
+      orbColor: 'bg-sky-500/20',
+      badgeBg: 'bg-sky-500/10 text-sky-300 border-sky-500/20'
+    },
+    {
+      label: 'Victories',
+      value: profile.wins,
+      icon: Trophy,
+      tag: `${winRate}% Win Rate`,
+      accentColor: 'text-emerald-400',
+      glowBg: 'bg-emerald-500/15',
+      glowBorder: 'border-emerald-500/30',
+      glowShadow: 'shadow-[0_0_20px_rgba(16,185,129,0.25)]',
+      orbColor: 'bg-emerald-500/20',
+      badgeBg: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+      badgeIcon: TrendingUp
+    },
+    {
+      label: 'Defeats',
+      value: profile.losses,
+      icon: ShieldAlert,
+      tag: `${lossRate}% Loss Rate`,
+      accentColor: 'text-amber-400',
+      glowBg: 'bg-amber-500/15',
+      glowBorder: 'border-amber-500/30',
+      glowShadow: 'shadow-[0_0_20px_rgba(245,158,11,0.2)]',
+      orbColor: 'bg-amber-500/20',
+      badgeBg: 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+    },
+    {
+      label: 'Best Streak',
+      value: profile.longestStreak,
+      icon: Sparkles,
+      tag: 'Peak Record',
+      accentColor: 'text-purple-400',
+      glowBg: 'bg-purple-500/15',
+      glowBorder: 'border-purple-500/30',
+      glowShadow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]',
+      orbColor: 'bg-purple-500/20',
+      badgeBg: 'bg-purple-500/10 text-purple-300 border-purple-500/20'
+    }
+  ];
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start border-b border-[#ffffff10] pb-6">
-        <Link to="/profile" className="nav-btn p-2 -m-2 rounded-2xl flex flex-col items-start gap-3 group">
-          <div className="w-16 h-16 rounded-full bg-[#0a1111] border-2 border-primary/50 overflow-hidden shadow-[0_0_15px_rgba(20,184,166,0.3)] group-hover:border-primary group-hover:shadow-[0_0_20px_rgba(20,184,166,0.6)] transition-all">
-            {profile.photoURL ? (
-              <img src={profile.photoURL} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-primary">
-                <User className="w-8 h-8" />
-              </div>
-            )}
+    <div className="p-5 space-y-6">
+      {/* Friendly Header Profile Link Wrapper */}
+      <motion.div 
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="flex justify-between items-center px-1"
+      >
+        <Link to="/profile" className="flex items-center gap-4 active:scale-98 transition-transform">
+          <div className="relative">
+            <div className="w-18 h-18 rounded-full bg-primary/10 border-2 border-primary/40 overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center">
+              {profile.photoURL ? (
+                <img src={profile.photoURL} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-9 h-9 text-primary" />
+              )}
+            </div>
+            <div className="absolute -bottom-0.5 -right-1 bg-primary text-[#050a0a] text-[10px] font-black px-2 py-0.5 rounded-full shadow-md">
+              Lv.{profile.level}
+            </div>
           </div>
           <div>
-            <h1 className="text-[10px] uppercase tracking-widest text-[#ffffff60] mb-1">Active User</h1>
-            <p className="text-3xl font-light tracking-tight text-text-main">{profile.displayName}</p>
+            <p className="text-2xl font-black tracking-tight text-white">{profile.displayName}</p>
           </div>
         </Link>
-        <div className="text-right mt-2">
-          <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Core Level</p>
-          <p className="text-2xl font-mono text-text-main">{profile.level}</p>
-        </div>
-      </div>
+      </motion.div>
 
-      {/* Main Stats Card */}
-      <div className="bg-card rounded-2xl p-6 relative overflow-hidden group border border-[#ffffff10]">
-        <div className="absolute top-0 left-0 w-1 h-full bg-primary shadow-[0_0_15px_rgba(20,184,166,0.5)]"></div>
-        <div className="relative z-10">
-          <div className="flex justify-between items-start mb-4">
-            <h2 className="text-[10px] uppercase tracking-widest text-[#ffffff60] mt-2">Competitive Standing</h2>
-            <div className="flex flex-col items-center gap-1 bg-[#ffffff05] px-4 py-2 rounded-xl border border-[#ffffff10]">
-              <span className="text-xl opacity-90">{getRankIcon(profile.rank)}</span>
-              <span className="text-[10px] tracking-widest uppercase text-primary font-bold">{profile.rank}</span>
+      {/* Main Competitive Standing Glass Hero Card */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false }}
+        transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+        className="bg-white/[0.03] backdrop-blur-md rounded-3xl p-6 relative overflow-hidden border-t border-t-white/25 border-x border-x-white/10 border-b border-b-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
+      >
+        <div className="relative z-10 space-y-5">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-4.5 h-4.5 text-primary" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-text-light">Competitive Rank</h2>
+            </div>
+            
+            <div className="flex items-center gap-1.5 bg-primary/15 border border-primary/40 backdrop-blur-md px-3.5 py-1.5 rounded-full text-primary shadow-inner">
+              <span className="text-sm">{rankBadge.icon}</span>
+              <span className="text-xs font-extrabold uppercase tracking-wider">{rankBadge.label}</span>
             </div>
           </div>
-          <div className="text-5xl font-light tracking-tighter text-text-main mb-6">
-            {profile.rating} <span className="text-sm font-normal text-text-light uppercase tracking-widest">CR</span>
+
+          <div className="flex items-baseline gap-2.5">
+            <span className="text-5xl font-black tracking-tight text-white drop-shadow-md">{profile.rating}</span>
+            <span className="text-sm font-bold text-primary uppercase tracking-widest bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20">CR Score</span>
           </div>
-          
-          <div className="space-y-4">
-            <div className="flex justify-between text-xs font-mono text-primary">
-              <span>XP.STREAM</span>
-              <span>{profile.xp} / {xpRequired}</span>
+
+          {/* XP Progress Meter */}
+          <div className="space-y-2 pt-1">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-text-light flex items-center gap-1"><Zap className="w-3.5 h-3.5 text-primary" /> XP Progress</span>
+              <span className="text-primary font-mono font-bold">{profile.xp} / {xpRequired} XP</span>
             </div>
-            <div className="h-1 w-full bg-[#ffffff05] rounded-full overflow-hidden">
-              <div className="h-full bg-primary transition-all shadow-[0_0_10px_rgba(20,184,166,0.4)]" style={{ width: `${progressPercent}%` }}></div>
+            <div className="h-2.5 w-full bg-black/40 backdrop-blur-md rounded-full overflow-hidden p-0.5 border border-white/10">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="h-full bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.7)]"
+              />
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Secondary Stats Group */}
+      {/* Overview Stats 2x2 Glass Grid */}
       <div className="space-y-4">
-        {/* Player Stats */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-[#0a1111] border border-[#ffffff10] p-4 rounded-xl flex flex-col justify-center space-y-1 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-[#ffffff20]"></div>
-            <span className="text-[10px] uppercase tracking-widest text-[#ffffff60]">Total Battles</span>
-            <span className="text-2xl font-light tracking-tight text-text-main">{profile.battles}</span>
-          </div>
-          <div className="bg-[#0a1111] border border-[#ffffff10] p-4 rounded-xl flex flex-col justify-center space-y-1 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-primary/40"></div>
-            <span className="text-[10px] uppercase tracking-widest text-primary">Victories</span>
-            <span className="text-2xl font-light tracking-tight text-text-main">{profile.wins}</span>
-          </div>
-          <div className="bg-[#0a1111] border border-[#ffffff10] p-4 rounded-xl flex flex-col justify-center space-y-1 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-accent-terra/40"></div>
-            <span className="text-[10px] uppercase tracking-widest text-accent-terra">Defeats</span>
-            <span className="text-2xl font-light tracking-tight text-text-main">{profile.losses}</span>
-          </div>
-          <div className="bg-[#0a1111] border border-[#ffffff10] p-4 rounded-xl flex flex-col justify-center space-y-1 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-secondary/40"></div>
-            <span className="text-[10px] uppercase tracking-widest text-secondary">Longest Win Streak</span>
-            <span className="text-2xl font-light tracking-tight text-text-main">{profile.longestStreak}</span>
-          </div>
-        </div>
+        <h3 className="text-xs font-bold uppercase tracking-widest text-text-light px-1 flex items-center gap-1.5">
+          <Swords className="w-3.5 h-3.5 text-primary" /> Performance Breakdown
+        </h3>
 
-        {/* Recent Streak */}
-        <div className="bg-card p-6 rounded-2xl border border-[#ffffff10] flex items-center justify-between">
-          <div>
-            <h2 className="text-[10px] uppercase tracking-widest text-[#ffffff60] mb-2">Victory Chain</h2>
-            <div className="flex items-baseline gap-2">
-               <span className="text-3xl font-light tracking-tighter text-text-main">{profile.currentStreak}</span>
-               <span className="text-xs text-secondary uppercase tracking-widest font-mono">Wins</span>
-            </div>
-          </div>
-          <div className="flex gap-1">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className={`h-8 w-2 rounded-sm ${i < profile.currentStreak ? 'bg-secondary shadow-[0_0_10px_rgba(74,222,128,0.4)]' : 'bg-[#ffffff05]'}`}></div>
-            ))}
-          </div>
-        </div>
-      </div>
-      
-      {/* Match History */}
-      <div className="bg-[#0a1111] rounded-2xl border border-[#ffffff10] overflow-hidden relative">
-        <div className="p-4 border-b border-[#ffffff10]">
-          <h2 className="text-[10px] uppercase tracking-widest text-[#ffffff60]">Combat Log</h2>
-        </div>
-        <div className="p-4 space-y-3">
-          {loadingMatches ? (
-            <div className="text-center text-[#ffffff40] text-sm py-4">Scanning records...</div>
-          ) : recentMatches.length === 0 ? (
-            <div className="text-center text-[#ffffff40] text-sm py-4">No recent matches found.</div>
-          ) : (
-            recentMatches.map((match) => {
-              const isTeamA = match.teamA.includes(user!.uid);
-              const isWinner = (match.matchWinner === 'A' && isTeamA) || (match.matchWinner === 'B' && !isTeamA);
-              const myScore = isTeamA ? match.teamAGamesWon : match.teamBGamesWon;
-              const theirScore = isTeamA ? match.teamBGamesWon : match.teamAGamesWon;
-              
-              const opponentIds = isTeamA ? match.teamB : match.teamA;
-              const opponentNames = opponentIds.map(id => playerNames[id] || 'Unknown').join(' & ');
+        <div className="grid grid-cols-2 gap-3.5">
+          {stats.map((stat, idx) => {
+            const Icon = stat.icon;
+            const BadgeIcon = stat.badgeIcon;
+            return (
+              <motion.div 
+                key={stat.label}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.25, delay: idx * 0.05 }}
+                className="bg-white/[0.03] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-[0_8px_25px_rgba(0,0,0,0.3)]"
+              >
+                {/* Background Ambient Glow Orb */}
+                <div className={`absolute -top-6 -right-6 w-20 h-20 ${stat.orbColor} rounded-full blur-xl pointer-events-none opacity-60`} />
 
-              const crChange = isTeamA ? (match.ratingChangeA || 0) : (match.ratingChangeB || 0);
-              const crChangeDisplay = crChange > 0 ? `+${crChange}` : crChange;
-
-              return (
-                <div key={match.id} className="flex items-center justify-between bg-card border border-[#ffffff05] p-4 rounded-xl">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-2 h-10 rounded-sm ${isWinner ? 'bg-primary shadow-[0_0_8px_rgba(20,184,166,0.6)]' : 'bg-accent-terra shadow-[0_0_8px_rgba(255,230,0,0.4)]'}`}></div>
-                    <div>
-                      <div className="text-sm font-mono text-text-main mb-1">
-                        {myScore} - {theirScore} <span className="text-xs font-sans font-light text-[#ffffff80] ml-2">vs {opponentNames || 'Ghost'}</span>
-                      </div>
-                      <div className="text-[10px] uppercase tracking-widest text-[#ffffff60]">
-                        {new Date(match.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className={`font-mono text-sm ${isWinner ? 'text-primary' : 'text-accent-terra'}`}>
-                      {crChangeDisplay} CR
-                    </div>
-                    <div className="text-[10px] uppercase tracking-widest text-[#ffffff40]">
-                      {isWinner ? 'Victory' : 'Defeat'}
-                    </div>
+                {/* Top Row: Label & Glowing Icon Badge */}
+                <div className="flex items-center justify-between relative z-10">
+                  <span className="text-[11px] font-bold text-text-light uppercase tracking-wider">{stat.label}</span>
+                  <div className={`w-7 h-7 rounded-lg ${stat.glowBg} border ${stat.glowBorder} ${stat.glowShadow} flex items-center justify-center`}>
+                    <Icon className={`w-3.5 h-3.5 ${stat.accentColor}`} />
                   </div>
                 </div>
-              );
-            })
-          )}
+
+                {/* Middle Row: Large Stat Value */}
+                <div className="my-2 relative z-10">
+                  <span className={`text-3xl font-black tracking-tight ${stat.accentColor} drop-shadow-md`}>
+                    {stat.value}
+                  </span>
+                </div>
+
+                {/* Bottom Row: Micro Metric / Tag Pill */}
+                <div className="relative z-10 flex items-center">
+                  <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${stat.badgeBg}`}>
+                    {BadgeIcon && <BadgeIcon className="w-2.5 h-2.5" />}
+                    <span>{stat.tag}</span>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
-      </div>
-      
-      <div className="pt-4 text-center pb-8">
-        <button onClick={logoutMock} className="text-sm text-[#ffffff40] hover:text-accent-terra transition-colors uppercase tracking-widest font-bold">Sign Out</button>
+
+        {/* Victory Chain Glass Box */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false }}
+          className={profile.currentStreak >= 5 
+            ? "bg-orange-500/[0.07] backdrop-blur-md p-5 rounded-3xl border-t border-t-orange-400/40 border-x border-x-orange-500/25 border-b border-b-orange-500/10 flex items-center justify-between shadow-[0_0_30px_rgba(239,68,68,0.25)] relative overflow-hidden"
+            : "bg-white/[0.03] backdrop-blur-md p-5 rounded-3xl border-t border-t-emerald-400/30 border-x border-x-emerald-500/15 border-b border-b-white/5 flex items-center justify-between shadow-[0_10px_35px_rgba(0,0,0,0.35)] relative overflow-hidden"
+          }
+        >
+          {/* Animated Background Energy Aura */}
+          {profile.currentStreak >= 5 ? (
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.3, 1],
+                opacity: [0.25, 0.45, 0.25]
+              }}
+              transition={{ 
+                duration: 2.5, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+              className="absolute -top-12 -right-10 w-44 h-32 bg-gradient-to-br from-orange-500 to-red-600 rounded-full blur-3xl pointer-events-none"
+            />
+          ) : (
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.15, 0.3, 0.15]
+              }}
+              transition={{ 
+                duration: 3, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+              className="absolute -top-12 -right-10 w-36 h-28 bg-emerald-500 rounded-full blur-3xl pointer-events-none"
+            />
+          )}
+
+          <div className="relative z-10">
+            {profile.currentStreak >= 5 ? (
+              <div className="flex items-center gap-1.5 mb-1">
+                {/* 🔥 Flame icon only animates/moves when on 5+ streak */}
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.25, 1], 
+                    rotate: [-5, 5, -5] 
+                  }}
+                  transition={{ 
+                    duration: 0.8, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                >
+                  <Flame className="w-4 h-4 text-orange-400 fill-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+                </motion.div>
+                <h4 className="text-xs font-black uppercase tracking-wider text-orange-400 drop-shadow-[0_0_10px_rgba(249,115,22,0.6)]">
+                  ON FIRE (1.5x XP Boost)
+                </h4>
+              </div>
+            ) : (
+              <h4 className="text-xs font-bold uppercase tracking-wider text-text-light flex items-center gap-1.5 mb-1">
+                {/* Static flame icon when below 5 streak */}
+                <Flame className="w-4 h-4 text-emerald-400" /> Current Win Streak
+              </h4>
+            )}
+            <div className="flex items-baseline gap-1.5">
+               {/* Displays the dynamic real number beyond 5 (e.g. 6, 7, 8, 12, etc.) */}
+               <span className={profile.currentStreak >= 5 ? "text-3xl font-black text-white drop-shadow-[0_0_12px_rgba(249,115,22,0.8)]" : "text-3xl font-extrabold text-white"}>
+                 {profile.currentStreak}
+               </span>
+               <span className={profile.currentStreak >= 5 ? "text-xs font-black text-orange-300" : "text-xs font-bold text-emerald-400"}>
+                 Wins in a row
+               </span>
+            </div>
+          </div>
+
+          {/* Living Flame / Equalizer Animated Bars with Progressive Speed */}
+          <div className="flex items-center gap-1.5 relative z-10 py-1">
+            {(() => {
+              // Speed scales dynamically with streak: 1 win = 2.5s (slow), 5+ wins = 0.7s (fast)
+              const streakLevel = Math.min(5, Math.max(1, profile.currentStreak));
+              const baseDuration = Math.max(0.7, 2.5 - (streakLevel - 1) * 0.45);
+
+              return [...Array(5)].map((_, i) => {
+                const isActive = profile.currentStreak >= 5 || i < profile.currentStreak;
+                const isSuperCharged = profile.currentStreak >= 5;
+
+                return (
+                  <motion.div 
+                    key={i} 
+                    initial={{ scaleY: 0.8 }}
+                    animate={
+                      isSuperCharged 
+                        ? {
+                            scaleY: [0.75, 1.3, 0.85, 1.25, 0.75],
+                            opacity: [0.8, 1, 0.85, 1, 0.8]
+                          }
+                        : isActive
+                          ? {
+                              scaleY: [0.85, 1.18, 0.9, 1.15, 0.85],
+                              opacity: [0.75, 1, 0.8, 1, 0.75]
+                            }
+                          : { scaleY: 1, opacity: 0.2 }
+                    }
+                    transition={
+                      isActive
+                        ? {
+                            duration: baseDuration + (i % 2) * (baseDuration * 0.15),
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: i * (baseDuration * 0.14)
+                          }
+                        : { duration: 0.2 }
+                    }
+                    className={`w-3 rounded-full origin-bottom ${
+                      isSuperCharged
+                        ? 'h-8 bg-gradient-to-t from-red-600 via-orange-500 to-amber-300 shadow-[0_0_15px_rgba(249,115,22,0.9)] border border-orange-400/50'
+                        : isActive 
+                          ? 'h-7 bg-gradient-to-t from-emerald-600 to-teal-300 shadow-[0_0_12px_rgba(16,185,129,0.8)] border border-emerald-400/40' 
+                          : 'h-6 bg-white/10 border border-white/5'
+                    }`}
+                  />
+                );
+              });
+            })()}
+          </div>
+        </motion.div>
       </div>
     </div>
   );

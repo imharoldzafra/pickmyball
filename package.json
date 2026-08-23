@@ -7,11 +7,19 @@
     "dev": "tsx server.ts",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "cap:sync": "vite build && cap sync",
+    "cap:android": "vite build && cap sync && cap open android",
+    "cap:ios": "vite build && cap sync && cap open ios"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
+    "@types/qrcode-terminal": "^0.12.2",
     "@vitejs/plugin-react": "^5.0.4",
     "clsx": "^2.1.1",
     "cors": "^2.8.6",
@@ -20,6 +28,7 @@
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
+    "qrcode-terminal": "^0.12.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-qr-code": "^2.2.0",

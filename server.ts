@@ -1,7 +1,21 @@
 import express from "express";
 import path from "path";
 import cors from "cors";
+import os from "os";
+import qrcode from "qrcode-terminal";
 import { createServer as createViteServer } from "vite";
+
+function getLocalIp() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const net of interfaces[name] || []) {
+      if (net.family === "IPv4" && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return "localhost";
+}
 
 async function startServer() {
   const app = express();
@@ -36,7 +50,15 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    const localIp = getLocalIp();
+    const networkUrl = `http://${localIp}:${PORT}`;
+
+    console.log(`\n🚀 PickMyBall server is running!`);
+    console.log(`💻 Local URL:   http://localhost:${PORT}`);
+    console.log(`📡 Network URL: ${networkUrl}\n`);
+    console.log(`📲 Scan this QR code with your phone camera to open on mobile:\n`);
+
+    qrcode.generate(networkUrl, { small: true });
   });
 }
 

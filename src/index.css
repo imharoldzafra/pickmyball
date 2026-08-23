@@ -6,56 +6,97 @@
     touch-action: manipulation;
   }
 
-  /* Sophisticated Mobile Button Interaction */
+  /* Smooth scrollbars */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.4);
+  }
+
+  /* Mobile Button Physics */
   button, .nav-btn {
     position: relative;
-    /* Springy release */
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
   }
 
   button:active, .nav-btn:active {
-    /* Responsive squish */
-    transform: scale(0.92);
-    filter: brightness(1.2);
-    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s ease, background-color 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease !important;
-  }
-
-  /* Instant tap flash overlay */
-  button::after, .nav-btn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background-color: rgba(255, 255, 255, 0.15);
-    opacity: 0;
-    transition: opacity 0.5s ease-out;
-    pointer-events: none;
-  }
-
-  button:active::after, .nav-btn:active::after {
-    opacity: 1;
-    transition: opacity 0s;
+    transform: scale(0.96);
+    transition: transform 0.08s ease-out !important;
   }
 }
 
 @theme {
-  --color-primary: #14b8a6;
-  --color-secondary: #4ade80;
-  --color-background: #060c0f;
-  --color-card: #0a1111;
-  --color-accent-sand: #14b8a6;
-  --color-accent-terra: #ffe600;
-  --color-text-main: #e2e8f0;
-  --color-text-light: rgba(226, 232, 240, 0.4);
+  --color-primary: #10b981;
+  --color-secondary: #34d399;
+  --color-background: #05080c;
+  --color-card: rgba(15, 23, 32, 0.55);
+  --color-accent-sand: #38bdf8;
+  --color-accent-terra: #f59e0b;
+  --color-text-main: #f8fafc;
+  --color-text-light: rgba(248, 250, 252, 0.65);
+}
+
+/* 🎥 Live Cinematic Background Animation */
+@keyframes cinematicMesh {
+  0% {
+    background-position: 0% 0%, 100% 100%, 50% 50%;
+  }
+  33% {
+    background-position: 50% 100%, 0% 50%, 100% 0%;
+  }
+  66% {
+    background-position: 100% 50%, 50% 0%, 0% 100%;
+  }
+  100% {
+    background-position: 0% 0%, 100% 100%, 50% 50%;
+  }
 }
 
 body {
-  background-color: #060c0f;
+  background-color: #04070a;
   background-image: 
-    radial-gradient(ellipse at 50% -20%, rgba(20, 184, 166, 0.3) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 120%, rgba(74, 222, 128, 0.2) 0%, transparent 60%),
-    radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.08) 0%, transparent 100%);
+    radial-gradient(ellipse 90% 80% at 20% -10%, rgba(16, 185, 129, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 70% at 85% 90%, rgba(6, 182, 212, 0.28) 0%, transparent 55%),
+    radial-gradient(circle 600px at 50% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  background-size: 180% 180%, 180% 180%, 180% 180%;
+  animation: cinematicMesh 18s ease-in-out infinite alternate;
   background-attachment: fixed;
   color: var(--color-text-main);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Inter", Roboto, sans-serif;
 }
+
+/* 💎 Premium Glass Container Class */
+.glass-card {
+  background: rgba(15, 23, 32, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+}
+
+.glass-card-accent {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 32, 0.55) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+/* 🚫 Invisible Smooth Scrollbar Utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
