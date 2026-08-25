@@ -15,9 +15,9 @@ import Play from './pages/Play';
 import Profile from './pages/Profile';
 import MatchLobby from './pages/MatchLobby';
 import LiveMatch from './pages/LiveMatch';
-import Victory from './pages/Victory';
 import Friends from './pages/Friends';
 import History from './pages/History';
+import WinnerProfile from './pages/WinnerProfile';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -45,7 +45,7 @@ export default function App() {
             <Route path="history" element={<History />} />
             <Route path="match/:matchId/lobby" element={<MatchLobby />} />
             <Route path="match/:matchId/live" element={<LiveMatch />} />
-            <Route path="match/:matchId/victory" element={<Victory />} />
+            <Route path="match/:matchId/winner" element={<WinnerProfile />} />
           </Route>
         </Routes>
       </BrowserRouter>

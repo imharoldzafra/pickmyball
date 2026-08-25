@@ -43,8 +43,22 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('mockUser');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [profile, setProfile] = useState<UserProfile | null>(() => {
+    try {
+      const saved = localStorage.getItem('mockProfile');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   // Helper to fetch profile from Supabase profiles table
@@ -367,7 +381,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       xpEarned: `+${xpEarned} XP`,
       crChange: crChange >= 0 ? `+${crChange} CR` : `${crChange} CR`
     };
-    const updatedHistory = [newRecord, ...historyList];
+    const updatedHistory = [newRecord, ...historyList].slice(0, 10);
     localStorage.setItem('matchHistory', JSON.stringify(updatedHistory));
 
     // 2. Update user profile locally and on Supabase

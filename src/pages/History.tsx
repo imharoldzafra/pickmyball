@@ -23,7 +23,12 @@ export default function History() {
     const saved = localStorage.getItem('matchHistory');
     if (saved) {
       try {
-        setMatches(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        const limited = Array.isArray(parsed) ? parsed.slice(0, 10) : [];
+        setMatches(limited);
+        if (Array.isArray(parsed) && parsed.length > 10) {
+          localStorage.setItem('matchHistory', JSON.stringify(limited));
+        }
       } catch (e) {
         setMatches([]);
       }

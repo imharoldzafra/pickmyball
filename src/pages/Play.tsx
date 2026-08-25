@@ -162,8 +162,8 @@ export default function Play() {
             </div>
           </motion.div>
 
-          {/* Secondary Actions Grid: Join Match & Solo Simulator */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {/* Secondary Action: Join Match */}
+          <div>
             {/* Join Room Card */}
             <motion.div
               whileHover={{ scale: 1.01 }}
@@ -177,71 +177,7 @@ export default function Play() {
                 </div>
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-white">Join Match</h3>
-                  <p className="text-[10px] text-text-light/70">Scan QR or enter room code</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-text-light/60" />
-            </motion.div>
-
-            {/* Solo Practice Card */}
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={async () => {
-                if (!user) return;
-                const testMatchId = `PKB-SIM-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-                
-                const myPlayer = {
-                  id: user.id,
-                  displayName: profile?.displayName || 'Player One',
-                  photoURL: profile?.photoURL || '',
-                  rating: profile?.rating || 850,
-                  rank: profile?.rank || 'Challenger',
-                };
-
-                const botOpponent = {
-                  id: 'bot-rival-1',
-                  displayName: '🤖 Practice Rival (Alex)',
-                  photoURL: '',
-                  rating: 1050,
-                  rank: 'Challenger',
-                };
-
-                await supabase.from('matches').insert({
-                  id: testMatchId,
-                  host_id: user.id,
-                  host_name: myPlayer.displayName,
-                  host_avatar: myPlayer.photoURL,
-                  match_type: '1v1',
-                  game_format: 'single_11',
-                  target_points: 11,
-                  status: 'IN_PROGRESS',
-                  team_a: [myPlayer],
-                  team_b: [botOpponent],
-                  referee_id: user.id,
-                  referee: myPlayer,
-                  current_game: 1,
-                  team_a_score: 0,
-                  team_b_score: 0,
-                  team_a_games_won: 0,
-                  team_b_games_won: 0,
-                  serving_team: 'A',
-                  server_number: 2,
-                  game_results: [],
-                  match_winner: 'NONE',
-                });
-
-                navigate(`/match/${testMatchId}/live`);
-              }}
-              className="cursor-pointer bg-white/[0.03] backdrop-blur-md p-4.5 rounded-3xl border border-white/10 hover:border-emerald-400/30 transition-all flex items-center justify-between shadow-[0_10px_35px_rgba(0,0,0,0.3)]"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
-                  <span>🧪</span>
-                </div>
-                <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-white">Solo Practice</h3>
-                  <p className="text-[10px] text-text-light/70">Test 0ms scoring engine</p>
+                  <p className="text-[10px] text-text-light/70">Scan QR code or enter match code</p>
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-text-light/60" />
@@ -262,8 +198,8 @@ export default function Play() {
                 { name: 'Rookie', range: '0 - 499 CR', color: 'text-slate-400', dot: 'bg-slate-400' },
                 { name: 'Challenger', range: '500 - 999 CR', color: 'text-emerald-400', dot: 'bg-emerald-400' },
                 { name: 'Veteran', range: '1,000 - 1,499 CR', color: 'text-cyan-400', dot: 'bg-cyan-400' },
-                { name: 'Expert', range: '1,500 - 1,999 CR', color: 'text-amber-400', dot: 'bg-amber-400' },
-                { name: 'Legend', range: '2,000+ CR', color: 'text-orange-400', dot: 'bg-orange-400' },
+                { name: 'Expert', range: '1,500 - 2,499 CR', color: 'text-amber-400', dot: 'bg-amber-400' },
+                { name: 'Legend', range: '2,500+ CR', color: 'text-orange-400', dot: 'bg-orange-400' },
               ].map((tier) => {
                 const isMyRank = (profile?.rank || 'Challenger').toLowerCase() === tier.name.toLowerCase();
                 return (

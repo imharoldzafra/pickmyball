@@ -6,7 +6,8 @@ import { cn } from '../../lib/utils';
 
 export default function Layout() {
   const location = useLocation();
-  const isLiveMatch = location.pathname.includes('/live') || location.pathname.includes('/victory');
+  const isMatchView = location.pathname.includes('/match/');
+  const isLiveMatch = location.pathname.includes('/live');
 
   return (
     <div className="min-h-screen bg-[#040709] flex justify-center selection:bg-primary/30">
@@ -127,20 +128,24 @@ export default function Layout() {
         <main className={cn(
           "flex-1 relative z-10 no-scrollbar flex flex-col",
           isLiveMatch 
-            ? "overflow-hidden pb-1 pt-1 px-1" 
-            : "overflow-y-auto pb-16 pt-1 px-1"
+            ? "overflow-hidden p-1" 
+            : isMatchView 
+              ? "overflow-y-auto pb-4 pt-1 px-1 justify-center"
+              : "overflow-y-auto pb-16 pt-1 px-1"
         )}>
           <Outlet />
         </main>
         
-        {/* Fixed Anchored Floating Ultra-Slim Organic Pill Navigation Bar */}
-        <nav className="fixed bottom-3.5 inset-x-4 max-w-[390px] mx-auto bg-[#070b10]/90 backdrop-blur-2xl border border-white/10 rounded-full px-3 py-1.5 flex justify-between items-center shadow-[0_15px_40px_rgba(0,0,0,0.85),0_0_20px_rgba(16,185,129,0.06)] z-50">
-          <NavItem to="/" icon={<Home className="w-5 h-5" />} label="Home" />
-          <NavItem to="/history" icon={<History className="w-5 h-5" />} label="History" />
-          <NavItem to="/play" isCenter icon={<Trophy className="w-6 h-6" />} label="Play" />
-          <NavItem to="/friends" icon={<Users className="w-5 h-5" />} label="Friends" />
-          <NavItem to="/profile" icon={<User className="w-5 h-5" />} label="Profile" />
-        </nav>
+        {/* Fixed Anchored Floating Ultra-Slim Organic Pill Navigation Bar (Hidden in matches & victory screen) */}
+        {!isMatchView && (
+          <nav className="fixed bottom-3.5 inset-x-4 max-w-[390px] mx-auto bg-[#070b10]/90 backdrop-blur-2xl border border-white/10 rounded-full px-3 py-1.5 flex justify-between items-center shadow-[0_15px_40px_rgba(0,0,0,0.85),0_0_20px_rgba(16,185,129,0.06)] z-50">
+            <NavItem to="/" icon={<Home className="w-5 h-5" />} label="Home" />
+            <NavItem to="/history" icon={<History className="w-5 h-5" />} label="History" />
+            <NavItem to="/play" isCenter icon={<Trophy className="w-6 h-6" />} label="Play" />
+            <NavItem to="/friends" icon={<Users className="w-5 h-5" />} label="Friends" />
+            <NavItem to="/profile" icon={<User className="w-5 h-5" />} label="Profile" />
+          </nav>
+        )}
       </div>
     </div>
   );

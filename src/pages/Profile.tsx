@@ -60,6 +60,29 @@ export default function Profile() {
     }
   };
 
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleResetStats = async () => {
+    if (!window.confirm('Reset all match stats, CR rating, and match history to fresh Level 1?')) return;
+    setIsResetting(true);
+    localStorage.removeItem('matchHistory');
+    localStorage.removeItem('mockProfile');
+    await updateProfileMock({
+      wins: 0,
+      losses: 0,
+      battles: 0,
+      xp: 0,
+      level: 1,
+      rating: 0,
+      rank: 'Rookie',
+      currentStreak: 0,
+      longestStreak: 0,
+      highestRating: 0,
+    });
+    setIsResetting(false);
+    navigate('/');
+  };
+
   const handleLogout = () => {
     logoutMock();
     navigate('/login');
@@ -81,82 +104,63 @@ export default function Profile() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-center gap-3"
+        className="flex items-center justify-between"
       >
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/')}
-          className="w-9 h-9 rounded-full bg-white/[0.08] border border-white/10 flex items-center justify-center text-primary backdrop-blur-md transition-colors shadow-md"
+        <button 
+          onClick={() => navigate(-1)}
+          className="p-2.5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 text-white transition-all active:scale-95"
         >
           <ChevronLeft className="w-5 h-5" />
-        </motion.button>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-white">Player Profile</h1>
-          <p className="text-xs text-text-light">Customize your player identity & avatar.</p>
-        </div>
+        </button>
+        <h1 className="text-xl font-bold tracking-tight text-white">Edit Profile</h1>
+        <div className="w-10" />
       </motion.div>
 
-      <div className="space-y-6 max-w-sm mx-auto">
-        {/* Avatar Section Glass Card */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.35 }}
-          className="bg-white/[0.05] backdrop-blur-2xl p-6 rounded-3xl border border-white/10 shadow-[0_12px_40px_0_rgba(0,0,0,0.4)] flex flex-col items-center text-center space-y-3"
+      {/* Avatar Section */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.35 }}
+        className="flex flex-col items-center space-y-3"
+      >
+        <div 
+          onClick={handleAvatarClick}
+          className="relative cursor-pointer group"
         >
-          <div 
-            className="relative cursor-pointer active:scale-95 transition-transform group" 
-            onClick={handleAvatarClick}
-          >
-            <div 
-              className="w-28 h-28 rounded-full bg-primary/10 border-2 border-primary/50 overflow-hidden shadow-[0_0_25px_rgba(16,185,129,0.35)] flex items-center justify-center backdrop-blur-md relative"
-            >
-              {photoURL ? (
-                <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <User className="w-14 h-14 text-primary" />
-              )}
-              {/* Subtle hover overlay */}
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Camera className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <div className="absolute bottom-0 right-0 bg-primary text-slate-950 p-2 rounded-full shadow-lg">
-              <Camera className="w-4 h-4" />
-            </div>
+          <div className="w-28 h-28 rounded-full border-2 border-primary/50 overflow-hidden bg-white/[0.03] shadow-[0_0_30px_rgba(16,185,129,0.2)] flex items-center justify-center transition-all group-hover:border-primary">
+            {photoURL ? (
+              <img src={photoURL} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-12 h-12 text-text-light/50" />
+            )}
           </div>
-
-          <div>
-            <h3 className="text-base font-bold text-white">{displayName || 'Player'}</h3>
-            <p className="text-xs text-primary font-semibold">Level {profile.level} • {profile.rank}</p>
+          <div className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-[#050a0a] shadow-lg group-hover:scale-110 transition-transform">
+            <Camera className="w-4 h-4" />
           </div>
-        </motion.div>
+        </div>
+        <p className="text-xs text-text-light font-medium">Tap photo to choose & crop with camera/gallery</p>
+      </motion.div>
 
-        {/* Form Fields Glass Card */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.05 }}
-          className="space-y-4 bg-white/[0.05] backdrop-blur-2xl p-6 rounded-3xl border border-white/10 shadow-[0_12px_40px_0_rgba(0,0,0,0.4)]"
-        >
-          {errorMsg && (
-            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-2xl text-left">
-              <p className="text-xs text-red-400 font-semibold">{errorMsg}</p>
-            </div>
-          )}
-
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-text-light">Username</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => { setDisplayName(e.target.value); setErrorMsg(null); }}
-              className="w-full bg-black/30 backdrop-blur-md border border-white/15 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-medium"
-              placeholder="Enter your username"
-            />
+      {/* Form Fields */}
+      <div className="space-y-4">
+        {errorMsg && (
+          <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold">
+            {errorMsg}
           </div>
-        </motion.div>
+        )}
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-text-light uppercase tracking-wider pl-1">
+            Display Name
+          </label>
+          <input
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="Enter your username"
+            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-4 py-3.5 text-white font-medium focus:outline-none focus:border-primary/50 transition-all text-sm"
+          />
+        </div>
 
         {/* Actions */}
         <motion.div 
