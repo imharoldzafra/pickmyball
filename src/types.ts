@@ -18,6 +18,14 @@ export interface UserProfile {
 export type MatchStatus = 'WAITING' | 'READY' | 'IN_PROGRESS' | 'FINISHED';
 export type Team = 'A' | 'B' | 'NONE';
 
+export interface LobbyPlayer {
+  id: string;
+  displayName: string;
+  photoURL?: string;
+  rating?: number;
+  rank?: string;
+}
+
 export interface GameResult {
   gameNumber: number;
   teamAScore: number;
@@ -27,10 +35,16 @@ export interface GameResult {
 export interface Match {
   id: string;
   creatorId: string;
+  hostName?: string;
+  hostAvatar?: string;
+  matchType: '1v1' | '2v2';
+  gameFormat: 'single_11' | 'single_15' | 'single_21' | 'best_of_3';
+  targetPoints: number;
   status: MatchStatus;
-  teamA: string[];
-  teamB: string[];
+  teamA: LobbyPlayer[];
+  teamB: LobbyPlayer[];
   refereeId: string | null;
+  referee?: LobbyPlayer | null;
   
   currentGame: number;
   teamAScore: number;

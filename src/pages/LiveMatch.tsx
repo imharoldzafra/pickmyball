@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Match, Team } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { Flame, Trophy, Zap, Shield, Swords, Sparkles, Activity } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Flame, Trophy, Shield, Swords, Sparkles, Activity, Check, RotateCcw, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LiveMatch() {
@@ -10,376 +11,510 @@ export default function LiveMatch() {
   const { user, recordMatchResult } = useAuth();
   const navigate = useNavigate();
 
-  // Mock initial state
-  const [match, setMatch] = useState<Match>({
-    id: matchId || 'MOCK',
-    creatorId: user?.uid || '',
-    status: 'IN_PROGRESS',
-    teamA: [user?.uid || 'A1'],
-    teamB: ['B1'],
-    refereeId: user?.uid || null,
-    currentGame: 1,
-    teamAScore: 0,
-    teamBScore: 0,
-    teamAGamesWon: 0,
-    teamBGamesWon: 0,
-    servingTeam: 'A',
-    serverNumber: 2,
-    gameResults: [],
-    matchWinner: 'NONE',
-    createdAt: Date.now(),
-    updatedAt: Date.now()
-  });
+  const [match, setMatch] = useState<Match | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const isReferee = match.refereeId === user?.uid;
+  // Fetch match from Supabase
+  const fetchMatch = async () => {
+    if (!matchId) return;
+    try {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*')
+        .eq('id', matchId)
+        .maybeSingle();
 
-  const handleScore = async (winner: Team) => {
-    if (!isReferee) return;
-    
-    setMatch(prev => {
-      const nextState = { ...prev };
-      
-      if (winner === nextState.servingTeam) {
-        // Point scored!
-        if (nextState.servingTeam === 'A') nextState.teamAScore++;
-        else nextState.teamBScore++;
-        
-        // Check game win
-        const winBy2 = Math.abs(nextState.teamAScore - nextState.teamBScore) >= 2;
-        const reached11 = nextState.teamAScore >= 11 || nextState.teamBScore >= 11;
-        
-        if (reached11 && winBy2) {
-          // End of game
-          const updatedResults = [...nextState.gameResults, {
-            gameNumber: nextState.currentGame,
-            teamAScore: nextState.teamAScore,
-            teamBScore: nextState.teamBScore
-          }];
-          nextState.gameResults = updatedResults;
-          
-          if (nextState.teamAScore > nextState.teamBScore) nextState.teamAGamesWon++;
-          else nextState.teamBGamesWon++;
-          
-          // Match over?
-          if (nextState.teamAGamesWon === 2 || nextState.teamBGamesWon === 2) {
-            nextState.matchWinner = nextState.teamAGamesWon === 2 ? 'A' : 'B';
-            nextState.status = 'FINISHED';
-
-            const userIsTeamA = nextState.teamA.includes(user?.uid || '');
-            const userWon = (nextState.matchWinner === 'A' && userIsTeamA) || (nextState.matchWinner === 'B' && !userIsTeamA);
-            const scoreSummary = updatedResults.map(g => `${g.teamAScore} - ${g.teamBScore}`).join(', ');
-
-            recordMatchResult(
-              userWon,
-              userWon ? 150 : 40,
-              userWon ? 25 : -12,
-              {
-                id: nextState.id,
-                type: '1v1 Competitive',
-                opponent: userIsTeamA ? 'Team Beta' : 'Team Alpha',
-                score: scoreSummary || `${nextState.teamAScore} - ${nextState.teamBScore}`
-              }
-            );
-          } else {
-            nextState.currentGame++;
-            nextState.teamAScore = 0;
-            nextState.teamBScore = 0;
-            // Alternate starting team per game (simplification)
-            nextState.servingTeam = nextState.currentGame % 2 === 0 ? 'B' : 'A';
-            nextState.serverNumber = 2; // Exception rule applies to start of any game
-          }
-        }
-      } else {
-        // Side out logic
-        // First service of a game starts on Server 2
-        const isFirstService = nextState.teamAScore === 0 && nextState.teamBScore === 0 && nextState.serverNumber === 2;
-        
-        if (nextState.serverNumber === 1 && !isFirstService) {
-          nextState.serverNumber = 2;
-        } else {
-          // Side out
-          nextState.servingTeam = nextState.servingTeam === 'A' ? 'B' : 'A';
-          nextState.serverNumber = 1;
-        }
+      if (data) {
+        setMatch({
+          id: data.id,
+          creatorId: data.host_id,
+          hostName: data.host_name,
+          hostAvatar: data.host_avatar,
+          matchType: data.match_type || '1v1',
+          gameFormat: data.game_format || 'single_11',
+          targetPoints: data.target_points || 11,
+          status: data.status || 'IN_PROGRESS',
+          teamA: data.team_a || [],
+          teamB: data.team_b || [],
+          refereeId: data.referee_id || data.host_id,
+          referee: data.referee,
+          currentGame: data.current_game || 1,
+          teamAScore: data.team_a_score || 0,
+          teamBScore: data.team_b_score || 0,
+          teamAGamesWon: data.team_a_games_won || 0,
+          teamBGamesWon: data.team_b_games_won || 0,
+          servingTeam: data.serving_team || 'A',
+          serverNumber: data.server_number || 2,
+          gameResults: data.game_results || [],
+          matchWinner: data.match_winner || 'NONE',
+          createdAt: data.created_at ? new Date(data.created_at).getTime() : Date.now(),
+          updatedAt: data.updated_at ? new Date(data.updated_at).getTime() : Date.now(),
+        });
       }
-
-      nextState.updatedAt = Date.now();
-      return nextState;
-    });
+    } catch (err) {
+      console.error('Fetch live match error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (match.status === 'FINISHED') {
-    const isWinnerAlpha = match.matchWinner === 'A';
+  useEffect(() => {
+    fetchMatch();
+  }, [matchId]);
+
+  const lastLocalActionTime = React.useRef<number>(0);
+
+  // Real-time Supabase Subscription for Live Score Broadcasts (< 30ms)
+  useEffect(() => {
+    if (!matchId) return;
+
+    const channel = supabase
+      .channel(`live-court-${matchId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'matches',
+          filter: `id=eq.${matchId}`,
+        },
+        (payload) => {
+          if (payload.new) {
+            const data: any = payload.new;
+            const isRef = user?.id === data.referee_id || user?.id === data.host_id;
+            const timeSinceLocalClick = Date.now() - lastLocalActionTime.current;
+
+            // 🛡️ Shield: If I am the referee and recently clicked (< 2.5s), ignore stale cloud echoes to prevent rubberbanding!
+            if (isRef && timeSinceLocalClick < 2500) {
+              return;
+            }
+
+            setMatch({
+              id: data.id,
+              creatorId: data.host_id,
+              hostName: data.host_name,
+              hostAvatar: data.host_avatar,
+              matchType: data.match_type || '1v1',
+              gameFormat: data.game_format || 'single_11',
+              targetPoints: data.target_points || 11,
+              status: data.status || 'IN_PROGRESS',
+              teamA: data.team_a || [],
+              teamB: data.team_b || [],
+              refereeId: data.referee_id || data.host_id,
+              referee: data.referee,
+              currentGame: data.current_game || 1,
+              teamAScore: data.team_a_score || 0,
+              teamBScore: data.team_b_score || 0,
+              teamAGamesWon: data.team_a_games_won || 0,
+              teamBGamesWon: data.team_b_games_won || 0,
+              servingTeam: data.serving_team || 'A',
+              serverNumber: data.server_number || 2,
+              gameResults: data.game_results || [],
+              matchWinner: data.match_winner || 'NONE',
+              createdAt: data.created_at ? new Date(data.created_at).getTime() : Date.now(),
+              updatedAt: data.updated_at ? new Date(data.updated_at).getTime() : Date.now(),
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [matchId, user?.id]);
+
+  // 🏆 Auto-Navigate to Dedicated Victory Page on Match Finish
+  useEffect(() => {
+    if (match?.status === 'FINISHED') {
+      const timeout = setTimeout(() => {
+        navigate(`/match/${match.id}/victory`);
+      }, 600);
+      return () => clearTimeout(timeout);
+    }
+  }, [match?.status, match?.id, navigate]);
+
+  if (loading || !match) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#05080c] p-6 text-center space-y-6 relative overflow-hidden">
-        {/* Background glow */}
-        <div className={`absolute w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none ${isWinnerAlpha ? 'bg-cyan-500' : 'bg-emerald-500'}`} />
-        
-        <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10"
-        >
-          <div className="text-6xl mb-4 drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]">🏆</div>
-          <h1 className="text-5xl font-black tracking-tight text-white">VICTORY</h1>
-          <h2 className={`text-2xl font-black font-mono uppercase tracking-widest mt-2 ${isWinnerAlpha ? 'text-cyan-400 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]' : 'text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]'}`}>
-            TEAM {isWinnerAlpha ? 'ALPHA' : 'BETA'}
-          </h2>
-        </motion.div>
-
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-4 mt-6 bg-white/[0.04] backdrop-blur-2xl p-8 rounded-3xl border border-white/10 w-full max-w-sm relative z-10 shadow-2xl"
-        >
-          <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-text-light px-2 pb-2 border-b border-white/10">
-            <span>Set</span>
-            <span className="text-cyan-400">Alpha</span>
-            <span className="text-emerald-400">Beta</span>
-          </div>
-          {match.gameResults.map(gr => (
-            <div key={gr.gameNumber} className="flex justify-between items-center text-lg font-mono px-2">
-              <span className="text-white/50 text-xs font-bold">Game {gr.gameNumber}</span>
-              <span className={`font-black ${gr.teamAScore > gr.teamBScore ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]' : 'text-white/40'}`}>{gr.teamAScore}</span>
-              <span className="text-white/20">-</span>
-              <span className={`font-black ${gr.teamBScore > gr.teamAScore ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'text-white/40'}`}>{gr.teamBScore}</span>
-            </div>
-          ))}
-        </motion.div>
-
-        <div className="pt-6 relative z-10">
-          <button onClick={() => navigate('/')} className="bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 px-8 py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs hover:shadow-[0_0_20px_rgba(16,185,129,0.6)] transition-all active:scale-95">
-            Exit Match
-          </button>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-3 bg-[#05080c]">
+        <div className="w-10 h-10 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
+        <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Connecting to Court...</p>
       </div>
     );
   }
 
+  const isReferee = user?.id === match.refereeId || user?.id === match.creatorId;
+  const targetPoints = match.targetPoints || 11;
+  const isBestOfThree = match.gameFormat === 'best_of_3';
+
+  // Referee Scoring Logic with Side Out & Set Management
+  const handleScore = async (rallyWinner: Team) => {
+    if (!isReferee || !match) return;
+
+    lastLocalActionTime.current = Date.now();
+
+    let newTeamAScore = match.teamAScore;
+    let newTeamBScore = match.teamBScore;
+    let newTeamAGamesWon = match.teamAGamesWon;
+    let newTeamBGamesWon = match.teamBGamesWon;
+    let newServingTeam = match.servingTeam;
+    let newServerNumber = match.serverNumber;
+    let newCurrentGame = match.currentGame;
+    let newGameResults = [...match.gameResults];
+    let newStatus: any = 'IN_PROGRESS';
+    let newWinner: Team = 'NONE';
+
+    if (rallyWinner === match.servingTeam) {
+      // Point scored!
+      if (rallyWinner === 'A') {
+        newTeamAScore++;
+      } else {
+        newTeamBScore++;
+      }
+
+      // Check for Game/Set Win (Must reach target points AND win by at least 2)
+      const reachedTarget = newTeamAScore >= targetPoints || newTeamBScore >= targetPoints;
+      const winBy2 = Math.abs(newTeamAScore - newTeamBScore) >= 2;
+
+      if (reachedTarget && winBy2) {
+        newGameResults.push({
+          gameNumber: newCurrentGame,
+          teamAScore: newTeamAScore,
+          teamBScore: newTeamBScore,
+        });
+
+        if (newTeamAScore > newTeamBScore) {
+          newTeamAGamesWon++;
+        } else {
+          newTeamBGamesWon++;
+        }
+
+        const setsToWin = isBestOfThree ? 2 : 1;
+        if (newTeamAGamesWon >= setsToWin || newTeamBGamesWon >= setsToWin) {
+          // Match Finished!
+          newWinner = newTeamAGamesWon >= setsToWin ? 'A' : 'B';
+          newStatus = 'FINISHED';
+
+          // Record player results
+          const userIsTeamA = match.teamA.some((p) => p.id === user?.id);
+          const userWon = (newWinner === 'A' && userIsTeamA) || (newWinner === 'B' && !userIsTeamA);
+          const scoreSummary = newGameResults.map((g) => `${g.teamAScore}-${g.teamBScore}`).join(', ');
+
+          recordMatchResult(
+            userWon,
+            userWon ? 150 : 50,
+            userWon ? 25 : -12,
+            {
+              id: match.id,
+              type: match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)',
+              opponent: userIsTeamA ? 'Team Beta' : 'Team Alpha',
+              score: scoreSummary || `${newTeamAScore} - ${newTeamBScore}`,
+            }
+          );
+        } else {
+          // Next Set
+          newCurrentGame++;
+          newTeamAScore = 0;
+          newTeamBScore = 0;
+          newServingTeam = newCurrentGame % 2 === 0 ? 'B' : 'A';
+          newServerNumber = 2; // Pickleball first server rule per game
+        }
+      }
+    } else {
+      // Fault / Side out
+      const isDoubles = match.matchType === '2v2';
+      const isFirstService = match.teamAScore === 0 && match.teamBScore === 0 && match.serverNumber === 2;
+
+      if (isDoubles && match.serverNumber === 1 && !isFirstService) {
+        newServerNumber = 2;
+      } else {
+        // Side Out
+        newServingTeam = match.servingTeam === 'A' ? 'B' : 'A';
+        newServerNumber = isDoubles ? 1 : 2;
+      }
+    }
+
+    // ⚡ 1. INSTANT OPTIMISTIC UI UPDATE (0ms delay)
+    const nextState: Match = {
+      ...match,
+      teamAScore: newTeamAScore,
+      teamBScore: newTeamBScore,
+      teamAGamesWon: newTeamAGamesWon,
+      teamBGamesWon: newTeamBGamesWon,
+      servingTeam: newServingTeam,
+      serverNumber: newServerNumber,
+      currentGame: newCurrentGame,
+      gameResults: newGameResults,
+      status: newStatus,
+      matchWinner: newWinner,
+      updatedAt: Date.now(),
+    };
+
+    setMatch(nextState);
+
+    // ⚡ 2. Silently sync to Supabase in background (Non-blocking)
+    supabase.from('matches').update({
+      team_a_score: newTeamAScore,
+      team_b_score: newTeamBScore,
+      team_a_games_won: newTeamAGamesWon,
+      team_b_games_won: newTeamBGamesWon,
+      serving_team: newServingTeam,
+      server_number: newServerNumber,
+      current_game: newCurrentGame,
+      game_results: newGameResults,
+      status: newStatus,
+      match_winner: newWinner,
+      updated_at: new Date().toISOString(),
+    }).eq('id', match.id).then(({ error }) => {
+      if (error) console.warn('Background sync warning:', error.message);
+    });
+  };
+
+  const isFinished = match.status === 'FINISHED';
+  const isWinnerAlpha = match.matchWinner === 'A';
   const tAScore = match.teamAScore;
   const tBScore = match.teamBScore;
   const isAlphaServing = match.servingTeam === 'A';
-
   const isAlphaLeading = tAScore > tBScore;
   const isBetaLeading = tBScore > tAScore;
-  const isTied = tAScore === tBScore && tAScore > 0;
+  const winningTeamScore = isWinnerAlpha ? tAScore : tBScore;
+  const losingTeamScore = isWinnerAlpha ? tBScore : tAScore;
 
-  const isAlphaGamePoint = tAScore >= 10 && tAScore > tBScore;
-  const isBetaGamePoint = tBScore >= 10 && tBScore > tAScore;
+  // Handle Rematch / Play Again on court
+  const handleRematch = async () => {
+    if (!isReferee) return;
+    const resetState: Partial<Match> = {
+      teamAScore: 0,
+      teamBScore: 0,
+      teamAGamesWon: 0,
+      teamBGamesWon: 0,
+      servingTeam: 'A',
+      serverNumber: 2,
+      currentGame: 1,
+      gameResults: [],
+      status: 'IN_PROGRESS',
+      matchWinner: 'NONE',
+      updatedAt: Date.now(),
+    };
+
+    setMatch((prev) => (prev ? { ...prev, ...resetState } : null));
+
+    await supabase.from('matches').update({
+      team_a_score: 0,
+      team_b_score: 0,
+      team_a_games_won: 0,
+      team_b_games_won: 0,
+      serving_team: 'A',
+      server_number: 2,
+      current_game: 1,
+      game_results: [],
+      status: 'IN_PROGRESS',
+      match_winner: 'NONE',
+      updated_at: new Date().toISOString(),
+    }).eq('id', match.id);
+  };
 
   return (
-    <div className="p-5 pb-24 max-w-lg mx-auto space-y-6">
-      {/* Header & Game Progress */}
-      <div className="text-center relative">
-        <div className="inline-flex items-center gap-1.5 bg-white/[0.06] border border-white/10 px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-widest text-text-light backdrop-blur-md">
+    <div className="p-4 sm:p-5 pb-2 max-w-lg mx-auto space-y-4 select-none touch-manipulation overflow-hidden">
+      
+      {/* 🎾 Court Header & Live Callout */}
+      <div className="text-center relative space-y-2.5">
+        <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/10 px-4 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-widest text-text-light backdrop-blur-md">
           <Swords className="w-3.5 h-3.5 text-primary" />
-          <span>Game {match.currentGame} of 3</span>
+          <span>{isBestOfThree ? `Set ${match.currentGame} of 3` : `Single Game • First to ${targetPoints}`}</span>
+          <span className="text-white/30">•</span>
+          <span className="text-emerald-400 font-mono">{match.id}</span>
         </div>
 
-        {/* 🌟 Dedicated Color-Coded Live Callout Board */}
-        <div className="mt-6 mb-4 p-5 rounded-3xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/15 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
-          {/* Ambient Glow for Active Server */}
-          <div className={`absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-24 rounded-full blur-2xl opacity-30 pointer-events-none ${isAlphaServing ? 'bg-cyan-500' : 'bg-emerald-500'}`} />
+        {/* 🌟 Dedicated Pickleball Callout Board (Server Score : Receiver Score : Server #) */}
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/15 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
+          <div className={`absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-24 rounded-full blur-2xl opacity-35 pointer-events-none ${isAlphaServing ? 'bg-cyan-500' : 'bg-emerald-500'}`} />
 
-          <div className="flex items-center justify-center gap-3 sm:gap-6 my-2 font-mono relative z-10">
-            {/* 1st Number: Server Team Score */}
-            <span className={`text-6xl sm:text-7xl font-black tracking-tight ${isAlphaServing ? 'text-cyan-400 drop-shadow-[0_0_20px_rgba(6,182,212,0.7)]' : 'text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.7)]'}`}>
-              <AnimatePresence mode="popLayout">
-                <motion.span
-                  key={isAlphaServing ? tAScore : tBScore}
-                  initial={{ scale: 1.15, opacity: 0.7 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  className="inline-block"
-                >
-                  {isAlphaServing ? tAScore : tBScore}
-                </motion.span>
-              </AnimatePresence>
-            </span>
+          <p className="text-[10px] font-black uppercase tracking-widest text-text-light/70 mb-1">
+            Pickleball Three-Digit Callout
+          </p>
 
-            {/* Separator */}
-            <span className="text-4xl sm:text-5xl font-light text-white/20">:</span>
+          <div className="flex items-center justify-center gap-4 my-1 font-mono relative z-10">
+            {/* 1st: Serving Team Score */}
+            <div className="flex flex-col items-center">
+              <span className={`text-5xl sm:text-6xl font-black tracking-tight ${isAlphaServing ? 'text-cyan-400 drop-shadow-[0_0_15px_rgba(6,182,212,0.7)]' : 'text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.7)]'}`}>
+                {isAlphaServing ? tAScore : tBScore}
+              </span>
+              <span className="text-[9px] font-bold uppercase text-text-light/50">Server</span>
+            </div>
 
-            {/* 2nd Number: Receiver Team Score */}
-            <span className={`text-6xl sm:text-7xl font-black tracking-tight ${isAlphaServing ? 'text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.7)]' : 'text-cyan-400 drop-shadow-[0_0_20px_rgba(6,182,212,0.7)]'}`}>
-              <AnimatePresence mode="popLayout">
-                <motion.span
-                  key={isAlphaServing ? tBScore : tAScore}
-                  initial={{ scale: 1.15, opacity: 0.7 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  className="inline-block"
-                >
-                  {isAlphaServing ? tBScore : tAScore}
-                </motion.span>
-              </AnimatePresence>
-            </span>
+            <span className="text-3xl font-light text-white/20 -mt-3">:</span>
 
-            {/* Separator */}
-            <span className="text-4xl sm:text-5xl font-light text-white/20">:</span>
+            {/* 2nd: Receiving Team Score */}
+            <div className="flex flex-col items-center">
+              <span className={`text-5xl sm:text-6xl font-black tracking-tight ${isAlphaServing ? 'text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.7)]' : 'text-cyan-400 drop-shadow-[0_0_15px_rgba(6,182,212,0.7)]'}`}>
+                {isAlphaServing ? tBScore : tAScore}
+              </span>
+              <span className="text-[9px] font-bold uppercase text-text-light/50">Receiver</span>
+            </div>
 
-            {/* 3rd Number: Server # (1 or 2) */}
-            <span className="text-6xl sm:text-7xl font-black tracking-tight text-white drop-shadow-md">
-              {match.serverNumber}
-            </span>
+            <span className="text-3xl font-light text-white/20 -mt-3">:</span>
+
+            {/* 3rd: Server Number */}
+            <div className="flex flex-col items-center">
+              <span className="text-5xl sm:text-6xl font-black tracking-tight text-white drop-shadow-md">
+                {match.serverNumber}
+              </span>
+              <span className="text-[9px] font-bold uppercase text-text-light/50">Server #</span>
+            </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isAlphaServing ? 'bg-cyan-400' : 'bg-emerald-400'}`}></span>
-              <span className={`relative inline-flex rounded-full h-2 w-2 ${isAlphaServing ? 'bg-cyan-400' : 'bg-emerald-400'}`}></span>
-            </span>
+          {/* Active Serving Pill */}
+          <div className="mt-2.5 pt-2.5 border-t border-white/10 flex items-center justify-center gap-2">
+            <span className={`w-2 h-2 rounded-full animate-ping ${isAlphaServing ? 'bg-cyan-400' : 'bg-emerald-400'}`} />
             <p className={`text-xs font-black uppercase tracking-widest ${isAlphaServing ? 'text-cyan-400' : 'text-emerald-400'}`}>
-              {isAlphaServing ? 'Team Alpha is Serving' : 'Team Beta is Serving'}
+              {isAlphaServing ? 'Team Alpha Serving' : 'Team Beta Serving'}
             </p>
           </div>
         </div>
       </div>
 
-      {/* 🥊 2x Interactive Score Cards (Alpha Cyan vs Beta Emerald Green) */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* 🥊 Score Cards (Team Alpha vs Team Beta) */}
+      <div className="grid grid-cols-2 gap-3.5">
+        
         {/* Team Alpha Score Box */}
-        <div 
-          className={`p-5 rounded-3xl flex flex-col justify-between border relative overflow-hidden backdrop-blur-2xl transition-all duration-300 shadow-lg ${
-            isAlphaLeading
-              ? 'border-cyan-400/70 bg-gradient-to-br from-cyan-500/20 via-cyan-950/30 to-white/[0.03] shadow-[0_0_25px_rgba(6,182,212,0.25)]'
-              : isAlphaServing 
-                ? 'border-cyan-500/50 bg-gradient-to-br from-cyan-500/12 via-cyan-950/15 to-white/[0.02]' 
-                : 'border-white/10 bg-white/[0.04] opacity-80'
-          }`}
-        >
-          {/* Subtle Ambient Glow when Leading */}
-          {isAlphaLeading && (
-            <div className="absolute -top-8 -right-8 w-24 h-24 bg-cyan-500/20 rounded-full blur-xl pointer-events-none" />
-          )}
-
-          {/* Top Indicator */}
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-1.5 bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]"></span>
+        <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${
+          isAlphaLeading
+            ? 'border-cyan-400/80 bg-gradient-to-br from-cyan-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+            : isAlphaServing
+              ? 'border-cyan-500/50 bg-cyan-950/20'
+              : 'border-white/10 bg-white/[0.03]'
+        }`}>
+          <div className="flex justify-between items-center">
+            <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider border border-cyan-500/30">
               Alpha
-            </div>
-
-            {/* Status Pills: Game Point / Ahead */}
-            {isAlphaGamePoint ? (
-              <span className="text-[9px] font-black text-amber-300 uppercase tracking-wider bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/40">
-                Game Point
-              </span>
-            ) : isAlphaLeading ? (
-              <span className="text-[9px] font-bold text-cyan-300 bg-cyan-500/20 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+            </span>
+            {isAlphaLeading && (
+              <span className="text-[9px] font-bold text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full">
                 +{tAScore - tBScore} Lead
               </span>
-            ) : null}
+            )}
           </div>
 
-          {/* Big Score with Smooth Satisfying Micro Spring Pop */}
-          <div className="my-4 text-center relative z-10">
-            <AnimatePresence mode="popLayout">
-              <motion.span
-                key={tAScore}
-                initial={{ scale: 1.18, opacity: 0.7 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                className="inline-block text-6xl font-black font-mono text-cyan-400 drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]"
-              >
-                {tAScore}
-              </motion.span>
-            </AnimatePresence>
+          <div className="my-2.5 text-center">
+            <span className="text-5xl font-black font-mono text-cyan-400 drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]">
+              {tAScore}
+            </span>
           </div>
 
-          {/* Bottom Games Won */}
-          <div className="flex items-center justify-between text-[10px] font-bold text-cyan-300 bg-cyan-500/10 px-3 py-1.5 rounded-xl border border-cyan-500/20 relative z-10">
-            <span>Games Won</span>
-            <span className="font-mono font-black text-cyan-300">{match.teamAGamesWon}</span>
+          {/* Players in Team Alpha */}
+          <div className="space-y-1 pt-2 border-t border-cyan-400/20">
+            {match.teamA.map((p) => (
+              <p key={p.id} className="text-[11px] font-bold text-white truncate text-center">
+                {p.displayName}
+              </p>
+            ))}
           </div>
         </div>
 
-        {/* Team Beta Score Box (Standard App Green / Emerald) */}
-        <div 
-          className={`p-5 rounded-3xl flex flex-col justify-between border relative overflow-hidden backdrop-blur-2xl transition-all duration-300 shadow-lg ${
-            isBetaLeading
-              ? 'border-emerald-400/70 bg-gradient-to-br from-emerald-500/20 via-emerald-950/30 to-white/[0.03] shadow-[0_0_25px_rgba(16,185,129,0.25)]'
-              : !isAlphaServing 
-                ? 'border-emerald-500/50 bg-gradient-to-br from-emerald-500/12 via-emerald-950/15 to-white/[0.02]' 
-                : 'border-white/10 bg-white/[0.04] opacity-80'
-          }`}
-        >
-          {/* Subtle Ambient Glow when Leading */}
-          {isBetaLeading && (
-            <div className="absolute -top-8 -right-8 w-24 h-24 bg-emerald-500/20 rounded-full blur-xl pointer-events-none" />
-          )}
-
-          {/* Top Indicator */}
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#10b981]"></span>
+        {/* Team Beta Score Box */}
+        <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${
+          isBetaLeading
+            ? 'border-emerald-400/80 bg-gradient-to-br from-emerald-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+            : !isAlphaServing
+              ? 'border-emerald-500/50 bg-emerald-950/20'
+              : 'border-white/10 bg-white/[0.03]'
+        }`}>
+          <div className="flex justify-between items-center">
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-500/30">
               Beta
-            </div>
-
-            {/* Status Pills: Game Point / Ahead */}
-            {isBetaGamePoint ? (
-              <span className="text-[9px] font-black text-amber-300 uppercase tracking-wider bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/40">
-                Game Point
-              </span>
-            ) : isBetaLeading ? (
-              <span className="text-[9px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+            </span>
+            {isBetaLeading && (
+              <span className="text-[9px] font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full">
                 +{tBScore - tAScore} Lead
               </span>
-            ) : null}
+            )}
           </div>
 
-          {/* Big Score with Smooth Satisfying Micro Spring Pop */}
-          <div className="my-4 text-center relative z-10">
-            <AnimatePresence mode="popLayout">
-              <motion.span
-                key={tBScore}
-                initial={{ scale: 1.18, opacity: 0.7 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                className="inline-block text-6xl font-black font-mono text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.6)]"
-              >
-                {tBScore}
-              </motion.span>
-            </AnimatePresence>
+          <div className="my-2.5 text-center">
+            <span className="text-5xl font-black font-mono text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.6)]">
+              {tBScore}
+            </span>
           </div>
 
-          {/* Bottom Games Won */}
-          <div className="flex items-center justify-between text-[10px] font-bold text-emerald-300 bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20 relative z-10">
-            <span>Games Won</span>
-            <span className="font-mono font-black text-emerald-300">{match.teamBGamesWon}</span>
+          {/* Players in Team Beta */}
+          <div className="space-y-1 pt-2 border-t border-emerald-400/20">
+            {match.teamB.map((p) => (
+              <p key={p.id} className="text-[11px] font-bold text-white truncate text-center">
+                {p.displayName}
+              </p>
+            ))}
           </div>
         </div>
+
       </div>
 
-      {/* Control Panel / Referee Actions */}
-      {isReferee ? (
-        <div className="space-y-3.5 pt-2">
-          <div className="flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wider text-text-light">
-            <Shield className="w-3.5 h-3.5 text-primary" /> Referee Control
+      {/* 🎮 Referee Controls vs Match Finished vs Live Spectator View */}
+      {isFinished ? (
+        <div className="space-y-2.5 pt-1">
+          <div className={`p-3.5 rounded-2xl border text-center space-y-1 backdrop-blur-xl ${
+            isWinnerAlpha 
+              ? 'bg-cyan-500/15 border-cyan-400/40 shadow-[0_0_20px_rgba(6,182,212,0.3)]' 
+              : 'bg-emerald-500/15 border-emerald-400/40 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+          }`}>
+            <div className="flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-wider text-amber-400">
+              <Trophy className="w-3.5 h-3.5" />
+              <span>Match Finished</span>
+            </div>
+            <p className={`text-sm font-black font-mono uppercase tracking-widest ${
+              isWinnerAlpha ? 'text-cyan-300' : 'text-emerald-300'
+            }`}>
+              Team {isWinnerAlpha ? 'Alpha' : 'Beta'} Wins ({winningTeamScore} - {losingTeamScore})
+            </p>
           </div>
-          
-          <button 
-            onClick={() => handleScore('A')}
-            className="w-full relative overflow-hidden bg-gradient-to-r from-cyan-600/30 via-cyan-500/20 to-cyan-700/10 border-2 border-cyan-500/60 p-4.5 rounded-2xl flex items-center justify-between text-cyan-300 font-mono text-base font-black uppercase tracking-widest active:scale-96 transition-transform shadow-lg"
+
+          {isReferee && (
+            <button
+              type="button"
+              onClick={handleRematch}
+              className="w-full bg-gradient-to-r from-primary via-emerald-400 to-secondary text-[#050a0a] py-3.5 rounded-2xl font-black uppercase tracking-wider text-xs shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-96 transition-all flex items-center justify-center gap-2"
+            >
+              <RotateCcw className="w-4 h-4 text-[#050a0a]" />
+              <span>Rematch / Play Again</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="w-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white py-3 rounded-2xl font-bold uppercase tracking-wider text-xs active:scale-96 transition-all"
           >
-            <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_#06b6d4]"></span>
-              <span>Point to Alpha</span>
+            Return to Arena Home
+          </button>
+        </div>
+      ) : isReferee ? (
+        <div className="space-y-2.5 pt-1">
+          <div className="flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wider text-text-light">
+            <Shield className="w-3.5 h-3.5 text-emerald-400" /> Host Referee Controls
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleScore('A')}
+            className="w-full bg-gradient-to-r from-cyan-600/30 via-cyan-500/20 to-cyan-700/10 border-2 border-cyan-500/60 p-3.5 rounded-2xl flex items-center justify-between text-cyan-300 font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-lg"
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4]" />
+              <span>Rally to Team Alpha</span>
             </div>
             <span className="text-xs bg-cyan-500/20 border border-cyan-500/40 px-3 py-1 rounded-xl text-cyan-200">
               {isAlphaServing ? '+1 Point' : 'Side Out'}
             </span>
           </button>
 
-          <button 
+          <button
+            type="button"
             onClick={() => handleScore('B')}
-            className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-emerald-700/10 border-2 border-emerald-500/60 p-4.5 rounded-2xl flex items-center justify-between text-emerald-300 font-mono text-base font-black uppercase tracking-widest active:scale-96 transition-transform shadow-lg"
+            className="w-full bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-emerald-700/10 border-2 border-emerald-500/60 p-3.5 rounded-2xl flex items-center justify-between text-emerald-300 font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-lg"
           >
-            <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#10b981]"></span>
-              <span>Point to Beta</span>
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]" />
+              <span>Rally to Team Beta</span>
             </div>
             <span className="text-xs bg-emerald-500/20 border border-emerald-500/40 px-3 py-1 rounded-xl text-emerald-200">
               {!isAlphaServing ? '+1 Point' : 'Side Out'}
@@ -387,17 +522,15 @@ export default function LiveMatch() {
           </button>
         </div>
       ) : (
-        <div className="mt-8 text-center p-6 bg-white/[0.04] backdrop-blur-2xl rounded-3xl border border-white/10 relative overflow-hidden shadow-lg">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-primary to-emerald-400"></div>
-          <p className="text-text-light text-xs uppercase tracking-widest flex items-center justify-center font-bold">
-            <span className="relative flex h-2.5 w-2.5 mr-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
-            </span>
-            Awaiting referee score updates...
+        <div className="text-center p-4 bg-white/[0.03] backdrop-blur-2xl rounded-3xl border border-white/10 relative overflow-hidden shadow-lg space-y-1.5">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 animate-pulse" />
+          <p className="text-xs text-text-light uppercase tracking-widest font-bold flex items-center justify-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            Live Court Connected • Referee: {match.hostName || 'Host'}
           </p>
         </div>
       )}
+
     </div>
   );
 }

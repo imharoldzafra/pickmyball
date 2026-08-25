@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, User, Camera, Save, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import AvatarCropperModal from '../components/AvatarCropperModal';
 
 export default function Profile() {
   const { profile, updateProfileMock, logoutMock } = useAuth();
@@ -11,36 +12,52 @@ export default function Profile() {
   
   const [displayName, setDisplayName] = useState(profile?.displayName || '');
   const [photoURL, setPhotoURL] = useState(profile?.photoURL || '');
+  const [rawImageToCrop, setRawImageToCrop] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showCropperModal, setShowCropperModal] = useState(false);
 
   if (!profile) return null;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file size is small enough to fit in localStorage (e.g. < 1.5MB)
-      if (file.size > 1.5 * 1024 * 1024) {
-        alert("Please choose a smaller image (under 1.5MB) to save to your local profile.");
-        return;
-      }
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoURL(reader.result as string);
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setRawImageToCrop(event.target.result as string);
+          setShowCropperModal(true);
+        }
       };
       reader.readAsDataURL(file);
     }
+    // Reset file input so selecting the same photo triggers onChange
+    e.target.value = '';
   };
 
-  const handleSave = () => {
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleSave = async () => {
+    setErrorMsg(null);
+    if (!displayName.trim()) {
+      setErrorMsg('Username cannot be empty');
+      return;
+    }
+
     setIsSaving(true);
-    updateProfileMock({
-      displayName,
+    const res = await updateProfileMock({
+      displayName: displayName.trim(),
       photoURL,
     });
-    setTimeout(() => {
-      setIsSaving(false);
+    setIsSaving(false);
+
+    if (res?.error) {
+      setErrorMsg(res.error);
+    } else {
       navigate('/');
-    }, 400);
+    }
   };
 
   const handleLogout = () => {
@@ -50,6 +67,15 @@ export default function Profile() {
 
   return (
     <div className="p-5 space-y-6">
+      {/* Hidden File Input (Opens Native Phone Gallery / Camera Roll directly) */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        accept="image/*"
+        className="hidden"
+      />
+
       {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
@@ -79,27 +105,28 @@ export default function Profile() {
           transition={{ duration: 0.35 }}
           className="bg-white/[0.05] backdrop-blur-2xl p-6 rounded-3xl border border-white/10 shadow-[0_12px_40px_0_rgba(0,0,0,0.4)] flex flex-col items-center text-center space-y-3"
         >
-          <div className="relative cursor-pointer active:scale-95 transition-transform" onClick={() => fileInputRef.current?.click()}>
+          <div 
+            className="relative cursor-pointer active:scale-95 transition-transform group" 
+            onClick={handleAvatarClick}
+          >
             <div 
-              className="w-28 h-28 rounded-full bg-primary/10 border-2 border-primary/50 overflow-hidden shadow-[0_0_25px_rgba(16,185,129,0.35)] flex items-center justify-center backdrop-blur-md"
+              className="w-28 h-28 rounded-full bg-primary/10 border-2 border-primary/50 overflow-hidden shadow-[0_0_25px_rgba(16,185,129,0.35)] flex items-center justify-center backdrop-blur-md relative"
             >
               {photoURL ? (
                 <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <User className="w-14 h-14 text-primary" />
               )}
+              {/* Subtle hover overlay */}
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
             </div>
             <div className="absolute bottom-0 right-0 bg-primary text-slate-950 p-2 rounded-full shadow-lg">
               <Camera className="w-4 h-4" />
             </div>
           </div>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            accept="image/*" 
-            className="hidden" 
-          />
+
           <div>
             <h3 className="text-base font-bold text-white">{displayName || 'Player'}</h3>
             <p className="text-xs text-primary font-semibold">Level {profile.level} • {profile.rank}</p>
@@ -113,14 +140,20 @@ export default function Profile() {
           transition={{ duration: 0.35, delay: 0.05 }}
           className="space-y-4 bg-white/[0.05] backdrop-blur-2xl p-6 rounded-3xl border border-white/10 shadow-[0_12px_40px_0_rgba(0,0,0,0.4)]"
         >
+          {errorMsg && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-2xl text-left">
+              <p className="text-xs text-red-400 font-semibold">{errorMsg}</p>
+            </div>
+          )}
+
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-text-light">Display Name</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-text-light">Username</label>
             <input
               type="text"
               value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
+              onChange={(e) => { setDisplayName(e.target.value); setErrorMsg(null); }}
               className="w-full bg-black/30 backdrop-blur-md border border-white/15 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-medium"
-              placeholder="Enter your player name"
+              placeholder="Enter your username"
             />
           </div>
         </motion.div>
@@ -153,6 +186,24 @@ export default function Profile() {
           </motion.button>
         </motion.div>
       </div>
+
+      {/* Instagram-style Avatar Cropper Modal (Opens immediately with chosen photo) */}
+      <AvatarCropperModal
+        isOpen={showCropperModal}
+        imageSrc={rawImageToCrop}
+        onClose={() => {
+          setShowCropperModal(false);
+          setRawImageToCrop(null);
+        }}
+        onChangePhoto={() => {
+          fileInputRef.current?.click();
+        }}
+        onCropComplete={(croppedUrl) => {
+          setPhotoURL(croppedUrl);
+          setShowCropperModal(false);
+          setRawImageToCrop(null);
+        }}
+      />
     </div>
   );
 }
