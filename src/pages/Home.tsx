@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, Flame, Trophy, Swords, Zap, Activity, ShieldAlert, Sparkles, TrendingUp } from 'lucide-react';
+import { User, Flame, Trophy, Zap, Activity, Sparkles, TrendingUp, TrendingDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -15,6 +15,48 @@ const getRankBadge = (rank: string) => {
   }
 };
 
+const BrokenShield = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="M12 2.5l-2 4 3.5 3-3.5 3.5 2 3.5-1 4" />
+  </svg>
+);
+
+const CrossedPaddles = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    {/* Paddle 1 (Top-Left to Bottom-Right) */}
+    <g transform="rotate(45 12 12)">
+      <rect x="7" y="1" width="10" height="11" rx="3.5" />
+      <path d="M12 12v9" strokeWidth="2.5" />
+      <path d="M10 21h4" strokeWidth="2.5" />
+    </g>
+    {/* Paddle 2 (Top-Right to Bottom-Left) */}
+    <g transform="rotate(-45 12 12)">
+      <rect x="7" y="1" width="10" height="11" rx="3.5" />
+      <path d="M12 12v9" strokeWidth="2.5" />
+      <path d="M10 21h4" strokeWidth="2.5" />
+    </g>
+    {/* Center Pickleball */}
+    <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+  </svg>
+);
+
 export default function Home() {
   const { profile } = useAuth();
 
@@ -24,58 +66,46 @@ export default function Home() {
   const progressPercent = Math.min(100, Math.round((profile.xp / xpRequired) * 100));
   const rankBadge = getRankBadge(profile.rank);
 
-  const winRate = profile.battles > 0 ? Math.round((profile.wins / profile.battles) * 100) : 0;
-  const lossRate = profile.battles > 0 ? Math.round((profile.losses / profile.battles) * 100) : 0;
-
   const stats = [
     {
       label: 'Total Matches',
       value: profile.battles,
-      icon: Activity,
-      tag: 'Recorded',
+      icon: CrossedPaddles,
       accentColor: 'text-sky-400',
       glowBg: 'bg-sky-500/15',
       glowBorder: 'border-sky-500/30',
-      glowShadow: 'shadow-[0_0_20px_rgba(56,189,248,0.2)]',
+      glowShadow: 'shadow-[0_0_20px_rgba(56,189,248,0.25)]',
       orbColor: 'bg-sky-500/20',
-      badgeBg: 'bg-sky-500/10 text-sky-300 border-sky-500/20'
     },
     {
       label: 'Victories',
       value: profile.wins,
       icon: Trophy,
-      tag: `${winRate}% Win Rate`,
       accentColor: 'text-emerald-400',
       glowBg: 'bg-emerald-500/15',
       glowBorder: 'border-emerald-500/30',
       glowShadow: 'shadow-[0_0_20px_rgba(16,185,129,0.25)]',
       orbColor: 'bg-emerald-500/20',
-      badgeBg: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-      badgeIcon: TrendingUp
     },
     {
       label: 'Defeats',
       value: profile.losses,
-      icon: ShieldAlert,
-      tag: `${lossRate}% Loss Rate`,
-      accentColor: 'text-amber-400',
-      glowBg: 'bg-amber-500/15',
-      glowBorder: 'border-amber-500/30',
-      glowShadow: 'shadow-[0_0_20px_rgba(245,158,11,0.2)]',
-      orbColor: 'bg-amber-500/20',
-      badgeBg: 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+      icon: BrokenShield,
+      accentColor: 'text-rose-400',
+      glowBg: 'bg-rose-500/15',
+      glowBorder: 'border-rose-500/30',
+      glowShadow: 'shadow-[0_0_20px_rgba(244,63,94,0.25)]',
+      orbColor: 'bg-rose-500/20',
     },
     {
       label: 'Best Streak',
       value: profile.longestStreak,
-      icon: Sparkles,
-      tag: 'Peak Record',
+      icon: Flame,
       accentColor: 'text-purple-400',
       glowBg: 'bg-purple-500/15',
       glowBorder: 'border-purple-500/30',
       glowShadow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]',
       orbColor: 'bg-purple-500/20',
-      badgeBg: 'bg-purple-500/10 text-purple-300 border-purple-500/20'
     }
   ];
 
@@ -83,54 +113,54 @@ export default function Home() {
     <div className="p-5 space-y-6">
       {/* Friendly Header Profile Link Wrapper */}
       <motion.div 
-        initial={{ opacity: 0, y: -15 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="flex justify-between items-center px-1"
+        transition={{ duration: 0.3 }}
+        className="flex items-center justify-between"
       >
-        <Link to="/profile" className="flex items-center gap-4 active:scale-98 transition-transform">
-          <div className="relative">
-            <div className="w-18 h-18 rounded-full bg-primary/10 border-2 border-primary/40 overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center">
+        <Link to="/profile" className="flex items-center gap-4 group">
+          <div className="relative shrink-0">
+            <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-2 border-primary/50 overflow-hidden bg-white/[0.03] shadow-[0_0_30px_rgba(16,185,129,0.3)] flex items-center justify-center transition-all group-hover:border-primary">
               {profile.photoURL ? (
-                <img src={profile.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                <img src={profile.photoURL} alt={profile.displayName} className="w-full h-full object-cover" />
               ) : (
-                <User className="w-9 h-9 text-primary" />
+                <User className="w-9 h-9 text-text-light/70" />
               )}
             </div>
-            <div className="absolute -bottom-0.5 -right-1 bg-primary text-[#050a0a] text-[10px] font-black px-2 py-0.5 rounded-full shadow-md">
-              Lv.{profile.level}
+            <div className="absolute -bottom-1 -right-1 bg-[#050a0a] rounded-full p-0.5 border border-primary/30 shadow-md">
+              <span className="text-xs font-black text-slate-950 bg-primary px-2 py-0.5 rounded-full leading-tight block">
+                Lv.{profile.level}
+              </span>
             </div>
           </div>
           <div>
-            <p className="text-2xl font-black tracking-tight text-white">{profile.displayName}</p>
+            <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-primary transition-colors tracking-tight">
+              {profile.displayName || 'Player'}
+            </h2>
           </div>
         </Link>
       </motion.div>
 
-      {/* Main Competitive Standing Glass Hero Card */}
+      {/* Main Glass Rating Card (Dark Modern Aesthetic) */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false }}
-        transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
-        className="bg-white/[0.03] backdrop-blur-md rounded-3xl p-6 relative overflow-hidden border-t border-t-white/25 border-x border-x-white/10 border-b border-b-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="relative overflow-hidden rounded-3xl bg-white/[0.03] backdrop-blur-2xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-6 shadow-[0_12px_40px_0_rgba(0,0,0,0.4)]"
       >
-        <div className="relative z-10 space-y-5">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="relative z-10 space-y-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-4.5 h-4.5 text-primary" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-text-light">Competitive Rank</h2>
-            </div>
-            
-            <div className="flex items-center gap-1.5 bg-primary/15 border border-primary/40 backdrop-blur-md px-3.5 py-1.5 rounded-full text-primary shadow-inner">
-              <span className="text-sm">{rankBadge.icon}</span>
-              <span className="text-xs font-extrabold uppercase tracking-wider">{rankBadge.label}</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-text-light">Current Rating</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-xs font-bold text-white shadow-inner">
+              <span>{rankBadge.icon}</span>
+              <span>{profile.rank}</span>
             </div>
           </div>
 
           <div className="flex items-baseline gap-2.5">
             <span className="text-5xl font-black tracking-tight text-white drop-shadow-md">{profile.rating}</span>
-            <span className="text-sm font-bold text-primary uppercase tracking-widest bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20">CR Score</span>
           </div>
 
           {/* XP Progress Meter */}
@@ -154,13 +184,12 @@ export default function Home() {
       {/* Overview Stats 2x2 Glass Grid */}
       <div className="space-y-4">
         <h3 className="text-xs font-bold uppercase tracking-widest text-text-light px-1 flex items-center gap-1.5">
-          <Swords className="w-3.5 h-3.5 text-primary" /> Performance Breakdown
+          <CrossedPaddles className="w-3.5 h-3.5 text-primary" /> Performance Breakdown
         </h3>
 
         <div className="grid grid-cols-2 gap-3.5">
           {stats.map((stat, idx) => {
             const Icon = stat.icon;
-            const BadgeIcon = stat.badgeIcon;
             return (
               <motion.div 
                 key={stat.label}
@@ -168,7 +197,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false }}
                 transition={{ duration: 0.25, delay: idx * 0.05 }}
-                className="bg-white/[0.03] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-[0_8px_25px_rgba(0,0,0,0.3)]"
+                className="bg-white/[0.03] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4 sm:p-5 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-[0_8px_25px_rgba(0,0,0,0.3)] space-y-3"
               >
                 {/* Background Ambient Glow Orb */}
                 <div className={`absolute -top-6 -right-6 w-20 h-20 ${stat.orbColor} rounded-full blur-xl pointer-events-none opacity-60`} />
@@ -176,24 +205,16 @@ export default function Home() {
                 {/* Top Row: Label & Glowing Icon Badge */}
                 <div className="flex items-center justify-between relative z-10">
                   <span className="text-[11px] font-bold text-text-light uppercase tracking-wider">{stat.label}</span>
-                  <div className={`w-7 h-7 rounded-lg ${stat.glowBg} border ${stat.glowBorder} ${stat.glowShadow} flex items-center justify-center`}>
-                    <Icon className={`w-3.5 h-3.5 ${stat.accentColor}`} />
+                  <div className={`w-7 h-7 rounded-lg ${stat.glowBg} border ${stat.glowBorder} ${stat.glowShadow} flex items-center justify-center shrink-0`}>
+                    <Icon className={`w-4.5 h-4.5 ${stat.accentColor}`} />
                   </div>
                 </div>
 
                 {/* Middle Row: Large Stat Value */}
-                <div className="my-2 relative z-10">
-                  <span className={`text-3xl font-black tracking-tight ${stat.accentColor} drop-shadow-md`}>
+                <div className="relative z-10 pt-1">
+                  <span className={`text-3xl sm:text-4xl font-black tracking-tight ${stat.accentColor} drop-shadow-md`}>
                     {stat.value}
                   </span>
-                </div>
-
-                {/* Bottom Row: Micro Metric / Tag Pill */}
-                <div className="relative z-10 flex items-center">
-                  <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${stat.badgeBg}`}>
-                    {BadgeIcon && <BadgeIcon className="w-2.5 h-2.5" />}
-                    <span>{stat.tag}</span>
-                  </div>
                 </div>
               </motion.div>
             );

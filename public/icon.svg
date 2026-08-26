@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="128" fill="#040709" />
+  <circle cx="256" cy="256" r="190" fill="#070e14" stroke="#10B981" stroke-width="16" />
+  
+  <!-- Center Triangle Holes -->
+  <circle cx="256" cy="180" r="32" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <circle cx="190" cy="290" r="32" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <circle cx="322" cy="290" r="32" fill="#040709" stroke="#10B981" stroke-width="14" />
+  
+  <!-- Outer Perspective Curve Holes -->
+  <ellipse cx="256" cy="95" rx="32" ry="14" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <ellipse cx="256" cy="417" rx="32" ry="14" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <ellipse cx="95" cy="256" rx="14" ry="32" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <ellipse cx="417" cy="256" rx="14" ry="32" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <ellipse cx="140" cy="140" rx="32" ry="14" transform="rotate(-45 140 140)" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <ellipse cx="372" cy="140" rx="32" ry="14" transform="rotate(45 372 140)" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <ellipse cx="140" cy="372" rx="32" ry="14" transform="rotate(45 140 372)" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <ellipse cx="372" cy="372" rx="32" ry="14" transform="rotate(-45 372 372)" fill="#040709" stroke="#10B981" stroke-width="14" />
+</svg>

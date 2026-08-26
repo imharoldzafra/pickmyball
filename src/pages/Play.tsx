@@ -100,7 +100,13 @@ export default function Play() {
     if (viewState === 'scan') {
       const scanner = new Html5QrcodeScanner(
         "reader", 
-        { fps: 10, qrbox: { width: 220, height: 220 } }, 
+        { 
+          fps: 10, 
+          qrbox: { width: 220, height: 220 },
+          videoConstraints: {
+            facingMode: { ideal: "environment" }
+          }
+        }, 
         false
       );
       scanner.render((text) => {
@@ -139,7 +145,7 @@ export default function Play() {
           >
             <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-400/20 transition-all" />
             <div className="flex items-center justify-between relative z-10">
-              <div className="space-y-1.5 max-w-[75%]">
+              <div className="space-y-1.5 w-full">
                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-400/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-black uppercase tracking-wider">
                   Host Arena
                 </div>
@@ -149,10 +155,6 @@ export default function Play() {
                 <p className="text-xs text-text-light/80 leading-relaxed">
                   Setup a 1v1 Singles or 2v2 Doubles room, invite players via live QR code, and referee the court in real time.
                 </p>
-              </div>
-
-              <div className="w-14 h-14 rounded-2xl bg-emerald-400 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform shrink-0">
-                <PickleballPaddle className="w-7 h-7 text-slate-950" />
               </div>
             </div>
 

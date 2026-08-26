@@ -371,27 +371,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 1. Update match history records in localStorage
     const savedHistory = localStorage.getItem('matchHistory');
     const historyList = savedHistory ? JSON.parse(savedHistory) : [];
+    const isReferee = matchDetails?.role === 'REFEREE';
+
     const newRecord = {
       id: matchDetails.id || `PKB-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       type: matchDetails.type || '1v1 Competitive',
-      opponent: matchDetails.opponent || (won ? 'Opponent' : 'Champion'),
+      opponent: matchDetails.opponent || (isReferee ? 'Alpha vs Beta' : (won ? 'Opponent' : 'Champion')),
       score: matchDetails.score || '11 - 9, 11 - 8',
-      result: won ? 'WON' : 'LOST',
+      result: isReferee ? 'REFEREED' : (won ? 'WON' : 'LOST'),
       xpEarned: `+${xpEarned} XP`,
-      crChange: crChange >= 0 ? `+${crChange} CR` : `${crChange} CR`
+      crChange: isReferee ? '+0 CR' : (crChange >= 0 ? `+${crChange} CR` : `${crChange} CR`),
+      role: matchDetails?.role || 'PLAYER',
     };
     const updatedHistory = [newRecord, ...historyList].slice(0, 10);
     localStorage.setItem('matchHistory', JSON.stringify(updatedHistory));
 
     // 2. Update user profile locally and on Supabase
     if (profile) {
-      const newBattles = profile.battles + 1;
-      const newWins = won ? profile.wins + 1 : profile.wins;
-      const newLosses = !won ? profile.losses + 1 : profile.losses;
-      const newStreak = won ? profile.currentStreak + 1 : 0;
+      const newBattles = isReferee ? profile.battles : profile.battles + 1;
+      const newWins = isReferee ? profile.wins : (won ? profile.wins + 1 : profile.wins);
+      const newLosses = isReferee ? profile.losses : (!won ? profile.losses + 1 : profile.losses);
+      const newStreak = isReferee ? profile.currentStreak : (won ? profile.currentStreak + 1 : 0);
       const newLongest = Math.max(profile.longestStreak, newStreak);
-      const newRating = Math.max(0, profile.rating + crChange);
+      const newRating = isReferee ? profile.rating : Math.max(0, profile.rating + crChange);
       const newHighest = Math.max(profile.highestRating, newRating);
       
       const newXp = profile.xp + xpEarned;

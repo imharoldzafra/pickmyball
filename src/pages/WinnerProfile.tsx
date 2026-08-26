@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Match, UserProfile } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Trophy, Sparkles, Flame, Shield, Swords, CheckCircle2, ChevronRight, Award } from 'lucide-react';
+import { Trophy, Sparkles, Flame, CheckCircle2, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function WinnerProfile() {

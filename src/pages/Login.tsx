@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { UserPlus, LogIn, ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, KeyRound } from 'lucide-react';
-import PickleballPaddle from '../components/icons/PickleballPaddle';
+import { UserPlus, LogIn, ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, KeyRound, User, Lock } from 'lucide-react';
+import Pickleball3DSphere from '../components/Pickleball3DSphere';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Login() {
@@ -147,104 +147,98 @@ export default function Login() {
           />
         </div>
 
-        {/* Scrollable Content Container */}
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col relative z-10 no-scrollbar">
+        {/* Main Content Area */}
+        <div className="flex-1 px-5 sm:px-7 py-3 flex flex-col justify-center relative z-10 overflow-hidden">
           
-          <div className="flex-1 flex flex-col justify-center py-2">
-            {/* Top Brand & Logo */}
+          <div className="w-full max-w-sm mx-auto my-auto space-y-4">
+            {/* Top Brand & Dynamic Tagline */}
             <motion.div 
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="text-center pt-2 pb-3 space-y-2.5"
+              transition={{ duration: 0.35 }}
+              className="text-center space-y-2"
             >
-              {/* Glowing Pickleball Paddle Logo Badge */}
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400/20 via-teal-500/10 to-cyan-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 mx-auto shadow-[0_0_30px_rgba(16,185,129,0.35)] backdrop-blur-md">
-                <PickleballPaddle className="w-7 h-7 text-emerald-400" />
+              {/* 🎾 True 3D Rotating Pickleball Sphere (Mobile-Optimized) */}
+              <div className="relative flex items-center justify-center py-1">
+                <Pickleball3DSphere size={72} />
               </div>
 
               <div>
-                <h1 className="text-3xl font-black tracking-tight text-white flex items-center justify-center gap-1.5">
-                  Pick<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">MyBall</span>
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                  Pick<span className="text-emerald-400 drop-shadow-[0_0_18px_rgba(16,185,129,0.4)]">MyBall</span>
                 </h1>
-                <p className="text-xs font-bold uppercase tracking-widest text-text-light/70 mt-1">
-                  Next-Gen Pickleball Scoring & Rankings
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mt-1">
+                  {authMode === 'signin' ? 'Ready to Serve.' : 'Join the Arena.'}
+                </p>
+                <p className="text-[11px] text-text-light/70 font-medium">
+                  {authMode === 'signin' 
+                    ? 'Sign in to track your matches & climb the ranks.' 
+                    : 'Create your player profile & compete on live courts.'}
                 </p>
               </div>
             </motion.div>
 
-            {/* Auth Card (Smoked Crystal Glass) */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+            {/* Smoked Glass Arena Shield Card */}
+            <motion.div
+              key={authMode}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="bg-white/[0.03] backdrop-blur-md p-6 rounded-3xl border-t border-t-white/25 border-x border-x-white/10 border-b border-b-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.4)] mt-5 space-y-4"
+              transition={{ duration: 0.3 }}
+              className="bg-[#070e14]/90 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.75)] space-y-3.5"
             >
-              {/* Segmented Switcher: Sign In vs Sign Up */}
-              <div className="flex bg-white/[0.05] p-1 rounded-full border border-white/10">
-                <button
-                  type="button"
-                  onClick={() => handleModeSwitch('signin')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1.5 active:scale-96 ${
-                    authMode === 'signin'
-                      ? 'bg-primary text-[#050a0a] font-extrabold shadow-[0_0_12px_rgba(16,185,129,0.3)]'
-                      : 'text-text-light hover:text-white'
-                  }`}
-                >
-                  <LogIn className="w-3.5 h-3.5" /> Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleModeSwitch('signup')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1.5 active:scale-96 ${
-                    authMode === 'signup'
-                      ? 'bg-primary text-[#050a0a] font-extrabold shadow-[0_0_12px_rgba(16,185,129,0.3)]'
-                      : 'text-text-light hover:text-white'
-                  }`}
-                >
-                  <UserPlus className="w-3.5 h-3.5" /> Create Account
-                </button>
-              </div>
-
               {errorMsg && (
-                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-2xl text-left">
-                  <p className="text-xs text-red-400 font-semibold">{errorMsg}</p>
-                </div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-2xl text-left backdrop-blur-md"
+                >
+                  <p className="text-xs text-rose-300 font-semibold">{errorMsg}</p>
+                </motion.div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-3">
                 {authMode === 'signup' && (
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light mb-1 px-1">
-                      Username
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
+                      Player Username
                     </label>
-                    <input 
-                      type="text"
-                      required
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="e.g. PickleMaster"
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-primary/60 focus:bg-white/[0.06] transition-all outline-none"
-                    />
+                    <div className="relative flex items-center">
+                      <input 
+                        type="text"
+                        required
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="e.g. kakarotbomba"
+                        className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-medium"
+                      />
+                      <User className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
+                    </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light mb-1 px-1">
-                    {authMode === 'signup' ? 'Email (Optional)' : 'Username / Email'}
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
+                    {authMode === 'signup' ? 'Email Address (Optional)' : 'Username / Email'}
                   </label>
-                  <input 
-                    type={authMode === 'signup' ? 'email' : 'text'}
-                    value={authMode === 'signup' ? email : displayName}
-                    onChange={(e) => authMode === 'signup' ? setEmail(e.target.value) : setDisplayName(e.target.value)}
-                    placeholder={authMode === 'signup' ? 'you@email.com' : 'e.g. nasty'}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-primary/60 focus:bg-white/[0.06] transition-all outline-none"
-                  />
+                  <div className="relative flex items-center">
+                    <input 
+                      type={authMode === 'signup' ? 'email' : 'text'}
+                      value={authMode === 'signup' ? email : displayName}
+                      onChange={(e) => authMode === 'signup' ? setEmail(e.target.value) : setDisplayName(e.target.value)}
+                      placeholder={authMode === 'signup' ? 'player@email.com' : 'e.g. kakarotbomba'}
+                      className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-medium"
+                    />
+                    {authMode === 'signup' ? (
+                      <Mail className="w-4 h-4 text-cyan-400/80 absolute left-4 pointer-events-none" />
+                    ) : (
+                      <User className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
+                    )}
+                  </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1 px-1">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90">
                       Password
                     </label>
                     {authMode === 'signin' && (
@@ -256,9 +250,9 @@ export default function Login() {
                           setForgotMsg(null);
                           setForgotSuccess(false);
                         }}
-                        className="text-[10px] font-bold text-emerald-400/80 hover:text-emerald-300 transition-colors uppercase tracking-wider active:scale-96"
+                        className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-wider active:scale-95"
                       >
-                        Forgot Password?
+                        Forgot?
                       </button>
                     )}
                   </div>
@@ -268,8 +262,9 @@ export default function Login() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-4 pr-11 py-3 text-sm text-white placeholder:text-white/30 focus:border-primary/60 focus:bg-white/[0.06] transition-all outline-none font-mono"
+                      className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-mono"
                     />
+                    <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -283,7 +278,7 @@ export default function Login() {
 
                 {authMode === 'signup' && (
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light mb-1 px-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
                       Confirm Password
                     </label>
                     <div className="relative flex items-center">
@@ -292,8 +287,9 @@ export default function Login() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-4 pr-11 py-3 text-sm text-white placeholder:text-white/30 focus:border-primary/60 focus:bg-white/[0.06] transition-all outline-none font-mono"
+                        className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-mono"
                       />
+                      <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -306,29 +302,54 @@ export default function Login() {
                   </div>
                 )}
 
+                {/* ⚡ High-Energy Electric Volt CTA Button with Shimmer */}
                 <button 
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-[#050a0a] py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-transform active:scale-96 flex items-center justify-center gap-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full relative overflow-hidden bg-emerald-400 hover:bg-emerald-300 text-[#04080a] py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:shadow-[0_0_35px_rgba(16,185,129,0.65)] transition-all active:scale-[0.97] flex items-center justify-center gap-2 mt-3 disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
-                  <span>
+                  {/* Sweeping Light Shimmer Reflection */}
+                  <motion.div 
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut", repeatDelay: 1.5 }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -skew-x-12 pointer-events-none"
+                  />
+                  
+                  <span className="relative z-10 font-black">
                     {isSubmitting 
                       ? 'Connecting Arena...' 
-                      : (authMode === 'signup' ? 'Create Account & Play' : 'Sign In to Arena')}
+                      : (authMode === 'signup' ? 'Claim Player Pass' : 'Enter Arena')}
                   </span>
-                  {!isSubmitting && <ArrowRight className="w-4 h-4" />}
+                  {!isSubmitting && (
+                    <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
+                  )}
                 </button>
               </form>
+
+              {/* Bottom Switcher Toggle Link inside Card */}
+              <div className="pt-2 text-center border-t border-white/5">
+                <button
+                  type="button"
+                  onClick={() => handleModeSwitch(authMode === 'signin' ? 'signup' : 'signin')}
+                  className="text-xs text-text-light/80 hover:text-white transition-colors active:scale-96"
+                >
+                  {authMode === 'signin' ? (
+                    <span>New to PickMyBall? <strong className="text-emerald-400 font-bold hover:underline ml-1">Create Account</strong></span>
+                  ) : (
+                    <span>Already have a player pass? <strong className="text-emerald-400 font-bold hover:underline ml-1">Sign In</strong></span>
+                  )}
+                </button>
+              </div>
             </motion.div>
           </div>
 
-          {/* Footer note pinned cleanly at bottom */}
-          <div className="text-center pt-2 pb-1 mt-auto">
-            <p className="text-[10px] text-text-light/35 font-mono tracking-wider">
-              PickMyBall Arena Engine • v1.0
-            </p>
-          </div>
+        </div>
 
+        {/* 🔒 Fixed Pinned Footer (Exact Identical Position on Both Sign In & Sign Up) */}
+        <div className="relative z-10 text-center py-2.5 flex-shrink-0">
+          <p className="text-[10px] text-text-light/35 font-mono tracking-wider">
+            PickMyBall Arena Engine • v1.0
+          </p>
         </div>
 
         {/* 🔒 Forgot Password Modal */}

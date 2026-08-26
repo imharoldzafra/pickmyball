@@ -80,13 +80,36 @@ export default function LiveMatch() {
   }, [matchId]);
 
   const lastLocalActionTime = React.useRef<number>(0);
+  const channelRef = React.useRef<any>(null);
 
-  // Real-time Supabase Subscription for Live Score Broadcasts (< 30ms)
+  // Real-time Supabase High-Speed Broadcast + Database Subscription (< 30ms)
   useEffect(() => {
     if (!matchId) return;
 
-    const channel = supabase
-      .channel(`live-court-${matchId}`)
+    const channel = supabase.channel(`live-court-${matchId}`, {
+      config: {
+        broadcast: { ack: false, self: false },
+      },
+    });
+
+    channel
+      // ⚡ Direct High-Speed Peer-to-Peer WebSocket Broadcast (< 30ms)
+      .on('broadcast', { event: 'SCORE_UPDATE' }, ({ payload }) => {
+        if (payload) {
+          setMatch(payload);
+          if (payload.status === 'FINISHED') {
+            try {
+              sessionStorage.setItem(`pkb_match_${payload.id}`, JSON.stringify(payload));
+            } catch (e) {
+              console.warn('Session storage error:', e);
+            }
+            setTimeout(() => {
+              navigate(`/match/${payload.id}/winner`, { replace: true });
+            }, 350);
+          }
+        }
+      })
+      // Database Change Fallback (for initial sync or reconnects)
       .on(
         'postgres_changes',
         {
@@ -101,7 +124,7 @@ export default function LiveMatch() {
             const isRef = user?.id === data.referee_id || user?.id === data.host_id;
             const timeSinceLocalClick = Date.now() - lastLocalActionTime.current;
 
-            // 🛡️ Shield: If I am the referee and recently clicked (< 2.5s), ignore stale cloud echoes to prevent rubberbanding!
+            // 🛡️ Shield: If I am the referee and recently clicked (< 2.5s), ignore stale cloud echoes
             if (isRef && timeSinceLocalClick < 2500) {
               return;
             }
@@ -136,10 +159,13 @@ export default function LiveMatch() {
       )
       .subscribe();
 
+    channelRef.current = channel;
+
     return () => {
       channel.unsubscribe();
+      channelRef.current = null;
     };
-  }, [matchId, user?.id]);
+  }, [matchId, user?.id, navigate]);
 
   if (loading || !match) {
     return (
@@ -154,9 +180,17 @@ export default function LiveMatch() {
   const targetPoints = match.targetPoints || 11;
   const isBestOfThree = match.gameFormat === 'best_of_3';
 
+  const lastScoreClickTime = React.useRef(0);
+
   // Referee Scoring Logic with Side Out & Set Management
   const handleScore = async (rallyWinner: Team) => {
     if (!isReferee || !match) return;
+
+    const now = Date.now();
+    if (now - lastScoreClickTime.current < 800) {
+      return; // prevent rapid accidental double-clicks within 800ms
+    }
+    lastScoreClickTime.current = now;
 
     lastLocalActionTime.current = Date.now();
 
@@ -202,22 +236,58 @@ export default function LiveMatch() {
           newWinner = newTeamAGamesWon >= setsToWin ? 'A' : 'B';
           newStatus = 'FINISHED';
 
-          // Record player results
+          // ⏱️ 60-Second Minimum Match Validity Check (Prevents rapid alt/spam farming)
+          const matchDurationSec = match.createdAt ? Math.floor((Date.now() - match.createdAt) / 1000) : 120;
+          const isOfficialRated = matchDurationSec >= 60;
+
+          // Record player or referee results
           const userIsTeamA = match.teamA.some((p) => p.id === user?.id);
-          const userWon = (newWinner === 'A' && userIsTeamA) || (newWinner === 'B' && !userIsTeamA);
+          const userIsTeamB = match.teamB.some((p) => p.id === user?.id);
+          const userIsPlaying = userIsTeamA || userIsTeamB;
+          const userIsReferee = !userIsPlaying && (match.hostId === user?.id || match.creatorId === user?.id || match.refereeId === user?.id);
+
+          const teamANames = match.teamA.map((p) => p.displayName).filter(Boolean).join(' & ') || 'Team Alpha';
+          const teamBNames = match.teamB.map((p) => p.displayName).filter(Boolean).join(' & ') || 'Team Beta';
           const scoreSummary = newGameResults.map((g) => `${g.teamAScore}-${g.teamBScore}`).join(', ');
 
-          recordMatchResult(
-            userWon,
-            userWon ? 150 : 50,
-            userWon ? 25 : -12,
-            {
-              id: match.id,
-              type: match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)',
-              opponent: userIsTeamA ? 'Team Beta' : 'Team Alpha',
-              score: scoreSummary || `${newTeamAScore} - ${newTeamBScore}`,
-            }
-          );
+          if (userIsPlaying) {
+            const userWon = (newWinner === 'A' && userIsTeamA) || (newWinner === 'B' && userIsTeamB);
+            const opponentNames = userIsTeamA ? teamBNames : teamANames;
+
+            const crEarned = isOfficialRated ? (userWon ? 25 : -12) : 0;
+            const xpEarned = isOfficialRated ? (userWon ? 150 : 50) : (userWon ? 40 : 15);
+            const matchTypeDesc = isOfficialRated 
+              ? (match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)')
+              : `${match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)'} • Practice`;
+
+            recordMatchResult(
+              userWon,
+              xpEarned,
+              crEarned,
+              {
+                id: match.id,
+                type: matchTypeDesc,
+                opponent: opponentNames,
+                score: scoreSummary || `${newTeamAScore} - ${newTeamBScore}`,
+                role: 'PLAYER',
+              }
+            );
+          } else if (userIsReferee) {
+            // Referee officiated the match (+75 XP referee bonus if official, +25 XP if practice)
+            const refXP = isOfficialRated ? 75 : 25;
+            recordMatchResult(
+              true,
+              refXP,
+              0,
+              {
+                id: match.id,
+                type: isOfficialRated ? (match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)') : `${match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)'} • Practice`,
+                opponent: `${teamANames} vs ${teamBNames}`,
+                score: scoreSummary || `${newTeamAScore} - ${newTeamBScore}`,
+                role: 'REFEREE',
+              }
+            );
+          }
         } else {
           // Next Set
           newCurrentGame++;
@@ -259,7 +329,16 @@ export default function LiveMatch() {
 
     setMatch(nextState);
 
-    // ⚡ 2. If Match Finished, navigate to Winner Profile
+    // ⚡ 2. INSTANT REALTIME BROADCAST TO ALL PHONES (< 30ms)
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'SCORE_UPDATE',
+        payload: nextState,
+      });
+    }
+
+    // ⚡ 3. If Match Finished, navigate to Winner Profile
     if (newStatus === 'FINISHED') {
       try {
         sessionStorage.setItem(`pkb_match_${match.id}`, JSON.stringify(nextState));
@@ -271,7 +350,7 @@ export default function LiveMatch() {
       }, 350);
     }
 
-    // ⚡ 3. Silently sync to Supabase in background (Non-blocking)
+    // ⚡ 4. Silently sync to Supabase in background (Non-blocking)
     supabase.from('matches').update({
       team_a_score: newTeamAScore,
       team_b_score: newTeamBScore,
