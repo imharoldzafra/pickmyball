@@ -20,8 +20,25 @@ export default function Profile() {
   if (!profile) return null;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMsg(null);
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type (Images only: JPEG, PNG, WebP)
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!validTypes.includes(file.type) && !file.type.startsWith('image/')) {
+        setErrorMsg('Please select a valid image file (JPEG, PNG, WebP).');
+        e.target.value = '';
+        return;
+      }
+
+      // Restrict file size (Max 2.5 MB)
+      const MAX_SIZE_BYTES = 2.5 * 1024 * 1024;
+      if (file.size > MAX_SIZE_BYTES) {
+        setErrorMsg('Image size must be less than 2.5MB.');
+        e.target.value = '';
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
@@ -41,14 +58,23 @@ export default function Profile() {
 
   const handleSave = async () => {
     setErrorMsg(null);
-    if (!displayName.trim()) {
+    const trimmed = displayName.trim();
+    if (!trimmed) {
       setErrorMsg('Username cannot be empty');
+      return;
+    }
+    if (trimmed.length < 2) {
+      setErrorMsg('Username must be at least 2 characters');
+      return;
+    }
+    if (trimmed.length > 25) {
+      setErrorMsg('Username must be 25 characters or fewer');
       return;
     }
 
     setIsSaving(true);
     const res = await updateProfileMock({
-      displayName: displayName.trim(),
+      displayName: trimmed,
       photoURL,
     });
     setIsSaving(false);
@@ -95,7 +121,7 @@ export default function Profile() {
         type="file"
         ref={fileInputRef}
         onChange={handleFileSelect}
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/*"
         className="hidden"
       />
 
@@ -150,12 +176,18 @@ export default function Profile() {
         )}
 
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-text-light uppercase tracking-wider pl-1">
-            Display Name
-          </label>
+          <div className="flex items-center justify-between pl-1">
+            <label className="text-xs font-bold text-text-light uppercase tracking-wider">
+              Display Name
+            </label>
+            <span className="text-[10px] text-text-light/60 font-medium">
+              {displayName.length}/25
+            </span>
+          </div>
           <input
             type="text"
             value={displayName}
+            maxLength={25}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="Enter your username"
             className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-4 py-3.5 text-white font-medium focus:outline-none focus:border-primary/50 transition-all text-sm"

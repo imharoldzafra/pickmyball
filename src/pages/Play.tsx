@@ -92,6 +92,10 @@ export default function Play() {
       return;
     }
     const finalCode = cleaned.startsWith('PKB-') ? cleaned : `PKB-${cleaned}`;
+    if (!/^PKB-[A-Z0-9]{3,12}$/i.test(finalCode)) {
+      setJoinError('Invalid match code format. Example: PKB-ABC123');
+      return;
+    }
     navigate(`/match/${finalCode}/lobby`);
   };
 
