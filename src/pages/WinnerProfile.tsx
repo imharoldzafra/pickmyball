@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Match, UserProfile } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Trophy, Sparkles, Flame, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Trophy, Sparkles, Flame, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function WinnerProfile() {
@@ -324,6 +324,19 @@ export default function WinnerProfile() {
               {streakCount} {streakCount === 1 ? 'Win' : 'Wins'} 🔥
             </span>
           </div>
+
+          {/* Court Stamina Momentum Refund Pill (Challenger+) */}
+          {(profile?.rating || 0) >= 800 && (
+            <div className="bg-emerald-500/10 border border-emerald-400/30 p-2.5 rounded-2xl flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-emerald-400 animate-pulse" />
+                <span className="font-bold text-white">Court Stamina</span>
+              </div>
+              <span className="font-mono font-black text-emerald-300 bg-emerald-400/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                +10% Momentum Refund ⚡
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Defeated Opponent Handshake Card */}

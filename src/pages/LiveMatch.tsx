@@ -589,11 +589,10 @@ export default function LiveMatch() {
             </button>
           </div>
         ) : (
-          <div className="text-center p-4 bg-white/[0.03] backdrop-blur-2xl rounded-3xl border border-white/10 relative overflow-hidden shadow-lg space-y-1.5">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 animate-pulse" />
-            <p className="text-xs text-text-light uppercase tracking-widest font-bold flex items-center justify-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              Live Court Connected • Referee: {match.hostName || 'Host'}
+          <div className="text-center p-3.5 bg-white/[0.03] backdrop-blur-2xl rounded-2xl border border-white/10 shadow-sm">
+            <p className="text-xs text-text-light font-bold flex items-center justify-center gap-2">
+              <Shield className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Official Court Referee: {match.hostName || 'Host'}</span>
             </p>
           </div>
         )}

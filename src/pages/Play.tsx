@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { PlusCircle, QrCode, Users, User, Trophy, Shield, ArrowRight, ArrowLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { PlusCircle, QrCode, Users, User, Trophy, Shield, ArrowRight, ArrowLeft, ChevronRight, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import PickleballPaddle from '../components/icons/PickleballPaddle';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import CourtStaminaCard from '../components/CourtStaminaCard';
+import TierEmblem from '../components/TierEmblem';
 
 export default function Play() {
   const [searchParams] = useSearchParams();
@@ -25,6 +27,7 @@ export default function Play() {
   const [creating, setCreating] = useState(false);
   const [manualCode, setManualCode] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [showEloSystem, setShowEloSystem] = useState(false);
 
   // Generate Match Room in Supabase
   const handleCreateMatch = async () => {
@@ -138,8 +141,11 @@ export default function Play() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="space-y-5 relative z-10"
+          className="space-y-4 relative z-10"
         >
+          {/* ⚡ Daily Court Stamina & Second Wind Energy Card */}
+          <CourtStaminaCard />
+
           {/* Main Host Action Card */}
           <motion.div
             whileHover={{ scale: 1.01 }}
@@ -170,7 +176,6 @@ export default function Play() {
 
           {/* Secondary Action: Join Match */}
           <div>
-            {/* Join Room Card */}
             <motion.div
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
@@ -190,55 +195,134 @@ export default function Play() {
             </motion.div>
           </div>
 
-          {/* 🏆 Competitive Tiers & CR Rating Guide */}
-          <div className="bg-white/[0.03] backdrop-blur-md p-5 rounded-3xl border border-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.3)] space-y-3.5">
-            <div className="flex items-center gap-1.5">
-              <Trophy className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[10px] font-bold text-text-light/60">
-                Official ELO System
-              </span>
-            </div>
+          {/* 🏆 Box-less "See Tiers" Minimal Action & Expandable Guide */}
+          <div className="pt-1 flex flex-col items-center w-full">
+            <button
+              onClick={() => setShowEloSystem(!showEloSystem)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] active:scale-95 border border-white/10 text-xs font-bold text-text-light hover:text-white transition-all shadow-sm group"
+            >
+              <span>See Tiers</span>
+              {showEloSystem ? (
+                <ChevronUp className="w-3.5 h-3.5 text-text-light/60 group-hover:text-white" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5 text-text-light/60 group-hover:text-white" />
+              )}
+            </button>
 
-            <div className="space-y-2">
-              {[
-                { name: 'Rookie', range: '0 - 499 CR', color: 'text-slate-400', dot: 'bg-slate-400' },
-                { name: 'Challenger', range: '500 - 999 CR', color: 'text-emerald-400', dot: 'bg-emerald-400' },
-                { name: 'Veteran', range: '1,000 - 1,499 CR', color: 'text-cyan-400', dot: 'bg-cyan-400' },
-                { name: 'Expert', range: '1,500 - 2,499 CR', color: 'text-amber-400', dot: 'bg-amber-400' },
-                { name: 'Legend', range: '2,500+ CR', color: 'text-orange-400', dot: 'bg-orange-400' },
-              ].map((tier) => {
-                const isMyRank = (profile?.rank || 'Challenger').toLowerCase() === tier.name.toLowerCase();
-                return (
-                  <div
-                    key={tier.name}
-                    className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all ${
-                      isMyRank
-                        ? 'bg-emerald-500/[0.12] border-emerald-400/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                        : 'bg-white/[0.02] border-white/5'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-2 h-2 rounded-full ${tier.dot}`} />
-                      <span className={`text-xs font-black ${tier.color}`}>
-                        {tier.name}
-                      </span>
-                      {isMyRank && (
-                        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-400 text-slate-950">
-                          Your Tier
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs font-mono font-bold text-text-light/80">
-                      {tier.range}
+            <AnimatePresence>
+              {showEloSystem && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0, y: -6 }}
+                  animate={{ height: 'auto', opacity: 1, y: 0 }}
+                  exit={{ height: 0, opacity: 0, y: -6 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="w-full overflow-hidden mt-3 p-4 sm:p-5 rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.4)] space-y-3"
+                >
+                  <div className="flex items-center justify-between pb-1.5 border-b border-white/5">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-white/90">
+                      Official ELO Divisions
                     </span>
+                    <Link
+                      to="/leaderboard"
+                      className="text-[10px] font-bold text-text-light/80 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 px-2.5 py-1 rounded-full flex items-center gap-1 transition-all active:scale-95 group"
+                    >
+                      <span>Leaderboard</span>
+                      <ArrowRight className="w-2.5 h-2.5 text-text-light/50 group-hover:text-white group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
                   </div>
-                );
-              })}
-            </div>
 
-            <p className="text-[10px] text-text-light/60 text-center leading-relaxed">
-              Win matches against higher-rated players to earn more CR and rank up through the divisions!
-            </p>
+                  <div className="space-y-2">
+                    {[
+                      { 
+                        name: 'Rookie', 
+                        threshold: '—', 
+                        color: 'text-slate-400',
+                        activeContainer: 'bg-gradient-to-r from-slate-400/20 via-slate-400/5 to-transparent border-slate-400/60 border-l-[3.5px] border-l-slate-400 shadow-[0_0_20px_rgba(148,163,184,0.2)]',
+                        activeText: 'text-slate-200'
+                      },
+                      { 
+                        name: 'Challenger', 
+                        threshold: '800+ CR', 
+                        color: 'text-emerald-400',
+                        activeContainer: 'bg-gradient-to-r from-emerald-500/20 via-emerald-500/5 to-transparent border-emerald-400/60 border-l-[3.5px] border-l-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]',
+                        activeText: 'text-emerald-300'
+                      },
+                      { 
+                        name: 'Veteran', 
+                        threshold: '1,200+ CR', 
+                        color: 'text-cyan-400',
+                        activeContainer: 'bg-gradient-to-r from-cyan-500/20 via-cyan-500/5 to-transparent border-cyan-400/60 border-l-[3.5px] border-l-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.2)]',
+                        activeText: 'text-cyan-300'
+                      },
+                      { 
+                        name: 'Expert', 
+                        threshold: '1,600+ CR', 
+                        color: 'text-amber-400',
+                        activeContainer: 'bg-gradient-to-r from-amber-500/20 via-amber-500/5 to-transparent border-amber-400/60 border-l-[3.5px] border-l-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]',
+                        activeText: 'text-amber-300'
+                      },
+                      { 
+                        name: 'Legend', 
+                        threshold: '2,500+ CR', 
+                        color: 'text-orange-400',
+                        activeContainer: 'bg-gradient-to-r from-orange-500/25 via-orange-500/5 to-transparent border-orange-500/60 border-l-[3.5px] border-l-orange-500 shadow-[0_0_25px_rgba(249,115,22,0.25)]',
+                        activeText: 'text-orange-300'
+                      },
+                    ].map((tier) => {
+                      const isMyRank = (profile?.rank || 'Challenger').toLowerCase() === tier.name.toLowerCase();
+                      const isLegend = tier.name === 'Legend';
+                      return (
+                        <div
+                          key={tier.name}
+                          className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all relative overflow-hidden ${
+                            isMyRank
+                              ? tier.activeContainer
+                              : 'bg-white/[0.02] border-white/5'
+                          }`}
+                        >
+                          {/* 👑 Option 3: Apex Grandmaster Effects for Legend */}
+                          {isLegend && (
+                            <>
+                              {/* Breathing Ember Orb */}
+                              <div className="absolute -top-4 -left-4 w-28 h-24 bg-gradient-to-br from-orange-500/25 via-amber-500/10 to-transparent rounded-full blur-xl pointer-events-none" />
+
+                              {/* Silky Chrome Light Sweep (Travels full container width) */}
+                              <motion.div
+                                initial={{ left: '-35%' }}
+                                animate={{ left: '135%' }}
+                                transition={{
+                                  duration: 2.2,
+                                  repeat: Infinity,
+                                  repeatDelay: 0.8,
+                                  ease: 'easeInOut',
+                                }}
+                                className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-white/[0.14] to-transparent skew-x-[-25deg] pointer-events-none"
+                              />
+                            </>
+                          )}
+
+                          <div className="flex items-center gap-2.5 relative z-10">
+                            <TierEmblem rank={tier.name} size="sm" animated={isMyRank || isLegend} />
+                            <span className={`text-xs font-black ${tier.color}`}>
+                              {tier.name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 relative z-10">
+                            <span className={`text-xs font-mono font-bold ${isMyRank ? tier.activeText : 'text-text-light/80'}`}>
+                              {tier.threshold}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-[10px] text-text-light/60 text-center leading-relaxed pt-1">
+                    Win matches against higher-rated opponents to earn bonus CR and climb through the divisions!
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
       )}
@@ -254,17 +338,14 @@ export default function Play() {
           className="space-y-5 relative z-10"
         >
           {/* Top Back Navigation */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <button
               onClick={() => setViewState('hub')}
-              className="flex items-center gap-2 text-xs font-bold text-text-light hover:text-white transition-colors bg-white/[0.04] px-3.5 py-2 rounded-full border border-white/10"
+              className="w-9 h-9 flex items-center justify-center text-text-light hover:text-white transition-all bg-white/[0.04] hover:bg-white/[0.08] rounded-full border border-white/10 active:scale-95 shadow-sm"
+              title="Back to Arena"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Arena</span>
+              <ArrowLeft className="w-4 h-4" />
             </button>
-            <h2 className="text-xs font-black uppercase tracking-wider text-emerald-400">
-              Match Setup
-            </h2>
           </div>
 
           {/* Card 1: Match Format (1v1 vs 2v2) */}

@@ -13,6 +13,8 @@ export interface UserProfile {
   longestStreak: number;
   highestRating: number;
   createdAt: number;
+  stamina?: number;
+  lastStaminaReset?: string;
 }
 
 export type MatchStatus = 'WAITING' | 'READY' | 'IN_PROGRESS' | 'FINISHED';

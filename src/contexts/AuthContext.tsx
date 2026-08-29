@@ -15,6 +15,8 @@ interface AuthContextType {
   logoutMock: () => void;
   updateProfileMock: (updates: Partial<UserProfile>) => Promise<void>;
   recordMatchResult: (won: boolean, xp: number, crChange: number, matchDetails: any) => Promise<void>;
+  setStaminaMock: (stamina: number) => Promise<void>;
+  toggleRankTierMock: () => Promise<void>;
 }
 
 const getRankFromRating = (rating: number): string => {
@@ -38,6 +40,8 @@ const AuthContext = createContext<AuthContextType>({
   logoutMock: () => {},
   updateProfileMock: async () => {},
   recordMatchResult: async () => {},
+  setStaminaMock: async () => {},
+  toggleRankTierMock: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -74,7 +78,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Error fetching Supabase profile:', error.message);
       }
 
+      const todayStr = new Date().toISOString().split('T')[0];
+
       if (data) {
+        // Daily Stamina Auto-Reset Check: resets to 100% every new day
+        const needsDailyReset = !data.last_stamina_reset || data.last_stamina_reset !== todayStr;
+        const initialStamina = needsDailyReset ? 100 : (data.stamina ?? 100);
+
         const loadedProfile: UserProfile = {
           uid: data.id,
           displayName: data.display_name,
@@ -90,6 +100,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           longestStreak: data.longest_streak || 0,
           highestRating: data.highest_rating || 0,
           createdAt: data.created_at ? new Date(data.created_at).getTime() : Date.now(),
+          stamina: initialStamina,
+          lastStaminaReset: todayStr,
         };
         setProfile(loadedProfile);
         localStorage.setItem('mockProfile', JSON.stringify(loadedProfile));
@@ -111,6 +123,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           longestStreak: 0,
           highestRating: 0,
           createdAt: Date.now(),
+          stamina: 100,
+          lastStaminaReset: todayStr,
         };
         setProfile(initialProfile);
       }
@@ -389,6 +403,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // 2. Update user profile locally and on Supabase
     if (profile) {
+      const isChallengerOrHigher = (profile.rating || 0) >= 800;
+      let currentStamina = profile.stamina ?? 100;
+      let newStamina = currentStamina;
+
+      if (isChallengerOrHigher) {
+        if (isReferee) {
+          // Refereeing: +20% Stamina Recharge (up to 100%)
+          newStamina = Math.min(100, currentStamina + 20);
+        } else if (won) {
+          if (currentStamina <= 0) {
+            // Second Wind Comeback: Win at 0% recharges +10%!
+            newStamina = 10;
+          } else {
+            // Normal Win: 20% match cost - 10% momentum refund = net -10%
+            newStamina = Math.max(0, currentStamina - 10);
+          }
+        } else {
+          // Loss: Full 20% Stamina deducted
+          newStamina = Math.max(0, currentStamina - 20);
+        }
+      } else {
+        // Rookie Sandbox: Always 100% unlimited
+        newStamina = 100;
+      }
+
       const newBattles = isReferee ? profile.battles : profile.battles + 1;
       const newWins = isReferee ? profile.wins : (won ? profile.wins + 1 : profile.wins);
       const newLosses = isReferee ? profile.losses : (!won ? profile.losses + 1 : profile.losses);
@@ -412,8 +451,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         highestRating: newHighest,
         xp: remainingXp,
         level: newLevel,
+        stamina: newStamina,
+        lastStaminaReset: new Date().toISOString().split('T')[0],
       });
     }
+  };
+
+  // Developer & Player Stamina Controls (Interactive Testing)
+  const setStaminaMock = async (targetStamina: number) => {
+    if (!profile) return;
+    const clamped = Math.max(0, Math.min(100, targetStamina));
+    await updateProfileMock({
+      stamina: clamped,
+      lastStaminaReset: new Date().toISOString().split('T')[0],
+    });
+  };
+
+  // Developer Test helper: Toggle between Rookie Sandbox and Challenger Ranked
+  const toggleRankTierMock = async () => {
+    if (!profile) return;
+    const isCurrentlyRookie = (profile.rating || 0) < 800;
+    const targetRating = isCurrentlyRookie ? 1200 : 450;
+    const targetRank = getRankFromRating(targetRating);
+    await updateProfileMock({
+      rating: targetRating,
+      rank: targetRank,
+      stamina: isCurrentlyRookie ? 80 : 100,
+    });
   };
 
   return (
@@ -430,7 +494,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signupMock: (name, email, pwd) => signUp(name, email || '', pwd), 
         logoutMock: signOut, 
         updateProfileMock, 
-        recordMatchResult 
+        recordMatchResult,
+        setStaminaMock,
+        toggleRankTierMock,
       }}
     >
       {children}

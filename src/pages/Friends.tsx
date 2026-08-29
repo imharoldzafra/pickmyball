@@ -21,9 +21,9 @@ export default function Friends() {
         <motion.button 
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-3.5 py-2 rounded-full text-xs font-bold transition-all backdrop-blur-md shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+          className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-white border border-white/10 px-3.5 py-2 rounded-full text-xs font-bold transition-all shadow-sm"
         >
-          <UserPlus className="w-4 h-4" /> Add Friend
+          <UserPlus className="w-4 h-4 text-emerald-400" /> Add Friend
         </motion.button>
       </motion.div>
 

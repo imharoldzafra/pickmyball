@@ -8,11 +8,19 @@ export default function Layout() {
   const location = useLocation();
   const isMatchView = location.pathname.includes('/match/');
   const isLiveMatch = location.pathname.includes('/live');
+  const isLeaderboard = location.pathname.includes('/leaderboard');
+  const isFirstPageTab = ['/', '/history', '/play', '/friends', '/profile'].includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-[#040709] flex justify-center selection:bg-primary/30">
+    <div className={cn(
+      "min-h-screen bg-[#040709] flex justify-center selection:bg-primary/30",
+      (isLiveMatch || isLeaderboard) && "h-[100dvh] overflow-hidden"
+    )}>
       {/* Phone container on desktop with rounded screen mock */}
-      <div className="w-full max-w-md min-h-screen flex flex-col bg-[#05080c] relative shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:border-x border-white/5 sm:rounded-3xl overflow-hidden my-0 sm:my-3 sm:max-h-[96vh]">
+      <div className={cn(
+        "w-full max-w-md flex flex-col bg-[#05080c] relative shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:border-x border-white/5 sm:rounded-3xl overflow-hidden my-0 sm:my-3",
+        (isLiveMatch || isLeaderboard) ? "h-[100dvh] max-h-[100dvh] sm:max-h-[96vh]" : "min-h-screen sm:max-h-[96vh]"
+      )}>
         
         {/* 🎾 Relaxing Pickleball Court & Floating Aurora Ambient Background Layer (App-Wide) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -127,17 +135,19 @@ export default function Layout() {
         {/* Content View */}
         <main className={cn(
           "flex-1 relative z-10 no-scrollbar flex flex-col",
-          isLiveMatch 
-            ? "overflow-hidden p-1" 
+          (isLiveMatch || isLeaderboard)
+            ? "overflow-hidden p-0" 
             : isMatchView 
               ? "overflow-y-auto pb-4 pt-1 px-1 justify-center"
-              : "overflow-y-auto pb-16 pt-1 px-1"
+              : isFirstPageTab
+                ? "overflow-y-auto pb-16 pt-1 px-1"
+                : "overflow-y-auto pb-4 pt-1 px-1"
         )}>
           <Outlet />
         </main>
         
-        {/* Fixed Anchored Floating Ultra-Slim Organic Pill Navigation Bar (Hidden in matches & victory screen) */}
-        {!isMatchView && (
+        {/* Fixed Anchored Floating Ultra-Slim Organic Pill Navigation Bar (Only on primary 1st pages) */}
+        {isFirstPageTab && !isMatchView && (
           <nav className="fixed bottom-3.5 inset-x-4 max-w-[390px] mx-auto bg-[#070b10]/90 backdrop-blur-2xl border border-white/10 rounded-full px-3 py-1.5 flex justify-between items-center shadow-[0_15px_40px_rgba(0,0,0,0.85),0_0_20px_rgba(16,185,129,0.06)] z-50">
             <NavItem to="/" icon={<Home className="w-5 h-5" />} label="Home" />
             <NavItem to="/history" icon={<History className="w-5 h-5" />} label="History" />

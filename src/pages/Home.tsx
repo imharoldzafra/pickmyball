@@ -1,8 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, Flame, Trophy, Zap, Activity, Sparkles, TrendingUp, TrendingDown } from 'lucide-react';
+import { User, Flame, Trophy, Zap, Activity, Sparkles, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import TierEmblem from '../components/TierEmblem';
+import BatteryPill from '../components/BatteryPill';
+
+const getTierBadgeStyle = (rank: string) => {
+  switch (rank.toLowerCase()) {
+    case 'legend': return 'text-orange-300 bg-orange-500/20 border-orange-500/40 shadow-[0_0_12px_rgba(249,115,22,0.35)]';
+    case 'expert': return 'text-amber-300 bg-amber-400/20 border-amber-400/40 shadow-[0_0_12px_rgba(251,191,36,0.35)]';
+    case 'veteran': return 'text-cyan-300 bg-cyan-500/20 border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.35)]';
+    case 'challenger': return 'text-emerald-300 bg-emerald-500/20 border-emerald-400/35 shadow-[0_0_12px_rgba(16,185,129,0.35)]';
+    case 'rookie':
+    default: return 'text-slate-300 bg-slate-500/20 border-slate-500/30';
+  }
+};
 
 const getRankBadge = (rank: string) => {
   switch (rank.toLowerCase()) {
@@ -118,55 +131,80 @@ export default function Home() {
         transition={{ duration: 0.3 }}
         className="flex items-center justify-between"
       >
-        <Link to="/profile" className="flex items-center gap-4 group">
+        <Link to="/profile" className="flex items-center gap-3.5 group">
           <div className="relative shrink-0">
-            <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-2 border-primary/50 overflow-hidden bg-white/[0.03] shadow-[0_0_30px_rgba(16,185,129,0.3)] flex items-center justify-center transition-all group-hover:border-primary">
+            <div className="w-15 h-15 sm:w-16 sm:h-16 rounded-full border-2 border-primary/50 overflow-hidden bg-white/[0.03] shadow-[0_0_30px_rgba(16,185,129,0.3)] flex items-center justify-center transition-all group-hover:border-primary">
               {profile.photoURL ? (
                 <img src={profile.photoURL} alt={profile.displayName} className="w-full h-full object-cover" />
               ) : (
-                <User className="w-9 h-9 text-text-light/70" />
+                <User className="w-7 h-7 text-text-light/70" />
               )}
             </div>
             <div className="absolute -bottom-1 -right-1 bg-[#050a0a] rounded-full p-0.5 border border-primary/30 shadow-md">
-              <span className="text-xs font-black text-slate-950 bg-primary px-2 py-0.5 rounded-full leading-tight block">
+              <span className="text-[10px] font-black text-slate-950 bg-primary px-1.5 py-0.5 rounded-full leading-tight block">
                 Lv.{profile.level}
               </span>
             </div>
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-primary transition-colors tracking-tight">
+            <h2 className="text-lg sm:text-xl font-black text-white group-hover:text-primary transition-colors tracking-tight">
               {profile.displayName || 'Player'}
             </h2>
+            <p className="text-[11px] font-bold text-text-light/60">
+              Tap to view profile
+            </p>
           </div>
         </Link>
+
+        {/* Unified Animated Battery Pill (Only visible once unlocked at Challenger 800+ CR) */}
+        {(profile.rating || 0) >= 800 && (
+          <div className="self-center -mt-5 mr-2 shrink-0">
+            <Link to="/play" className="active:scale-95 transition-transform block">
+              <BatteryPill 
+                stamina={profile.stamina} 
+                rating={profile.rating} 
+              />
+            </Link>
+          </div>
+        )}
       </motion.div>
 
-      {/* Main Glass Rating Card (Dark Modern Aesthetic) */}
+      {/* Main Glass Rating Card (Option A: Balanced Battle Card) */}
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="relative overflow-hidden rounded-3xl bg-white/[0.03] backdrop-blur-2xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-6 shadow-[0_12px_40px_0_rgba(0,0,0,0.4)]"
+        className="relative overflow-hidden rounded-3xl bg-white/[0.03] backdrop-blur-2xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 px-5 pt-3.5 pb-4.5 sm:px-6 sm:pt-4 sm:pb-5 shadow-[0_12px_40px_0_rgba(0,0,0,0.4)]"
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="relative z-10 space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-bold uppercase tracking-widest text-text-light">Current Rating</span>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-xs font-bold text-white shadow-inner">
-              <span>{rankBadge.icon}</span>
-              <span>{profile.rank}</span>
+        <div className="relative z-10 space-y-3">
+          {/* Main Stats Row: Big Rating Number on Left, Tier Badge + Animated Emblem on Right */}
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-text-light/60 block">
+                Competitive Rating (CR)
+              </span>
+              <span className="text-3xl sm:text-4xl font-black tracking-tight text-white drop-shadow-md block mt-0.5">
+                {profile.rating}
+              </span>
+            </div>
+
+            {/* 🏅 Clean Tier Title (No Box) above the Animated Emblem */}
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-black uppercase tracking-widest text-text-light/60 mb-1 block">
+                {profile.rank}
+              </span>
+              <TierEmblem rank={profile.rank} size="md" animated={true} />
             </div>
           </div>
 
-          <div className="flex items-baseline gap-2.5">
-            <span className="text-5xl font-black tracking-tight text-white drop-shadow-md">{profile.rating}</span>
-          </div>
-
-          {/* XP Progress Meter */}
+          {/* User Level & XP Progress Meter */}
           <div className="space-y-2 pt-1">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-text-light flex items-center gap-1"><Zap className="w-3.5 h-3.5 text-primary" /> XP Progress</span>
+            <div className="flex justify-between items-center text-xs font-semibold">
+              <span className="text-xs font-bold font-mono text-text-light">
+                {profile.level}
+              </span>
               <span className="text-primary font-mono font-bold">{profile.xp} / {xpRequired} XP</span>
             </div>
             <div className="h-2.5 w-full bg-black/40 backdrop-blur-md rounded-full overflow-hidden p-0.5 border border-white/10">

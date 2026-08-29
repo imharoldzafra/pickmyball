@@ -17,6 +17,7 @@ import LiveMatch from './pages/LiveMatch';
 import Friends from './pages/Friends';
 import History from './pages/History';
 import WinnerProfile from './pages/WinnerProfile';
+import Leaderboard from './pages/Leaderboard';
 
 import Pickleball3DSphere from './components/Pickleball3DSphere';
 import { motion } from 'framer-motion';
@@ -80,6 +81,7 @@ export default function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="friends" element={<Friends />} />
             <Route path="history" element={<History />} />
+            <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="match/:matchId/lobby" element={<MatchLobby />} />
             <Route path="match/:matchId/live" element={<LiveMatch />} />
             <Route path="match/:matchId/winner" element={<WinnerProfile />} />
