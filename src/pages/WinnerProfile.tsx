@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Match, UserProfile } from '../types';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, calculateTierCR } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Trophy, Sparkles, Flame, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -14,8 +14,10 @@ export default function WinnerProfile() {
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const streakCount = Math.max(1, profile?.currentStreak || 1);
+  const earnedCR = calculateTierCR(profile?.rating || 850, true, streakCount);
   const finalRating = profile?.rating || 850;
-  const initialRating = Math.max(0, finalRating - 25);
+  const initialRating = Math.max(0, finalRating - earnedCR);
 
   // 🔢 Real-time Rolling Number Animation for CR (Top level hook)
   const [displayCR, setDisplayCR] = useState(initialRating);
@@ -169,8 +171,6 @@ export default function WinnerProfile() {
     rating: profile?.rating || 850,
   };
 
-  const streakCount = Math.max(1, profile?.streak || 1);
-
   return (
     <div className="min-h-full flex flex-col justify-between p-4 sm:p-5 max-w-md mx-auto space-y-4 select-none">
       
@@ -291,7 +291,7 @@ export default function WinnerProfile() {
                   transition={{ delay: 0.35, duration: 0.45, ease: "easeOut" }}
                   className="text-[10px] font-mono font-black text-emerald-300 bg-emerald-500/25 border border-emerald-400/40 px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.25)]"
                 >
-                  +25
+                  +{earnedCR}
                 </motion.span>
               </div>
             </div>

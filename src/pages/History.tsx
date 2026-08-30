@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Trophy, TrendingUp, Sparkles, PlusCircle } from 'lucide-react';
+import { Calendar, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
@@ -95,26 +95,26 @@ export default function History() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.05 }}
-        className="flex-shrink-0 bg-white/[0.025] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4.5 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.35)] grid grid-cols-3 gap-3 text-center divide-x divide-white/10"
+        className="flex-shrink-0 bg-white/[0.025] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 py-4 px-2 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.35)] grid grid-cols-3 items-center text-center"
       >
-        <div>
+        <div className="flex flex-col items-center justify-center px-1">
           <span className="block text-[10px] font-bold text-text-light uppercase tracking-wider mb-1">
             {filter === 'TODAY' ? 'Today Win Rate' : 'Win Rate'}
           </span>
-          <span className="text-lg font-extrabold text-white flex items-center justify-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5 text-primary" /> {winRate}%
+          <span className="text-lg font-extrabold text-white block">
+            {winRate}%
           </span>
         </div>
-        <div>
+        <div className="flex flex-col items-center justify-center border-x border-white/10 px-1 py-0.5">
           <span className="block text-[10px] font-bold text-text-light uppercase tracking-wider mb-1">Total XP</span>
-          <span className="text-lg font-extrabold text-primary flex items-center justify-center gap-1">
-            <Sparkles className="w-3.5 h-3.5 text-primary" /> {totalXp} XP
+          <span className="text-lg font-extrabold text-white block">
+            {totalXp} XP
           </span>
         </div>
-        <div>
+        <div className="flex flex-col items-center justify-center px-1">
           <span className="block text-[10px] font-bold text-text-light uppercase tracking-wider mb-1">Current CR</span>
-          <span className="text-lg font-extrabold text-[#38bdf8] flex items-center justify-center gap-1">
-            <Trophy className="w-3.5 h-3.5 text-[#38bdf8]" /> {netCr}
+          <span className="text-lg font-extrabold text-white block">
+            {netCr}
           </span>
         </div>
       </motion.div>
@@ -136,7 +136,7 @@ export default function History() {
                 : 'text-text-light hover:text-white'
                 }`}
             >
-              Today ({todayMatches.length})
+              Today
             </button>
             <button
               onClick={() => setFilter('ALL')}
@@ -145,7 +145,7 @@ export default function History() {
                 : 'text-text-light hover:text-white'
                 }`}
             >
-              Recent 10 ({matches.length})
+              Recent
             </button>
           </div>
 
@@ -218,26 +218,28 @@ export default function History() {
               </h4>
               <p className="text-xs text-text-light/70">
                 {filter === 'TODAY'
-                  ? 'Play a match today to start your daily session, or check Recent 10 to see your past records!'
+                  ? 'Play a match today to start your daily session, or check Recent to see your past records!'
                   : 'Start your first match in the Play tab to build your match history and earn CR rating!'}
               </p>
             </div>
-            <div className="flex items-center gap-2.5">
-              {filter === 'TODAY' && matches.length > 0 && (
-                <button
-                  onClick={() => setFilter('ALL')}
-                  className="bg-white/10 hover:bg-white/15 border border-white/15 text-white px-4 py-2 rounded-full text-xs font-bold active:scale-95 transition-all"
+            {filter === 'TODAY' && (
+              <div className="flex items-center gap-2.5">
+                {matches.length > 0 && (
+                  <button
+                    onClick={() => setFilter('ALL')}
+                    className="bg-white/10 hover:bg-white/15 border border-white/15 text-white px-4 py-2 rounded-full text-xs font-bold active:scale-95 transition-all"
+                  >
+                    View Recent ({matches.length})
+                  </button>
+                )}
+                <Link
+                  to="/play"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-96 transition-transform"
                 >
-                  View Recent ({matches.length})
-                </button>
-              )}
-              <Link
-                to="/play"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-96 transition-transform"
-              >
-                <PlusCircle className="w-4 h-4" /> Start A Match
-              </Link>
-            </div>
+                  <PlusCircle className="w-4 h-4" /> Start A Match
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </motion.div>

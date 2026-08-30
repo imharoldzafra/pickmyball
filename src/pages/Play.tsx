@@ -199,13 +199,13 @@ export default function Play() {
           <div className="pt-1 flex flex-col items-center w-full">
             <button
               onClick={() => setShowEloSystem(!showEloSystem)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] active:scale-95 border border-white/10 text-xs font-bold text-text-light hover:text-white transition-all shadow-sm group"
+              className="inline-flex items-center gap-1.5 py-1 text-xs font-bold text-text-light/60 hover:text-white active:scale-95 transition-all group tracking-wide"
             >
               <span>See Tiers</span>
               {showEloSystem ? (
-                <ChevronUp className="w-3.5 h-3.5 text-text-light/60 group-hover:text-white" />
+                <ChevronUp className="w-3.5 h-3.5 text-text-light/40 group-hover:text-white transition-colors" />
               ) : (
-                <ChevronDown className="w-3.5 h-3.5 text-text-light/60 group-hover:text-white" />
+                <ChevronDown className="w-3.5 h-3.5 text-text-light/40 group-hover:text-white transition-colors" />
               )}
             </button>
 
@@ -236,13 +236,15 @@ export default function Play() {
                       { 
                         name: 'Rookie', 
                         threshold: '—', 
+                        crRatio: '+80 / -40',
                         color: 'text-slate-400',
                         activeContainer: 'bg-gradient-to-r from-slate-400/20 via-slate-400/5 to-transparent border-slate-400/60 border-l-[3.5px] border-l-slate-400 shadow-[0_0_20px_rgba(148,163,184,0.2)]',
-                        activeText: 'text-slate-200'
+                        activeText: 'text-text-light/80'
                       },
                       { 
                         name: 'Challenger', 
                         threshold: '800+ CR', 
+                        crRatio: '+40 / -20',
                         color: 'text-emerald-400',
                         activeContainer: 'bg-gradient-to-r from-emerald-500/20 via-emerald-500/5 to-transparent border-emerald-400/60 border-l-[3.5px] border-l-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]',
                         activeText: 'text-emerald-300'
@@ -250,6 +252,7 @@ export default function Play() {
                       { 
                         name: 'Veteran', 
                         threshold: '1,200+ CR', 
+                        crRatio: '+30 / -20',
                         color: 'text-cyan-400',
                         activeContainer: 'bg-gradient-to-r from-cyan-500/20 via-cyan-500/5 to-transparent border-cyan-400/60 border-l-[3.5px] border-l-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.2)]',
                         activeText: 'text-cyan-300'
@@ -257,13 +260,15 @@ export default function Play() {
                       { 
                         name: 'Expert', 
                         threshold: '1,600+ CR', 
+                        crRatio: '+25 / -25',
                         color: 'text-amber-400',
                         activeContainer: 'bg-gradient-to-r from-amber-500/20 via-amber-500/5 to-transparent border-amber-400/60 border-l-[3.5px] border-l-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]',
                         activeText: 'text-amber-300'
                       },
                       { 
                         name: 'Legend', 
-                        threshold: '2,500+ CR', 
+                        threshold: '2,000+ CR', 
+                        crRatio: '+20 / -30',
                         color: 'text-orange-400',
                         activeContainer: 'bg-gradient-to-r from-orange-500/25 via-orange-500/5 to-transparent border-orange-500/60 border-l-[3.5px] border-l-orange-500 shadow-[0_0_25px_rgba(249,115,22,0.25)]',
                         activeText: 'text-orange-300'
@@ -447,7 +452,7 @@ export default function Play() {
           className="space-y-5 relative z-10"
         >
           {/* Top Back Navigation */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <button
               onClick={() => setViewState('hub')}
               className="flex items-center gap-2 text-xs font-bold text-text-light hover:text-white transition-colors bg-white/[0.04] px-3.5 py-2 rounded-full border border-white/10"
@@ -455,9 +460,6 @@ export default function Play() {
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Arena</span>
             </button>
-            <h2 className="text-xs font-black uppercase tracking-wider text-cyan-400">
-              Join Match
-            </h2>
           </div>
 
           {/* Manual Match Code Card */}

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, 
   Users, 
-  Globe, 
+  MapPin, 
   Flame, 
   ArrowLeft, 
   Sparkles, 
@@ -150,7 +150,7 @@ export default function Leaderboard() {
             <span>Play Arena</span>
           </button>
 
-          {/* Glass Dual Tab Selector (Global vs Friends) */}
+          {/* Glass Dual Tab Selector (Local vs Friends) */}
           <div className="flex bg-white/[0.04] backdrop-blur-2xl p-0.5 rounded-full border border-white/10 shadow-sm shrink-0">
             <button
               onClick={() => setActiveTab('global')}
@@ -160,8 +160,8 @@ export default function Leaderboard() {
                   : 'text-text-light/70 hover:text-white'
               }`}
             >
-              <Globe className="w-3 h-3" />
-              <span>Global</span>
+              <MapPin className="w-3 h-3" />
+              <span>Local</span>
             </button>
             <button
               onClick={() => setActiveTab('friends')}
@@ -241,7 +241,6 @@ export default function Leaderboard() {
           </motion.div>
         ) : (
           <div className="text-center py-6 px-4 rounded-3xl bg-white/[0.02] border border-white/5 space-y-1 max-w-sm mx-auto">
-            <span className="text-2xl block">🎾</span>
             <p className="text-xs font-black text-white">No active rankings yet</p>
             <p className="text-[10px] text-text-light/60">Play your first match on court to claim the #1 championship stand!</p>
           </div>

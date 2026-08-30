@@ -12,15 +12,9 @@ export default function Layout() {
   const isFirstPageTab = ['/', '/history', '/play', '/friends', '/profile'].includes(location.pathname);
 
   return (
-    <div className={cn(
-      "min-h-screen bg-[#040709] flex justify-center selection:bg-primary/30",
-      (isLiveMatch || isLeaderboard) && "h-[100dvh] overflow-hidden"
-    )}>
+    <div className="min-h-screen h-[100dvh] bg-[#040709] flex justify-center selection:bg-primary/30 overflow-hidden">
       {/* Phone container on desktop with rounded screen mock */}
-      <div className={cn(
-        "w-full max-w-md flex flex-col bg-[#05080c] relative shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:border-x border-white/5 sm:rounded-3xl overflow-hidden my-0 sm:my-3",
-        (isLiveMatch || isLeaderboard) ? "h-[100dvh] max-h-[100dvh] sm:max-h-[96vh]" : "min-h-screen sm:max-h-[96vh]"
-      )}>
+      <div className="w-full max-w-md flex flex-col bg-[#05080c] relative shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:border-x border-white/5 sm:rounded-3xl overflow-hidden my-0 sm:my-3 h-[100dvh] max-h-[100dvh] sm:max-h-[96vh]">
         
         {/* 🎾 Relaxing Pickleball Court & Floating Aurora Ambient Background Layer (App-Wide) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -140,8 +134,8 @@ export default function Layout() {
             : isMatchView 
               ? "overflow-y-auto pb-4 pt-1 px-1 justify-center"
               : isFirstPageTab
-                ? "overflow-y-auto pb-16 pt-1 px-1"
-                : "overflow-y-auto pb-4 pt-1 px-1"
+                ? "overflow-y-auto pb-20 pt-1 px-1 overscroll-contain"
+                : "overflow-y-auto pb-4 pt-1 px-1 overscroll-contain"
         )}>
           <Outlet />
         </main>

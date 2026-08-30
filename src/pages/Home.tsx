@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Flame, Trophy, Zap, Activity, Sparkles, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
+import { User, Flame, Trophy, Zap, Activity, Sparkles, TrendingUp, TrendingDown, ChevronRight, Infinity as InfinityIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import TierEmblem from '../components/TierEmblem';
 import BatteryPill from '../components/BatteryPill';
+import LivingFlame from '../components/LivingFlame';
 
 const getTierBadgeStyle = (rank: string) => {
   switch (rank.toLowerCase()) {
@@ -84,41 +85,41 @@ export default function Home() {
       label: 'Total Matches',
       value: profile.battles,
       icon: CrossedPaddles,
-      accentColor: 'text-sky-400',
-      glowBg: 'bg-sky-500/15',
-      glowBorder: 'border-sky-500/30',
-      glowShadow: 'shadow-[0_0_20px_rgba(56,189,248,0.25)]',
-      orbColor: 'bg-sky-500/20',
+      accentColor: 'text-white',
+      glowBg: 'bg-white/5',
+      glowBorder: 'border-white/10',
+      glowShadow: 'shadow-[0_0_20px_rgba(255,255,255,0.05)]',
+      orbColor: 'bg-white/5',
     },
     {
       label: 'Victories',
       value: profile.wins,
       icon: Trophy,
-      accentColor: 'text-emerald-400',
-      glowBg: 'bg-emerald-500/15',
-      glowBorder: 'border-emerald-500/30',
-      glowShadow: 'shadow-[0_0_20px_rgba(16,185,129,0.25)]',
-      orbColor: 'bg-emerald-500/20',
+      accentColor: 'text-white',
+      glowBg: 'bg-white/5',
+      glowBorder: 'border-white/10',
+      glowShadow: 'shadow-[0_0_20px_rgba(255,255,255,0.05)]',
+      orbColor: 'bg-white/5',
     },
     {
       label: 'Defeats',
       value: profile.losses,
       icon: BrokenShield,
-      accentColor: 'text-rose-400',
-      glowBg: 'bg-rose-500/15',
-      glowBorder: 'border-rose-500/30',
-      glowShadow: 'shadow-[0_0_20px_rgba(244,63,94,0.25)]',
-      orbColor: 'bg-rose-500/20',
+      accentColor: 'text-white',
+      glowBg: 'bg-white/5',
+      glowBorder: 'border-white/10',
+      glowShadow: 'shadow-[0_0_20px_rgba(255,255,255,0.05)]',
+      orbColor: 'bg-white/5',
     },
     {
       label: 'Best Streak',
       value: profile.longestStreak,
       icon: Flame,
-      accentColor: 'text-purple-400',
-      glowBg: 'bg-purple-500/15',
-      glowBorder: 'border-purple-500/30',
-      glowShadow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]',
-      orbColor: 'bg-purple-500/20',
+      accentColor: 'text-white',
+      glowBg: 'bg-white/5',
+      glowBorder: 'border-white/10',
+      glowShadow: 'shadow-[0_0_20px_rgba(255,255,255,0.05)]',
+      orbColor: 'bg-white/5',
     }
   ];
 
@@ -220,14 +221,13 @@ export default function Home() {
       </motion.div>
 
       {/* Overview Stats 2x2 Glass Grid */}
-      <div className="space-y-4">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-text-light px-1 flex items-center gap-1.5">
-          <CrossedPaddles className="w-3.5 h-3.5 text-primary" /> Performance Breakdown
+      <div className="space-y-2.5">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-text-light px-1">
+          Performance Breakdown
         </h3>
 
-        <div className="grid grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-2 gap-2.5">
           {stats.map((stat, idx) => {
-            const Icon = stat.icon;
             return (
               <motion.div 
                 key={stat.label}
@@ -235,22 +235,19 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false }}
                 transition={{ duration: 0.25, delay: idx * 0.05 }}
-                className="bg-white/[0.03] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4 sm:p-5 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-[0_8px_25px_rgba(0,0,0,0.3)] space-y-3"
+                className="bg-white/[0.03] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 px-3.5 py-3 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.25)] space-y-1.5"
               >
                 {/* Background Ambient Glow Orb */}
-                <div className={`absolute -top-6 -right-6 w-20 h-20 ${stat.orbColor} rounded-full blur-xl pointer-events-none opacity-60`} />
+                <div className={`absolute -top-6 -right-6 w-20 h-20 ${stat.orbColor} rounded-full blur-xl pointer-events-none opacity-30`} />
 
-                {/* Top Row: Label & Glowing Icon Badge */}
-                <div className="flex items-center justify-between relative z-10">
-                  <span className="text-[11px] font-bold text-text-light uppercase tracking-wider">{stat.label}</span>
-                  <div className={`w-7 h-7 rounded-lg ${stat.glowBg} border ${stat.glowBorder} ${stat.glowShadow} flex items-center justify-center shrink-0`}>
-                    <Icon className={`w-4.5 h-4.5 ${stat.accentColor}`} />
-                  </div>
+                {/* Top: Label */}
+                <div className="relative z-10">
+                  <span className="text-[10px] font-bold text-text-light/60 uppercase tracking-wider">{stat.label}</span>
                 </div>
 
-                {/* Middle Row: Large Stat Value */}
-                <div className="relative z-10 pt-1">
-                  <span className={`text-3xl sm:text-4xl font-black tracking-tight ${stat.accentColor} drop-shadow-md`}>
+                {/* Bottom: Stat Value */}
+                <div className="relative z-10 pt-0.5">
+                  <span className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-md">
                     {stat.value}
                   </span>
                 </div>
@@ -262,13 +259,24 @@ export default function Home() {
         {/* Victory Chain Glass Box with Progressive Thermal Heat */}
         {(() => {
           const streak = profile.currentStreak;
+          const isGodlike = streak >= 10;
           const isSuperCharged = streak >= 5;
 
-          // Distinct 5-Stage Progressive Theme Configuration
+          // Distinct Progressive Theme Configuration (0 to 10+ Secret Tier)
           const getStreakTheme = (count: number) => {
+            if (count >= 10) {
+              return {
+                title: 'GODLIKE',
+                flameClass: 'text-purple-400 fill-purple-400 drop-shadow-[0_0_16px_rgba(168,85,247,0.95)]',
+                textColor: 'text-purple-300 drop-shadow-[0_0_12px_rgba(168,85,247,0.7)] font-black',
+                subTextColor: 'text-purple-300 font-bold',
+                boxClass: 'bg-purple-600/[0.09] border-t-purple-400/60 border-x-purple-500/30 border-b-purple-500/10 shadow-[0_0_40px_rgba(168,85,247,0.35)]',
+                auraColor: 'from-purple-600 via-violet-500 to-cyan-400',
+              };
+            }
             if (count >= 5) {
               return {
-                title: 'ON FIRE (1.5x XP Boost)',
+                title: 'ON FIRE',
                 flameClass: 'text-orange-400 fill-orange-500 drop-shadow-[0_0_14px_rgba(249,115,22,0.95)]',
                 textColor: 'text-orange-400 drop-shadow-[0_0_10px_rgba(249,115,22,0.6)]',
                 subTextColor: 'text-orange-300 font-bold',
@@ -278,7 +286,7 @@ export default function Home() {
             }
             if (count === 4) {
               return {
-                title: 'Igniting Streak',
+                title: 'Heating Up',
                 flameClass: 'text-orange-500 fill-orange-500/80 drop-shadow-[0_0_10px_rgba(249,115,22,0.8)]',
                 textColor: 'text-orange-400',
                 subTextColor: 'text-orange-300',
@@ -288,7 +296,7 @@ export default function Home() {
             }
             if (count === 3) {
               return {
-                title: 'Heating Up',
+                title: 'Current Win Streak',
                 flameClass: 'text-amber-400 fill-amber-400/70 drop-shadow-[0_0_10px_rgba(245,158,11,0.8)]',
                 textColor: 'text-amber-400',
                 subTextColor: 'text-amber-300',
@@ -298,22 +306,32 @@ export default function Home() {
             }
             if (count === 2) {
               return {
-                title: 'Building Momentum',
-                flameClass: 'text-lime-400 fill-lime-400/60 drop-shadow-[0_0_8px_rgba(132,204,22,0.7)]',
-                textColor: 'text-lime-400',
-                subTextColor: 'text-lime-300',
-                boxClass: 'bg-lime-500/[0.04] border-t-lime-400/35 border-x-lime-500/15 border-b-white/5 shadow-[0_8px_30px_rgba(132,204,22,0.2)]',
-                auraColor: 'from-lime-500 to-emerald-400',
+                title: 'Current Win Streak',
+                flameClass: 'text-cyan-400 fill-cyan-400/60 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]',
+                textColor: 'text-cyan-300',
+                subTextColor: 'text-cyan-400',
+                boxClass: 'bg-cyan-500/[0.04] border-t-cyan-400/35 border-x-cyan-500/15 border-b-white/5 shadow-[0_8px_30px_rgba(6,182,212,0.2)]',
+                auraColor: 'from-cyan-500 to-teal-400',
               };
             }
-            // 0 or 1
+            if (count === 1) {
+              return {
+                title: 'Current Win Streak',
+                flameClass: 'text-emerald-400 fill-emerald-400/50 drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]',
+                textColor: 'text-text-light',
+                subTextColor: 'text-emerald-400',
+                boxClass: 'bg-white/[0.03] border-t-emerald-400/30 border-x-emerald-500/15 border-b-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.35)]',
+                auraColor: 'from-emerald-500 to-teal-400',
+              };
+            }
+            // 0 wins (Dormant Clean State - No green glow)
             return {
               title: 'Current Win Streak',
-              flameClass: 'text-emerald-400 fill-emerald-400/50 drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]',
-              textColor: 'text-text-light',
-              subTextColor: 'text-emerald-400',
-              boxClass: 'bg-white/[0.03] border-t-emerald-400/30 border-x-emerald-500/15 border-b-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.35)]',
-              auraColor: 'from-emerald-500 to-teal-400',
+              flameClass: 'text-text-light/40 fill-none',
+              textColor: 'text-text-light/70',
+              subTextColor: 'text-text-light/50',
+              boxClass: 'bg-white/[0.03] border-t-white/15 border-x-white/10 border-b-white/5 shadow-[0_6px_20px_rgba(0,0,0,0.25)]',
+              auraColor: '',
             };
           };
 
@@ -321,8 +339,12 @@ export default function Home() {
 
           // Distinct Bar Style for each thermal stage
           const getBarStyle = () => {
+            if (isGodlike) {
+              // ⚡ STAGE 10+ (GODLIKE): COSMIC ULTRAVIOLET PLASMA WITH ELECTRIC CYAN LASER EDGE
+              return 'bg-gradient-to-t from-purple-700 via-violet-500 to-cyan-300 shadow-[0_0_20px_rgba(168,85,247,0.95)] border border-cyan-300/80';
+            }
             if (isSuperCharged) {
-              // 🔥 STAGE 5+ (MAX): ALL BARS TURN INTO BLAZING MOLTEN FIRE
+              // 🔥 STAGE 5-7: ALL BARS TURN INTO BLAZING MOLTEN FIRE
               return 'bg-gradient-to-t from-red-600 via-orange-500 to-amber-300 shadow-[0_0_16px_rgba(249,115,22,0.95)] border border-orange-400/70';
             }
             if (streak === 4) {
@@ -334,8 +356,8 @@ export default function Home() {
               return 'bg-gradient-to-t from-amber-600 via-yellow-400 to-yellow-200 shadow-[0_0_14px_rgba(234,179,8,0.85)] border border-amber-400/60';
             }
             if (streak === 2) {
-              // 🟢 STAGE 2: ELECTRIC NEON LIME
-              return 'bg-gradient-to-t from-lime-600 via-lime-400 to-emerald-200 shadow-[0_0_12px_rgba(132,204,22,0.8)] border border-lime-400/50';
+              // 🟦 STAGE 2: ELECTRIC CYAN / IN THE ZONE
+              return 'bg-gradient-to-t from-cyan-600 via-cyan-400 to-teal-200 shadow-[0_0_12px_rgba(6,182,212,0.8)] border border-cyan-400/50';
             }
             // 🟩 STAGE 1: COOL EMERALD / TEAL
             return 'bg-gradient-to-t from-emerald-600 via-teal-400 to-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.8)] border border-emerald-400/50';
@@ -343,51 +365,110 @@ export default function Home() {
 
           return (
             <motion.div 
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false }}
-              className={`backdrop-blur-md p-5 rounded-3xl border-t border-x border-b flex items-center justify-between relative overflow-hidden transition-all duration-500 ${theme.boxClass}`}
-            >
-              {/* Animated Background Aura */}
-              <motion.div 
-                animate={{ 
-                  scale: isSuperCharged ? [1, 1.35, 1] : [1, 1.2, 1],
-                  opacity: isSuperCharged ? [0.25, 0.5, 0.25] : [0.12, 0.25, 0.12]
-                }}
-                transition={{ 
-                  duration: isSuperCharged ? 2 : 3, 
-                  repeat: Infinity, 
-                  ease: "easeInOut" 
-                }}
-                className={`absolute -top-12 -right-10 w-44 h-32 bg-gradient-to-br ${theme.auraColor} rounded-full blur-3xl pointer-events-none`}
-              />
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false }}
+                className={`backdrop-blur-md p-5 rounded-3xl border-t border-x border-b flex items-center justify-between relative overflow-hidden transition-all duration-500 ${theme.boxClass}`}
+              >
+              {/* Animated Background Aura (Only when streak > 0) */}
+              {streak > 0 && theme.auraColor && (
+                <motion.div 
+                  animate={{ 
+                    scale: isGodlike ? [1, 1.4, 1] : isSuperCharged ? [1, 1.35, 1] : [1, 1.2, 1],
+                    opacity: isGodlike ? [0.35, 0.6, 0.35] : isSuperCharged ? [0.25, 0.5, 0.25] : [0.12, 0.25, 0.12]
+                  }}
+                  transition={{ 
+                    duration: isGodlike ? 1.6 : isSuperCharged ? 2 : 3, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                  className={`absolute -top-12 -right-10 w-44 h-32 bg-gradient-to-br ${theme.auraColor} rounded-full blur-3xl pointer-events-none`}
+                />
+              )}
+
+              {/* ✨ Ambient Living Fire / Cosmic Stardust Particles (Drifting upward inside the card on 5+ streaks) */}
+              {streak >= 5 && (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                  {(isGodlike
+                    ? Array.from({ length: 54 }, (_, i) => ({
+                        left: `${(i * 1.78 + 2).toFixed(1)}%`,
+                        duration: 1.8 + (i % 6) * 0.25,
+                        delay: (i * 0.05) % 2.2,
+                        xSway: [
+                          (i % 2 === 0 ? -1 : 1) * (2 + (i % 3)),
+                          (i % 2 === 0 ? 1 : -1) * (2 + ((i + 1) % 3)),
+                          (i % 2 === 0 ? -1 : 1) * (1 + (i % 2)),
+                        ],
+                        size: i % 4 === 0 ? 'w-[0.75px] h-[0.75px]' : i % 4 === 1 ? 'w-[1px] h-[1px]' : i % 4 === 2 ? 'w-[1.2px] h-[1.2px]' : 'w-[0.85px] h-[0.85px]',
+                      }))
+                    : [
+                        { left: '6%', duration: 2.6, delay: 0, xSway: [-3, 4, -2], size: 'w-[1px] h-[1px]' },
+                        { left: '13%', duration: 3.2, delay: 1.1, xSway: [3, -4, 2], size: 'w-[1.5px] h-[1.5px]' },
+                        { left: '20%', duration: 2.8, delay: 0.5, xSway: [-4, 3, -3], size: 'w-[1px] h-[1px]' },
+                        { left: '27%', duration: 3.4, delay: 1.8, xSway: [4, -3, 2], size: 'w-[1.5px] h-[1.5px]' },
+                        { left: '34%', duration: 2.7, delay: 0.8, xSway: [-3, 5, -2], size: 'w-[1px] h-[1px]' },
+                        { left: '42%', duration: 3.1, delay: 1.5, xSway: [5, -4, 3], size: 'w-[1.5px] h-[1.5px]' },
+                        { left: '50%', duration: 2.6, delay: 0.3, xSway: [-4, 4, -3], size: 'w-[1px] h-[1px]' },
+                        { left: '58%', duration: 3.5, delay: 2.0, xSway: [3, -5, 2], size: 'w-[1.5px] h-[1.5px]' },
+                        { left: '66%', duration: 2.9, delay: 0.9, xSway: [-5, 3, -2], size: 'w-[1px] h-[1px]' },
+                        { left: '74%', duration: 3.3, delay: 1.7, xSway: [4, -4, 3], size: 'w-[1.5px] h-[1.5px]' },
+                        { left: '82%', duration: 2.7, delay: 0.6, xSway: [-3, 5, -3], size: 'w-[1px] h-[1px]' },
+                        { left: '90%', duration: 3.2, delay: 1.4, xSway: [4, -3, 2], size: 'w-[1.5px] h-[1.5px]' },
+                        { left: '96%', duration: 2.8, delay: 0.2, xSway: [-3, 4, -2], size: 'w-[1px] h-[1px]' },
+                      ]
+                  ).map((ember, i) => (
+                    <motion.div
+                      key={i}
+                      style={{ left: ember.left }}
+                      initial={{ y: 0, opacity: 0, scale: 0.3 }}
+                      animate={{
+                        y: [0, isGodlike ? -64 : -54],
+                        x: [0, ember.xSway[0], ember.xSway[1], ember.xSway[2], 0],
+                        opacity: isGodlike ? [0, 0.95, 0.45, 0.95, 0.35, 0] : [0, 0.95, 0.95, 0.6, 0],
+                        scale: isGodlike ? [0.3, 1.1, 0.7, 1.0, 0] : [0.4, 1.2, 1.0, 0.7, 0],
+                      }}
+                      transition={{
+                        duration: ember.duration,
+                        repeat: Infinity,
+                        delay: ember.delay,
+                        ease: "easeOut",
+                      }}
+                      className={`absolute bottom-0 rounded-full ${ember.size} ${
+                        isGodlike
+                          ? i % 3 === 0
+                            ? 'bg-cyan-300 shadow-[0_0_4px_#22d3ee]'
+                            : i % 3 === 1
+                              ? 'bg-purple-300 shadow-[0_0_4px_#c084fc]'
+                              : 'bg-white shadow-[0_0_5px_#ffffff]'
+                          : i % 2 === 0
+                            ? 'bg-amber-200 shadow-[0_0_5px_#fde047]'
+                            : 'bg-orange-400 shadow-[0_0_5px_#ea580c]'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
 
               <div className="relative z-10">
                 <div className="flex items-center gap-1.5 mb-1">
-                  {/* Dynamic Flame that animates and changes color */}
-                  <motion.div
-                    animate={
-                      isSuperCharged 
-                        ? { scale: [1, 1.3, 1], rotate: [-6, 6, -6] }
-                        : streak >= 3
-                          ? { scale: [1, 1.15, 1], rotate: [-3, 3, -3] }
-                          : { scale: [1, 1.05, 1] }
-                    }
-                    transition={{ 
-                      duration: isSuperCharged ? 0.7 : 1.2, 
-                      repeat: Infinity, 
-                      ease: "easeInOut" 
-                    }}
-                  >
-                    <Flame className={`w-4 h-4 ${theme.flameClass}`} />
-                  </motion.div>
+                  {/* Living Organic Multi-Layer Flame with Floating Sparks */}
+                  <LivingFlame streak={streak} size="sm" />
                   <h4 className={`text-xs font-black uppercase tracking-wider ${theme.textColor}`}>
                     {theme.title}
                   </h4>
+                  {streak >= 10 ? (
+                    <span className="text-[9px] font-black tracking-wider px-1.5 py-0.2 rounded-full bg-purple-500/25 border border-purple-400/40 text-purple-200 shadow-[0_0_8px_rgba(168,85,247,0.4)] leading-tight">
+                      +20 CR
+                    </span>
+                  ) : streak >= 5 ? (
+                    <span className="text-[9px] font-black tracking-wider px-1.5 py-0.2 rounded-full bg-orange-500/25 border border-orange-400/40 text-orange-200 shadow-[0_0_8px_rgba(249,115,22,0.4)] leading-tight">
+                      +15 CR
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="flex items-baseline gap-1.5">
-                  <span className={`text-3xl font-black text-white ${isSuperCharged ? 'drop-shadow-[0_0_15px_rgba(249,115,22,0.9)]' : 'drop-shadow-md'}`}>
+                  <span className={`text-3xl font-black text-white ${isGodlike ? 'drop-shadow-[0_0_18px_rgba(168,85,247,0.95)]' : isSuperCharged ? 'drop-shadow-[0_0_15px_rgba(249,115,22,0.9)]' : 'drop-shadow-md'}`}>
                     {streak}
                   </span>
                   <span className={`text-xs font-bold ${theme.subTextColor}`}>
@@ -396,60 +477,78 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 📊 Sleek Vertical Equalizer Bars (Always True Bars, Never Dots) */}
+              {/* 5-Bar Equalizer Display (Active across all streaks, with Godlike Cosmic Overdrive on 10+) */}
               <div className="flex items-center gap-1.5 h-9 relative z-10">
                 {(() => {
-                  const isAnimated = streak >= 3;
+                  const isAnimated = streak >= 4;
 
-                  // Fluid Equalizer Bar Height Profiles (Always maintaining tall pill bar shape: 18px - 32px):
+                  // Fluid Equalizer Bar Profiles via GPU-accelerated scaleY (120 FPS buttery smooth):
                   const getBassProfile = (barIndex: number) => {
-                    if (isSuperCharged) {
-                      // 🔥 STAGE 5+ (MOLTEN FIRE CHILL BASS WAVE): 0.78s fluid vertical dancing
-                      const heights = [
-                        [18, 30, 22, 28, 18],
-                        [22, 28, 18, 32, 22],
-                        [18, 32, 24, 26, 18],
-                        [24, 26, 18, 30, 24],
-                        [18, 28, 22, 30, 18],
+                    if (isGodlike) {
+                      // ⚡ STAGE 10+ (GODLIKE COSMIC HARMONIC OVERDRIVE):
+                      // Ultra-smooth, higher peak harmonic wave with laser-smooth flow
+                      const scales = [
+                        [0.55, 1.38, 0.75, 1.28, 0.55],
+                        [0.75, 1.28, 0.55, 1.42, 0.75],
+                        [0.55, 1.42, 0.85, 1.22, 0.55],
+                        [0.85, 1.22, 0.55, 1.36, 0.85],
+                        [0.55, 1.32, 0.80, 1.40, 0.55],
                       ];
                       return {
-                        duration: 0.8 + (barIndex % 2) * 0.08,
-                        height: heights[barIndex % heights.length],
+                        duration: 0.68 + (barIndex % 2) * 0.06,
+                        scaleY: scales[barIndex % scales.length],
+                        opacity: [0.92, 1, 0.95, 1, 0.92],
+                        delay: barIndex * 0.06,
+                      };
+                    }
+
+                    if (isSuperCharged) {
+                      // 🔥 STAGE 5-9 (MOLTEN FIRE CHILL BASS WAVE): 0.78s rapid GPU vertical dance
+                      const scales = [
+                        [0.62, 1.22, 0.75, 1.15, 0.62],
+                        [0.75, 1.15, 0.62, 1.25, 0.75],
+                        [0.62, 1.25, 0.82, 1.10, 0.62],
+                        [0.82, 1.10, 0.62, 1.20, 0.82],
+                        [0.62, 1.18, 0.78, 1.22, 0.62],
+                      ];
+                      return {
+                        duration: 0.78 + (barIndex % 2) * 0.08,
+                        scaleY: scales[barIndex % scales.length],
                         opacity: [0.85, 1, 0.9, 1, 0.85],
-                        delay: barIndex * 0.1,
+                        delay: barIndex * 0.08,
                       };
                     }
 
                     if (streak === 4) {
-                      // 🟠 STAGE 4 (WARM BOUNCY WAVE): 0.95s smooth vertical dancing
-                      const heights = [
-                        [18, 28, 22, 26, 18],
-                        [22, 26, 18, 28, 22],
-                        [18, 30, 20, 24, 18],
-                        [24, 24, 18, 28, 24],
-                        [18, 26, 22, 26, 18],
+                      // 🟠 STAGE 4 (WARM CONTROLLED WAVE): 1.5s smooth GPU wave
+                      const scales = [
+                        [0.65, 1.12, 0.78, 1.05, 0.65],
+                        [0.78, 1.05, 0.65, 1.15, 0.78],
+                        [0.65, 1.18, 0.72, 1.02, 0.65],
+                        [0.82, 1.02, 0.65, 1.12, 0.82],
+                        [0.65, 1.08, 0.78, 1.08, 0.65],
                       ];
                       return {
-                        duration: 0.95 + (barIndex % 2) * 0.1,
-                        height: heights[barIndex % heights.length],
+                        duration: 1.5 + (barIndex % 2) * 0.1,
+                        scaleY: scales[barIndex % scales.length],
                         opacity: [0.8, 1, 0.85, 1, 0.8],
-                        delay: barIndex * 0.12,
+                        delay: barIndex * 0.1,
                       };
                     }
 
-                    // 🟡 STAGE 3 (CHILL LO-FI WAVE): 1.15s relaxed vertical dancing
-                    const heights = [
-                      [18, 26, 20, 24, 18],
-                      [22, 24, 18, 26, 22],
-                      [18, 28, 22, 22, 18],
-                      [20, 24, 18, 26, 20],
-                      [18, 24, 20, 24, 18],
+                    // 🟡 STAGE 3 (CHILL LO-FI RELAXED WAVE): 2.2s liquid-smooth gentle wave
+                    const scales = [
+                      [0.68, 1.05, 0.80, 0.98, 0.68],
+                      [0.80, 0.98, 0.68, 1.08, 0.80],
+                      [0.68, 1.10, 0.82, 0.95, 0.68],
+                      [0.75, 0.95, 0.68, 1.05, 0.75],
+                      [0.68, 1.02, 0.80, 1.02, 0.68],
                     ];
                     return {
-                      duration: 1.15 + (barIndex % 3) * 0.12,
-                      height: heights[barIndex % heights.length],
-                      opacity: [0.75, 1, 0.8, 1, 0.75],
-                      delay: barIndex * 0.14,
+                      duration: 2.2 + (barIndex % 3) * 0.15,
+                      scaleY: scales[barIndex % scales.length],
+                      opacity: [0.78, 1, 0.85, 1, 0.78],
+                      delay: barIndex * 0.12,
                     };
                   };
 
@@ -457,56 +556,61 @@ export default function Home() {
                     const isActive = isSuperCharged || i < streak;
                     const anim = getBassProfile(i);
 
-                    // At Stage 1 and 2: Steady / Still vertical bars
+                    // At Stage 0, 1, 2, and 3: Steady / Still vertical bars (laser-aligned at h-6)
                     if (!isAnimated) {
                       return (
                         <div 
                           key={i} 
-                          className={`w-3 rounded-full transition-all duration-300 ${
+                          className={`w-3 h-6 rounded-full transition-all duration-300 ${
                             isActive 
-                              ? `h-6 ${getBarStyle()}` 
-                              : 'h-6 bg-white/10 border border-white/5 opacity-25'
+                              ? getBarStyle() 
+                              : 'bg-white/10 border border-white/5 opacity-20'
                           }`}
                         />
                       );
                     }
 
-                    // At Stage 3+: Moving Vertical Equalizer Bars (Always Tall Bars)
+                    // At Stage 4+: Inactive bars remain steady and centered at h-6
+                    if (!isActive) {
+                      return (
+                        <div 
+                          key={i} 
+                          className="w-3 h-6 rounded-full bg-white/10 border border-white/5 opacity-20 transition-all"
+                        />
+                      );
+                    }
+
+                    // Active animated bars: Pulse symmetrically from the exact center axis
                     return (
                       <motion.div 
                         key={i} 
-                        animate={
-                          isActive
-                            ? {
-                                height: anim.height,
-                                opacity: anim.opacity,
-                              }
-                            : { height: 24, opacity: 0.18 }
-                        }
-                        transition={
-                          isActive
-                            ? {
-                                duration: anim.duration,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                                delay: anim.delay,
-                              }
-                            : { duration: 0.2 }
-                        }
-                        className={`w-3 rounded-full transition-colors duration-300 ${
-                          isActive 
-                            ? getBarStyle() 
-                            : 'bg-white/10 border border-white/5'
-                        }`}
-                        style={{ minHeight: '18px' }}
-                      />
+                        animate={{
+                          scaleY: anim.scaleY,
+                          opacity: anim.opacity,
+                        }}
+                        transition={{
+                          duration: anim.duration,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: anim.delay,
+                        }}
+                        className={`w-3 h-6 rounded-full transition-colors duration-300 relative overflow-hidden ${getBarStyle()}`}
+                        style={{
+                          transformOrigin: "center center",
+                          willChange: "transform",
+                        }}
+                      >
+                        {isGodlike && (
+                          <div className="absolute top-0 left-0 right-0 h-1 bg-cyan-200 rounded-full shadow-[0_0_8px_#22d3ee]" />
+                        )}
+                      </motion.div>
                     );
                   });
                 })()}
               </div>
             </motion.div>
-          );
-        })()}
+        );
+      })()}
       </div>
     </div>
   );

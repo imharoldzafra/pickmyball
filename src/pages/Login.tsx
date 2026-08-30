@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { UserPlus, LogIn, ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, KeyRound, User, Lock } from 'lucide-react';
+import { UserPlus, LogIn, ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, User, Lock } from 'lucide-react';
 import Pickleball3DSphere from '../components/Pickleball3DSphere';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,6 +15,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [infoMsg, setInfoMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Forgot Password Modal State
@@ -29,6 +30,7 @@ export default function Login() {
   const handleModeSwitch = (mode: 'signin' | 'signup') => {
     setAuthMode(mode);
     setErrorMsg(null);
+    setInfoMsg(null);
     setPassword('');
     setConfirmPassword('');
     setShowPassword(false);
@@ -38,10 +40,20 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setInfoMsg(null);
 
     if (authMode === 'signup') {
       if (!displayName.trim()) {
         setErrorMsg('Please choose a username');
+        return;
+      }
+      if (!email.trim()) {
+        setErrorMsg('Please enter your email address');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setErrorMsg('Please enter a valid email address');
         return;
       }
       if (!password) {
@@ -63,6 +75,8 @@ export default function Login() {
       
       if (res.error) {
         setErrorMsg(res.error);
+      } else if (res.needsVerification) {
+        setInfoMsg(res.message || 'Verification email sent! Please check your inbox.');
       }
     } else {
       if (!displayName.trim()) {
@@ -196,6 +210,17 @@ export default function Login() {
                 </motion.div>
               )}
 
+              {infoMsg && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-3.5 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-left backdrop-blur-md flex items-start gap-2.5"
+                >
+                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-emerald-300 font-medium leading-relaxed">{infoMsg}</p>
+                </motion.div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-3">
                 {authMode === 'signup' && (
                   <div>
@@ -218,11 +243,12 @@ export default function Login() {
 
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
-                    {authMode === 'signup' ? 'Email Address (Optional)' : 'Username / Email'}
+                    {authMode === 'signup' ? 'Email Address' : 'Username / Email'}
                   </label>
                   <div className="relative flex items-center">
                     <input 
                       type={authMode === 'signup' ? 'email' : 'text'}
+                      required
                       value={authMode === 'signup' ? email : displayName}
                       onChange={(e) => authMode === 'signup' ? setEmail(e.target.value) : setDisplayName(e.target.value)}
                       placeholder={authMode === 'signup' ? 'player@email.com' : 'e.g. kakarotbomba'}
@@ -318,7 +344,7 @@ export default function Login() {
                   <span className="relative z-10 font-black">
                     {isSubmitting 
                       ? 'Connecting Arena...' 
-                      : (authMode === 'signup' ? 'Claim Player Pass' : 'Enter Arena')}
+                      : (authMode === 'signup' ? 'Create Account' : 'Sign In')}
                   </span>
                   {!isSubmitting && (
                     <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
@@ -336,7 +362,7 @@ export default function Login() {
                   {authMode === 'signin' ? (
                     <span>New to PickMyBall? <strong className="text-emerald-400 font-bold hover:underline ml-1">Create Account</strong></span>
                   ) : (
-                    <span>Already have a player pass? <strong className="text-emerald-400 font-bold hover:underline ml-1">Sign In</strong></span>
+                    <span>Already have an account? <strong className="text-emerald-400 font-bold hover:underline ml-1">Sign In</strong></span>
                   )}
                 </button>
               </div>
@@ -377,14 +403,9 @@ export default function Login() {
                   <X className="w-5 h-5" />
                 </button>
 
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <KeyRound className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-white">Reset Password</h3>
-                    <p className="text-[11px] text-text-light/70">PickMyBall Account Recovery</p>
-                  </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Reset Password</h3>
+                  <p className="text-[11px] text-text-light/70">PickMyBall Account Recovery</p>
                 </div>
 
                 <p className="text-xs text-text-light/80 leading-relaxed">

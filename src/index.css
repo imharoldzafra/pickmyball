@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 @layer base {
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'tnum' on, 'lnum' on;
+  }
+
   * {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -35,6 +40,7 @@
 }
 
 @theme {
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --color-primary: #10b981;
   --color-secondary: #34d399;
   --color-background: #05080c;

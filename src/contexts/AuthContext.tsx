@@ -7,7 +7,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   signIn: (identifier: string, password?: string) => Promise<{ error?: string }>;
-  signUp: (displayName: string, email: string, password?: string) => Promise<{ error?: string }>;
+  signUp: (displayName: string, email: string, password?: string) => Promise<{ error?: string; success?: boolean; needsVerification?: boolean; message?: string }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error?: string; success?: boolean }>;
   loginMock: (displayName?: string, password?: string) => Promise<{ error?: string }>;
@@ -19,12 +19,40 @@ interface AuthContextType {
   toggleRankTierMock: () => Promise<void>;
 }
 
-const getRankFromRating = (rating: number): string => {
-  if (rating >= 2500) return 'Legend';
+export const getRankFromRating = (rating: number): string => {
+  if (rating >= 2000) return 'Legend';
   if (rating >= 1600) return 'Expert';
   if (rating >= 1200) return 'Veteran';
   if (rating >= 800) return 'Challenger';
   return 'Rookie';
+};
+
+export const calculateTierCR = (rating: number, userWon: boolean, currentStreak: number = 0) => {
+  // Streak bonuses on Win:
+  // Streaks 10+ (Godlike): +20 CR
+  // Streaks 5-9 (On Fire): +15 CR
+  const streakBonus = userWon 
+    ? (currentStreak >= 9 ? 20 : currentStreak >= 4 ? 15 : 0)
+    : 0;
+
+  if (rating >= 2000) {
+    // 👑 Legend (2,000+): +20 win / -30 loss
+    return userWon ? 20 + streakBonus : -30;
+  }
+  if (rating >= 1600) {
+    // 💎 Expert (1,600-1,999): +25 win / -25 loss
+    return userWon ? 25 + streakBonus : -25;
+  }
+  if (rating >= 1200) {
+    // 🏆 Veteran (1,200-1,599): +30 win / -20 loss
+    return userWon ? 30 + streakBonus : -20;
+  }
+  if (rating >= 800) {
+    // 🏓 Challenger (800-1,199): +40 win / -20 loss
+    return userWon ? 40 + streakBonus : -20;
+  }
+  // 🌱 Rookie (0-799): +80 win / -40 loss
+  return userWon ? 80 + streakBonus : -40;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -234,7 +262,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn('Username check warning:', err);
     }
 
-    const finalEmail = email.trim() || `${trimmedName.toLowerCase().replace(/[^a-z0-9]/g, '')}@pickmyball.app`;
+    const finalEmail = email.trim();
+    if (!finalEmail) {
+      return { error: 'Please enter a valid email address' };
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email: finalEmail,
@@ -248,18 +279,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (error) {
       if (error.message.toLowerCase().includes('already registered')) {
-        return { error: 'An account with this email/username already exists.' };
+        return { error: 'An account with this email already exists.' };
       }
       return { error: error.message };
     }
 
-    if (data.user) {
+    // When email verification is enabled in Supabase, data.session is null until verified
+    if (data.user && !data.session) {
+      return {
+        success: true,
+        needsVerification: true,
+        message: `Verification email sent to ${finalEmail}! Please check your inbox (and spam folder) to verify your account before signing in.`
+      };
+    }
+
+    if (data.user && data.session) {
       setUser(data.user);
       localStorage.setItem('mockUser', JSON.stringify({ uid: data.user.id, displayName: trimmedName, email: finalEmail }));
       await fetchProfile(data.user.id, { display_name: trimmedName });
     }
 
-    return {};
+    return { success: true };
   };
 
   const signIn = async (identifier: string, password = 'password123') => {

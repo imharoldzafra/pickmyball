@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Match, Team } from '../types';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, calculateTierCR } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Flame, Trophy, Shield, Swords, Sparkles, Activity, Check, RotateCcw, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LiveMatch() {
   const { matchId } = useParams<{ matchId: string }>();
-  const { user, recordMatchResult } = useAuth();
+  const { user, profile, recordMatchResult } = useAuth();
   const navigate = useNavigate();
 
   const [match, setMatch] = useState<Match | null>(null);
@@ -254,7 +254,9 @@ export default function LiveMatch() {
             const userWon = (newWinner === 'A' && userIsTeamA) || (newWinner === 'B' && userIsTeamB);
             const opponentNames = userIsTeamA ? teamBNames : teamANames;
 
-            const crEarned = isOfficialRated ? (userWon ? 25 : -12) : 0;
+            const crEarned = isOfficialRated 
+              ? calculateTierCR(profile?.rating || 0, userWon, profile?.currentStreak || 0) 
+              : 0;
             const xpEarned = isOfficialRated ? (userWon ? 150 : 50) : (userWon ? 40 : 15);
             const matchTypeDesc = isOfficialRated 
               ? (match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)')
