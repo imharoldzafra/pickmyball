@@ -38,6 +38,10 @@ export default function Home() {
   const progressPercent = Math.min(100, Math.round((profile.xp / xpRequired) * 100));
   const rankBadge = getRankBadge(profile.rank);
 
+  // 🛡️ Data Integrity Safeguard: A player with 0 victories cannot logically have a streak
+  const safeCurrentStreak = profile.wins === 0 ? 0 : (profile.currentStreak || 0);
+  const safeLongestStreak = profile.wins === 0 ? 0 : (profile.longestStreak || 0);
+
   const stats = [
     {
       label: 'Total Matches',
@@ -56,19 +60,19 @@ export default function Home() {
     },
     {
       label: 'Best Streak',
-      value: profile.longestStreak,
+      value: safeLongestStreak,
       orbColor: 'bg-white/5',
     }
   ];
 
   return (
-    <div className="p-5 space-y-6">
+    <div className="px-5 pt-8 pb-8 sm:pt-6 space-y-6 sm:space-y-7">
       {/* Friendly Header Profile Link Wrapper */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-center justify-between pt-1"
+        className="flex items-center justify-between"
       >
         <Link to="/profile" className="flex items-center gap-4 group">
           <div className="relative shrink-0">
@@ -164,7 +168,7 @@ export default function Home() {
           Performance Breakdown
         </h3>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
           {stats.map((stat, idx) => {
             return (
               <motion.div 
@@ -173,21 +177,21 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false }}
                 transition={{ duration: 0.25, delay: idx * 0.05 }}
-                className="bg-white/[0.03] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4.5 sm:p-5 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-[0_8px_25px_rgba(0,0,0,0.25)] min-h-[102px] sm:min-h-[110px]"
+                className="bg-white/[0.03] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 px-4 py-3 sm:py-3.5 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.25)] min-h-[82px] sm:min-h-[86px]"
               >
                 {/* Background Ambient Glow Orb */}
-                <div className={`absolute -top-6 -right-6 w-24 h-24 ${stat.orbColor} rounded-full blur-xl pointer-events-none opacity-30`} />
+                <div className={`absolute -top-6 -right-6 w-20 h-20 ${stat.orbColor} rounded-full blur-xl pointer-events-none opacity-25`} />
 
                 {/* Top: Label */}
                 <div className="relative z-10">
-                  <span className="text-[11px] font-bold text-text-light/60 uppercase tracking-wider block">
+                  <span className="text-[10.5px] font-bold text-text-light/60 uppercase tracking-wider block leading-tight">
                     {stat.label}
                   </span>
                 </div>
 
-                {/* Bottom: Big Stat Value */}
-                <div className="relative z-10 pt-2">
-                  <span className="text-3xl sm:text-4xl font-black tracking-tight text-white drop-shadow-md block leading-none">
+                {/* Bottom: Stat Value */}
+                <div className="relative z-10 mt-auto pt-1.5">
+                  <span className="text-2xl sm:text-2xl font-black tracking-tight text-white drop-shadow-md block leading-none">
                     {stat.value}
                   </span>
                 </div>
@@ -198,7 +202,7 @@ export default function Home() {
 
         {/* Victory Chain Glass Box with Progressive Thermal Heat */}
         {(() => {
-          const streak = profile.currentStreak;
+          const streak = safeCurrentStreak;
           const isGodlike = streak >= 10;
           const isSuperCharged = streak >= 5;
 

@@ -134,7 +134,7 @@ export default function Layout() {
             : isMatchView 
               ? "overflow-y-auto pb-4 pt-1 px-1 justify-center"
               : isFirstPageTab
-                ? "overflow-y-auto pb-20 pt-1 px-1 overscroll-contain"
+                ? "overflow-y-auto pb-24 pt-2 sm:pt-1 px-1 overscroll-contain"
                 : "overflow-y-auto pb-4 pt-1 px-1 overscroll-contain"
         )}>
           <Outlet />
