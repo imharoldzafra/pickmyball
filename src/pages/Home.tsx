@@ -29,48 +29,6 @@ const getRankBadge = (rank: string) => {
   }
 };
 
-const BrokenShield = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    <path d="M12 2.5l-2 4 3.5 3-3.5 3.5 2 3.5-1 4" />
-  </svg>
-);
-
-const CrossedPaddles = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    {/* Paddle 1 (Top-Left to Bottom-Right) */}
-    <g transform="rotate(45 12 12)">
-      <rect x="7" y="1" width="10" height="11" rx="3.5" />
-      <path d="M12 12v9" strokeWidth="2.5" />
-      <path d="M10 21h4" strokeWidth="2.5" />
-    </g>
-    {/* Paddle 2 (Top-Right to Bottom-Left) */}
-    <g transform="rotate(-45 12 12)">
-      <rect x="7" y="1" width="10" height="11" rx="3.5" />
-      <path d="M12 12v9" strokeWidth="2.5" />
-      <path d="M10 21h4" strokeWidth="2.5" />
-    </g>
-    {/* Center Pickleball */}
-    <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-  </svg>
-);
-
 export default function Home() {
   const { profile } = useAuth();
 
@@ -84,41 +42,21 @@ export default function Home() {
     {
       label: 'Total Matches',
       value: profile.battles,
-      icon: CrossedPaddles,
-      accentColor: 'text-white',
-      glowBg: 'bg-white/5',
-      glowBorder: 'border-white/10',
-      glowShadow: 'shadow-[0_0_20px_rgba(255,255,255,0.05)]',
       orbColor: 'bg-white/5',
     },
     {
       label: 'Victories',
       value: profile.wins,
-      icon: Trophy,
-      accentColor: 'text-white',
-      glowBg: 'bg-white/5',
-      glowBorder: 'border-white/10',
-      glowShadow: 'shadow-[0_0_20px_rgba(255,255,255,0.05)]',
       orbColor: 'bg-white/5',
     },
     {
       label: 'Defeats',
       value: profile.losses,
-      icon: BrokenShield,
-      accentColor: 'text-white',
-      glowBg: 'bg-white/5',
-      glowBorder: 'border-white/10',
-      glowShadow: 'shadow-[0_0_20px_rgba(255,255,255,0.05)]',
       orbColor: 'bg-white/5',
     },
     {
       label: 'Best Streak',
       value: profile.longestStreak,
-      icon: Flame,
-      accentColor: 'text-white',
-      glowBg: 'bg-white/5',
-      glowBorder: 'border-white/10',
-      glowShadow: 'shadow-[0_0_20px_rgba(255,255,255,0.05)]',
       orbColor: 'bg-white/5',
     }
   ];
@@ -130,28 +68,28 @@ export default function Home() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-center justify-between"
+        className="flex items-center justify-between pt-1"
       >
-        <Link to="/profile" className="flex items-center gap-3.5 group">
+        <Link to="/profile" className="flex items-center gap-4 group">
           <div className="relative shrink-0">
-            <div className="w-15 h-15 sm:w-16 sm:h-16 rounded-full border-2 border-primary/50 overflow-hidden bg-white/[0.03] shadow-[0_0_30px_rgba(16,185,129,0.3)] flex items-center justify-center transition-all group-hover:border-primary">
+            <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-2 border-primary/60 overflow-hidden bg-white/[0.03] shadow-[0_0_35px_rgba(16,185,129,0.35)] flex items-center justify-center transition-all group-hover:border-primary group-hover:scale-105 duration-300">
               {profile.photoURL ? (
                 <img src={profile.photoURL} alt={profile.displayName} className="w-full h-full object-cover" />
               ) : (
-                <User className="w-7 h-7 text-text-light/70" />
+                <User className="w-8 h-8 text-text-light/70" />
               )}
             </div>
-            <div className="absolute -bottom-1 -right-1 bg-[#050a0a] rounded-full p-0.5 border border-primary/30 shadow-md">
-              <span className="text-[10px] font-black text-slate-950 bg-primary px-1.5 py-0.5 rounded-full leading-tight block">
+            <div className="absolute -bottom-1 -right-1 bg-[#040709] rounded-full p-0.5 border border-primary/40 shadow-lg">
+              <span className="text-[11px] font-black text-slate-950 bg-primary px-2 py-0.5 rounded-full leading-tight block">
                 Lv.{profile.level}
               </span>
             </div>
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-white group-hover:text-primary transition-colors tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-primary transition-colors tracking-tight leading-tight">
               {profile.displayName || 'Player'}
             </h2>
-            <p className="text-[11px] font-bold text-text-light/60">
+            <p className="text-[11px] font-bold text-text-light/60 mt-0.5">
               Tap to view profile
             </p>
           </div>
@@ -159,7 +97,7 @@ export default function Home() {
 
         {/* Unified Animated Battery Pill (Only visible once unlocked at Challenger 800+ CR) */}
         {(profile.rating || 0) >= 800 && (
-          <div className="self-center -mt-5 mr-2 shrink-0">
+          <div className="self-center -mt-4 mr-2 shrink-0">
             <Link to="/play" className="active:scale-95 transition-transform block">
               <BatteryPill 
                 stamina={profile.stamina} 
@@ -226,7 +164,7 @@ export default function Home() {
           Performance Breakdown
         </h3>
 
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-3">
           {stats.map((stat, idx) => {
             return (
               <motion.div 
@@ -235,19 +173,21 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false }}
                 transition={{ duration: 0.25, delay: idx * 0.05 }}
-                className="bg-white/[0.03] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 px-3.5 py-3 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.25)] space-y-1.5"
+                className="bg-white/[0.03] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4.5 sm:p-5 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-[0_8px_25px_rgba(0,0,0,0.25)] min-h-[102px] sm:min-h-[110px]"
               >
                 {/* Background Ambient Glow Orb */}
-                <div className={`absolute -top-6 -right-6 w-20 h-20 ${stat.orbColor} rounded-full blur-xl pointer-events-none opacity-30`} />
+                <div className={`absolute -top-6 -right-6 w-24 h-24 ${stat.orbColor} rounded-full blur-xl pointer-events-none opacity-30`} />
 
                 {/* Top: Label */}
                 <div className="relative z-10">
-                  <span className="text-[10px] font-bold text-text-light/60 uppercase tracking-wider">{stat.label}</span>
+                  <span className="text-[11px] font-bold text-text-light/60 uppercase tracking-wider block">
+                    {stat.label}
+                  </span>
                 </div>
 
-                {/* Bottom: Stat Value */}
-                <div className="relative z-10 pt-0.5">
-                  <span className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-md">
+                {/* Bottom: Big Stat Value */}
+                <div className="relative z-10 pt-2">
+                  <span className="text-3xl sm:text-4xl font-black tracking-tight text-white drop-shadow-md block leading-none">
                     {stat.value}
                   </span>
                 </div>

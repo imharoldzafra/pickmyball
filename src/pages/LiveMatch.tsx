@@ -254,11 +254,11 @@ export default function LiveMatch() {
             const userWon = (newWinner === 'A' && userIsTeamA) || (newWinner === 'B' && userIsTeamB);
             const opponentNames = userIsTeamA ? teamBNames : teamANames;
 
-            const crEarned = isOfficialRated 
-              ? calculateTierCR(profile?.rating || 0, userWon, profile?.currentStreak || 0) 
+            const crEarned = isOfficialRated
+              ? calculateTierCR(profile?.rating || 0, userWon, profile?.currentStreak || 0)
               : 0;
             const xpEarned = isOfficialRated ? (userWon ? 150 : 50) : (userWon ? 40 : 15);
-            const matchTypeDesc = isOfficialRated 
+            const matchTypeDesc = isOfficialRated
               ? (match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)')
               : `${match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)'} • Practice`;
 
@@ -416,7 +416,7 @@ export default function LiveMatch() {
 
   return (
     <div className="h-full min-h-[92vh] flex flex-col p-4 sm:p-5 max-w-lg mx-auto select-none touch-manipulation overflow-hidden">
-      
+
       {/* 🎾 1. Top Match Header Pill (Stays in its top position) */}
       <div className="text-center pt-0.5 shrink-0">
         <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/10 px-4 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-widest text-text-light backdrop-blur-md">
@@ -429,7 +429,7 @@ export default function LiveMatch() {
 
       {/* 🎾 2. All Other Layouts Centered Together as One Unit */}
       <div className="flex-1 flex flex-col justify-center space-y-4 my-auto">
-        
+
         {/* 🌟 Upper Group: Callout Board & Score Cards (Lifted up further) */}
         <div className="space-y-3.5 -translate-y-7 sm:-translate-y-8">
           {/* 🌟 Dedicated Pickleball Callout Board (Server Score : Receiver Score : Server #) */}
@@ -481,15 +481,14 @@ export default function LiveMatch() {
 
           {/* 🥊 Score Cards (Team Alpha vs Team Beta) */}
           <div className="grid grid-cols-2 gap-3.5">
-            
+
             {/* Team Alpha Score Box */}
-            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${
-              isAlphaLeading
+            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${isAlphaLeading
                 ? 'border-cyan-400/80 bg-gradient-to-br from-cyan-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(6,182,212,0.3)]'
                 : isAlphaServing
                   ? 'border-cyan-500/50 bg-cyan-950/20'
                   : 'border-white/10 bg-white/[0.03]'
-            }`}>
+              }`}>
               <div className="flex justify-between items-center">
                 <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider border border-cyan-500/30">
                   Alpha
@@ -518,13 +517,12 @@ export default function LiveMatch() {
             </div>
 
             {/* Team Beta Score Box */}
-            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${
-              isBetaLeading
+            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${isBetaLeading
                 ? 'border-emerald-400/80 bg-gradient-to-br from-emerald-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(16,185,129,0.3)]'
                 : !isAlphaServing
                   ? 'border-emerald-500/50 bg-emerald-950/20'
                   : 'border-white/10 bg-white/[0.03]'
-            }`}>
+              }`}>
               <div className="flex justify-between items-center">
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-500/30">
                   Beta
