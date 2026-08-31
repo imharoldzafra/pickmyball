@@ -37,11 +37,13 @@ export interface GameResult {
 export interface Match {
   id: string;
   creatorId: string;
+  hostId?: string;
   hostName?: string;
   hostAvatar?: string;
   matchType: '1v1' | '2v2';
   gameFormat: 'single_11' | 'single_15' | 'single_21' | 'best_of_3';
   targetPoints: number;
+  winByTwo?: boolean;
   status: MatchStatus;
   teamA: LobbyPlayer[];
   teamB: LobbyPlayer[];
