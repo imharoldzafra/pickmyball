@@ -108,3 +108,24 @@ body {
   scrollbar-width: none !important;
 }
 
+/* 📷 Futuristic Scanner Viewfinder */
+#reader {
+  border: none !important;
+  background: transparent !important;
+}
+#reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 1rem !important;
+}
+#reader__scan_region {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: auto !important;
+}
+#reader__dashboard_section {
+  display: none !important;
+}
+

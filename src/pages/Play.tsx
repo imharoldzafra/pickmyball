@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
-import { PlusCircle, QrCode, Users, User, Trophy, Shield, ArrowRight, ArrowLeft, ChevronRight, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
-import PickleballPaddle from '../components/icons/PickleballPaddle';
+import { PlusCircle, QrCode, Users, User, Trophy, Shield, ArrowRight, ArrowLeft, ChevronRight, ChevronDown, ChevronUp, Sparkles, Camera, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -28,6 +27,11 @@ export default function Play() {
   const [manualCode, setManualCode] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
   const [showEloSystem, setShowEloSystem] = useState(false);
+
+  // On-demand Camera Scanner State
+  const [isScanning, setIsScanning] = useState(false);
+  const [cameraStarting, setCameraStarting] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   // Generate Match Room in Supabase
   const handleCreateMatch = async () => {
@@ -102,69 +106,111 @@ export default function Play() {
     navigate(`/match/${finalCode}/lobby`);
   };
 
-  // Direct Rear Camera QR Code Scanner Setup
+  // On-Demand Rear Camera QR Code Scanner Setup
   useEffect(() => {
     let html5QrCode: Html5Qrcode | null = null;
+    let isMounted = true;
 
-    if (viewState === 'scan') {
-      html5QrCode = new Html5Qrcode("reader");
+    if (viewState === 'scan' && isScanning) {
+      setCameraStarting(true);
+      setCameraError(null);
 
-      const config = {
-        fps: 10,
-        qrbox: { width: 240, height: 240 },
-        aspectRatio: 1.0,
-      };
+      // Brief delay to ensure #reader element is fully mounted in DOM
+      const timer = setTimeout(() => {
+        if (!isMounted) return;
 
-      const handleScanSuccess = (text: string) => {
-        if (html5QrCode && html5QrCode.isScanning) {
-          html5QrCode.stop().then(() => {
-            html5QrCode?.clear();
-          }).catch(() => {});
+        const readerElem = document.getElementById("reader");
+        if (!readerElem) {
+          setCameraStarting(false);
+          return;
         }
-        const raw = text.trim();
-        const matchFound = raw.match(/PKB-[A-Z0-9_-]+/i);
-        const matchIdToJoin = matchFound ? matchFound[0].toUpperCase() : raw.toUpperCase();
-        navigate(`/match/${matchIdToJoin}/lobby`);
-      };
 
-      // Automatically launch the rear/environment camera directly
-      html5QrCode
-        .start(
-          { facingMode: { exact: "environment" } },
-          config,
-          handleScanSuccess,
-          () => {}
-        )
-        .catch(() => {
-          // If exact environment camera fails (e.g. desktop/laptop webcam or ideal mode), fall back to ideal environment or default
+        try {
+          html5QrCode = new Html5Qrcode("reader");
+
+          const config = {
+            fps: 10,
+            qrbox: { width: 240, height: 240 },
+            aspectRatio: 1.0,
+          };
+
+          const handleScanSuccess = (text: string) => {
+            if (html5QrCode && html5QrCode.isScanning) {
+              html5QrCode.stop().then(() => {
+                html5QrCode?.clear();
+              }).catch(() => {});
+            }
+            const raw = text.trim();
+            const matchFound = raw.match(/PKB-[A-Z0-9_-]+/i);
+            const matchIdToJoin = matchFound ? matchFound[0].toUpperCase() : raw.toUpperCase();
+            navigate(`/match/${matchIdToJoin}/lobby`);
+          };
+
+          // Directly launch the rear/environment camera
           html5QrCode
-            ?.start(
-              { facingMode: "environment" },
+            .start(
+              { facingMode: { exact: "environment" } },
               config,
               handleScanSuccess,
               () => {}
             )
+            .then(() => {
+              if (isMounted) setCameraStarting(false);
+            })
             .catch(() => {
+              // Fallback to ideal environment or webcam
               html5QrCode
                 ?.start(
-                  { facingMode: "user" },
+                  { facingMode: "environment" },
                   config,
                   handleScanSuccess,
                   () => {}
                 )
-                .catch((err) => console.warn("Camera start error:", err));
+                .then(() => {
+                  if (isMounted) setCameraStarting(false);
+                })
+                .catch(() => {
+                  html5QrCode
+                    ?.start(
+                      { facingMode: "user" },
+                      config,
+                      handleScanSuccess,
+                      () => {}
+                    )
+                    .then(() => {
+                      if (isMounted) setCameraStarting(false);
+                    })
+                    .catch((err) => {
+                      console.warn("Camera start error:", err);
+                      if (isMounted) {
+                        setCameraStarting(false);
+                        setCameraError("Unable to access rear camera. Please ensure permissions are granted or enter room code above.");
+                      }
+                    });
+                });
             });
-        });
+        } catch (err) {
+          console.error("Html5Qrcode init error:", err);
+          if (isMounted) {
+            setCameraStarting(false);
+            setCameraError("Camera initialization failed. Please use room code.");
+          }
+        }
+      }, 50);
 
       return () => {
+        isMounted = false;
+        clearTimeout(timer);
         if (html5QrCode && html5QrCode.isScanning) {
           html5QrCode.stop().then(() => {
             html5QrCode?.clear();
           }).catch(() => {});
         }
       };
+    } else {
+      setCameraStarting(false);
     }
-  }, [viewState, navigate]);
+  }, [viewState, isScanning, navigate]);
 
   return (
     <div className="p-4 sm:p-5 space-y-6">
@@ -219,7 +265,7 @@ export default function Play() {
               className="cursor-pointer bg-white/[0.03] backdrop-blur-md p-4.5 rounded-3xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-between shadow-[0_10px_35px_rgba(0,0,0,0.3)]"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-cyan-400/15 border border-cyan-400/30 flex items-center justify-center text-cyan-300 shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-400/15 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shrink-0">
                   <QrCode className="w-5 h-5" />
                 </div>
                 <div>
@@ -470,7 +516,6 @@ export default function Play() {
             disabled={creating}
             className="bg-gradient-to-r from-primary via-emerald-400 to-secondary text-[#050a0a] w-full py-4 rounded-2xl font-black uppercase tracking-wider text-xs shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            <PickleballPaddle className="w-4 h-4 text-[#050a0a]" />
             <span>{creating ? 'Generating Room...' : 'Generate Match Room & QR'}</span>
             <ArrowRight className="w-4 h-4" />
           </motion.button>
@@ -490,7 +535,10 @@ export default function Play() {
           {/* Top Back Navigation */}
           <div className="flex items-center">
             <button
-              onClick={() => setViewState('hub')}
+              onClick={() => {
+                setIsScanning(false);
+                setViewState('hub');
+              }}
               className="flex items-center gap-2 text-xs font-bold text-text-light hover:text-white transition-colors bg-white/[0.04] px-3.5 py-2 rounded-full border border-white/10"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -516,11 +564,11 @@ export default function Play() {
                   placeholder="e.g. PKB-X7K92P"
                   value={manualCode}
                   onChange={(e) => { setManualCode(e.target.value); setJoinError(null); }}
-                  className="flex-1 bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white font-mono uppercase tracking-widest placeholder:text-text-light/30 focus:outline-none focus:border-cyan-400 transition-colors"
+                  className="flex-1 bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white font-mono uppercase tracking-widest placeholder:text-text-light/30 focus:outline-none focus:border-emerald-400 transition-colors"
                 />
                 <button
                   type="submit"
-                  className="bg-cyan-400 text-slate-950 px-5 py-3 rounded-2xl font-black uppercase tracking-wider text-xs shadow-[0_0_15px_rgba(6,182,212,0.4)] active:scale-95 transition-all"
+                  className="bg-gradient-to-r from-primary to-emerald-400 text-[#050a0a] px-5 py-3 rounded-2xl font-black uppercase tracking-wider text-xs shadow-[0_0_18px_rgba(16,185,129,0.4)] active:scale-95 transition-all hover:brightness-105"
                 >
                   Join
                 </button>
@@ -531,19 +579,98 @@ export default function Play() {
             </form>
           </div>
 
-          {/* QR Scanner Card */}
+          {/* QR Scanner Card (Apple-style minimalist thin-line viewfinder) */}
           <div className="bg-white/[0.03] backdrop-blur-md p-5 rounded-3xl border border-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.3)] space-y-4">
-            <div className="space-y-1">
-              <h3 className="text-sm font-black uppercase tracking-wider text-white">
-                Scan Host QR Code
-              </h3>
-              <p className="text-xs text-text-light">
-                Point your camera at the host's match QR code to enter the room automatically.
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-text-light/90">
+                  Scan Host QR Code
+                </h3>
+                <p className="text-[11px] text-text-light/50 mt-0.5">
+                  {isScanning ? "Position match QR within the frame" : "Tap frame to open camera"}
+                </p>
+              </div>
+              {isScanning && (
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[10px] font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Scanning</span>
+                </div>
+              )}
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/40">
-              <div id="reader" className="w-full"></div>
+            {/* Apple-style Minimalist Viewfinder Frame */}
+            <div className="relative">
+              {!isScanning ? (
+                <motion.div
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setIsScanning(true)}
+                  className="group cursor-pointer relative aspect-square max-w-[240px] mx-auto w-full rounded-2xl bg-black/40 border border-white/10 hover:border-white/25 hover:bg-black/50 p-6 flex flex-col items-center justify-center text-center transition-all duration-200"
+                >
+                  {/* Whisper-Thin Corner Brackets */}
+                  <div className="absolute top-2.5 left-2.5 w-3.5 h-3.5 border-t border-l border-white/50 rounded-tl-[4px] group-hover:border-white transition-colors" />
+                  <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 border-t border-r border-white/50 rounded-tr-[4px] group-hover:border-white transition-colors" />
+                  <div className="absolute bottom-2.5 left-2.5 w-3.5 h-3.5 border-b border-l border-white/50 rounded-bl-[4px] group-hover:border-white transition-colors" />
+                  <div className="absolute bottom-2.5 right-2.5 w-3.5 h-3.5 border-b border-r border-white/50 rounded-br-[4px] group-hover:border-white transition-colors" />
+
+                  {/* Center Minimal Icon & Clean Typography */}
+                  <div className="flex flex-col items-center gap-2.5 z-10">
+                    <div className="w-11 h-11 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-white/70 group-hover:text-white group-hover:scale-105 group-hover:bg-white/[0.08] transition-all">
+                      <QrCode className="w-5 h-5" strokeWidth={1.75} />
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-semibold text-white/90 tracking-wide block">
+                        Scan QR Code
+                      </span>
+                      <span className="text-[11px] text-white/40 block">
+                        Tap to activate camera
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="relative aspect-square max-w-[240px] mx-auto w-full rounded-2xl overflow-hidden bg-black/90 border border-white/15">
+                  {/* Whisper-Thin Corner Brackets over Live Stream */}
+                  <div className="absolute top-2.5 left-2.5 w-3.5 h-3.5 border-t border-l border-white/80 rounded-tl-[4px] z-20 pointer-events-none" />
+                  <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 border-t border-r border-white/80 rounded-tr-[4px] z-20 pointer-events-none" />
+                  <div className="absolute bottom-2.5 left-2.5 w-3.5 h-3.5 border-b border-l border-white/80 rounded-bl-[4px] z-20 pointer-events-none" />
+                  <div className="absolute bottom-2.5 right-2.5 w-3.5 h-3.5 border-b border-r border-white/80 rounded-br-[4px] z-20 pointer-events-none" />
+
+                  {/* Connecting Loader */}
+                  {cameraStarting && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 backdrop-blur-xs gap-2">
+                      <div className="w-5 h-5 border-[1.5px] border-white/20 border-t-white rounded-full animate-spin" />
+                      <span className="text-[11px] text-white/60 font-medium">
+                        Opening camera...
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Video Stream Mount Target */}
+                  <div id="reader" className="w-full h-full"></div>
+                </div>
+              )}
+
+              {/* Error Message if Camera Access Fails */}
+              {cameraError && (
+                <div className="mt-2.5 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center max-w-[240px] mx-auto">
+                  <p className="text-[11px] text-rose-400 font-medium">{cameraError}</p>
+                </div>
+              )}
+
+              {/* Minimal Cancel Button when Active */}
+              {isScanning && (
+                <div className="mt-2.5 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsScanning(false)}
+                    className="px-4 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-medium text-white/70 hover:text-white transition-all flex items-center gap-1.5 active:scale-95"
+                  >
+                    <X className="w-3 h-3 text-white/50" />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>

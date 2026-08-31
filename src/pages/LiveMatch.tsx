@@ -484,10 +484,10 @@ export default function LiveMatch() {
 
             {/* Team Alpha Score Box */}
             <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${isAlphaLeading
-                ? 'border-cyan-400/80 bg-gradient-to-br from-cyan-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(6,182,212,0.3)]'
-                : isAlphaServing
-                  ? 'border-cyan-500/50 bg-cyan-950/20'
-                  : 'border-white/10 bg-white/[0.03]'
+              ? 'border-cyan-400/80 bg-gradient-to-br from-cyan-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+              : isAlphaServing
+                ? 'border-cyan-500/50 bg-cyan-950/20'
+                : 'border-white/10 bg-white/[0.03]'
               }`}>
               <div className="flex justify-between items-center">
                 <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider border border-cyan-500/30">
@@ -518,10 +518,10 @@ export default function LiveMatch() {
 
             {/* Team Beta Score Box */}
             <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${isBetaLeading
-                ? 'border-emerald-400/80 bg-gradient-to-br from-emerald-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                : !isAlphaServing
-                  ? 'border-emerald-500/50 bg-emerald-950/20'
-                  : 'border-white/10 bg-white/[0.03]'
+              ? 'border-emerald-400/80 bg-gradient-to-br from-emerald-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+              : !isAlphaServing
+                ? 'border-emerald-500/50 bg-emerald-950/20'
+                : 'border-white/10 bg-white/[0.03]'
               }`}>
               <div className="flex justify-between items-center">
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-500/30">
