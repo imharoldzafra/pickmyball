@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { PlusCircle, QrCode, Users, User, Trophy, Shield, ArrowRight, ArrowLeft, ChevronRight, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import PickleballPaddle from '../components/icons/PickleballPaddle';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -102,30 +102,66 @@ export default function Play() {
     navigate(`/match/${finalCode}/lobby`);
   };
 
-  // QR Code Scanner Setup
+  // Direct Rear Camera QR Code Scanner Setup
   useEffect(() => {
+    let html5QrCode: Html5Qrcode | null = null;
+
     if (viewState === 'scan') {
-      const scanner = new Html5QrcodeScanner(
-        "reader", 
-        { 
-          fps: 10, 
-          qrbox: { width: 220, height: 220 },
-          videoConstraints: {
-            facingMode: { ideal: "environment" }
-          }
-        }, 
-        false
-      );
-      scanner.render((text) => {
-        scanner.clear();
+      html5QrCode = new Html5Qrcode("reader");
+
+      const config = {
+        fps: 10,
+        qrbox: { width: 240, height: 240 },
+        aspectRatio: 1.0,
+      };
+
+      const handleScanSuccess = (text: string) => {
+        if (html5QrCode && html5QrCode.isScanning) {
+          html5QrCode.stop().then(() => {
+            html5QrCode?.clear();
+          }).catch(() => {});
+        }
         const raw = text.trim();
-        // Support both full URL and raw match ID
         const matchFound = raw.match(/PKB-[A-Z0-9_-]+/i);
         const matchIdToJoin = matchFound ? matchFound[0].toUpperCase() : raw.toUpperCase();
         navigate(`/match/${matchIdToJoin}/lobby`);
-      }, () => {});
+      };
+
+      // Automatically launch the rear/environment camera directly
+      html5QrCode
+        .start(
+          { facingMode: { exact: "environment" } },
+          config,
+          handleScanSuccess,
+          () => {}
+        )
+        .catch(() => {
+          // If exact environment camera fails (e.g. desktop/laptop webcam or ideal mode), fall back to ideal environment or default
+          html5QrCode
+            ?.start(
+              { facingMode: "environment" },
+              config,
+              handleScanSuccess,
+              () => {}
+            )
+            .catch(() => {
+              html5QrCode
+                ?.start(
+                  { facingMode: "user" },
+                  config,
+                  handleScanSuccess,
+                  () => {}
+                )
+                .catch((err) => console.warn("Camera start error:", err));
+            });
+        });
+
       return () => {
-        scanner.clear().catch(() => {});
+        if (html5QrCode && html5QrCode.isScanning) {
+          html5QrCode.stop().then(() => {
+            html5QrCode?.clear();
+          }).catch(() => {});
+        }
       };
     }
   }, [viewState, navigate]);

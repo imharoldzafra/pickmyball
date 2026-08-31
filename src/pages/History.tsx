@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
 interface MatchRecord {
@@ -99,7 +99,7 @@ export default function History() {
       >
         <div className="flex flex-col items-center justify-center px-1">
           <span className="block text-[10px] font-bold text-text-light uppercase tracking-wider mb-1">
-            {filter === 'TODAY' ? 'Today Win Rate' : 'Win Rate'}
+            Win Rate
           </span>
           <span className="text-lg font-extrabold text-white block">
             {winRate}%
@@ -126,122 +126,143 @@ export default function History() {
         transition={{ duration: 0.35, delay: 0.1 }}
         className="flex-1 min-h-0 flex flex-col pt-1"
       >
-        {/* Filter Navigation Bar */}
-        <div className="flex items-center justify-between mb-2.5 flex-shrink-0">
-          <div className="flex items-center gap-1.5 bg-white/[0.04] p-1 rounded-2xl border border-white/10 shadow-inner">
+        {/* Controls: Smooth Sliding Segmented Filter */}
+        <div className="flex items-center mb-2.5 flex-shrink-0">
+          <div className="flex items-center bg-white/[0.04] p-1 rounded-2xl border border-white/10 shadow-inner relative">
             <button
+              type="button"
               onClick={() => setFilter('TODAY')}
-              className={`px-3.5 py-1 rounded-xl text-xs font-bold transition-all active:scale-95 ${filter === 'TODAY'
-                ? 'bg-primary text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
-                : 'text-text-light hover:text-white'
-                }`}
+              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${
+                filter === 'TODAY' ? 'text-slate-950 font-black' : 'text-text-light/70 hover:text-white'
+              }`}
             >
+              {filter === 'TODAY' && (
+                <motion.div
+                  layoutId="activeHistoryFilter"
+                  className="absolute inset-0 bg-primary rounded-xl shadow-[0_0_14px_rgba(16,185,129,0.45)] -z-10"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
               Today
             </button>
             <button
+              type="button"
               onClick={() => setFilter('ALL')}
-              className={`px-3.5 py-1 rounded-xl text-xs font-bold transition-all active:scale-95 ${filter === 'ALL'
-                ? 'bg-primary text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
-                : 'text-text-light hover:text-white'
-                }`}
+              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${
+                filter === 'ALL' ? 'text-slate-950 font-black' : 'text-text-light/70 hover:text-white'
+              }`}
             >
+              {filter === 'ALL' && (
+                <motion.div
+                  layoutId="activeHistoryFilter"
+                  className="absolute inset-0 bg-primary rounded-xl shadow-[0_0_14px_rgba(16,185,129,0.45)] -z-10"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
               Recent
             </button>
           </div>
-
-          <span className="text-[10px] font-mono font-bold text-text-light/60 bg-white/[0.04] border border-white/10 px-2.5 py-1 rounded-full">
-            {displayedMatches.length} {displayedMatches.length === 1 ? 'Match' : 'Matches'}
-          </span>
         </div>
 
-        {/* Scrollable list or Empty State */}
-        {displayedMatches.length > 0 ? (
-          <div
-            className="flex-1 overflow-y-auto pr-1 pt-2 pb-8 space-y-3.5 overscroll-contain no-scrollbar"
-            style={{
-              maskImage: 'linear-gradient(to bottom, transparent 0%, black 16px, black calc(100% - 24px), transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 16px, black calc(100% - 24px), transparent 100%)'
-            }}
+        {/* Scrollable list or Empty State with Smooth Transition */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={filter}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18 }}
+            className="flex-1 min-h-0 flex flex-col"
           >
-            {displayedMatches.map((match, idx) => (
-              <motion.div
-                key={match.id + idx}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: idx * 0.05 }}
-                className="bg-white/[0.025] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4.5 rounded-3xl flex justify-between items-center relative overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+            {displayedMatches.length > 0 ? (
+              <div
+                className="flex-1 overflow-y-auto pr-1 pt-2 pb-8 space-y-3.5 overscroll-contain no-scrollbar"
+                style={{
+                  maskImage: 'linear-gradient(to bottom, transparent 0%, black 16px, black calc(100% - 24px), transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 16px, black calc(100% - 24px), transparent 100%)'
+                }}
               >
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold font-mono bg-white/10 text-white px-2 py-0.5 rounded-md border border-white/10">{match.id}</span>
-                    <span className="text-[11px] text-text-light flex items-center gap-1 font-medium">
-                      <Calendar className="w-3 h-3 text-text-light" /> {match.date}
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-extrabold text-white">
-                      {match.result === 'REFEREED' ? match.opponent : `vs ${match.opponent}`}
-                    </h4>
-                    <p className="text-[11px] text-text-light font-semibold mt-0.5">
-                      {match.result === 'REFEREED' ? `Court Refereed • Score: ${match.score}` : `${match.type} • Score: ${match.score}`}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right space-y-1.5 flex-shrink-0 pl-3">
-                  <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${match.result === 'REFEREED'
-                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
-                    : match.result === 'WON'
-                      ? 'bg-primary/15 text-primary border border-primary/20 shadow-[0_0_10px_rgba(16,185,129,0.15)]'
-                      : 'bg-red-500/15 text-red-400 border border-red-500/20'
-                    }`}>
-                    {match.result === 'REFEREED' ? 'REFEREED 🛡️' : match.result}
-                  </span>
-                  <div className="text-[10px] font-bold space-y-0.5">
-                    <p className="text-primary font-mono">{match.xpEarned}</p>
-                    <p className={match.crChange.startsWith('+') ? 'text-[#38bdf8] font-mono' : 'text-red-400 font-mono'}>
-                      {match.crChange}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-white/[0.025] backdrop-blur-md rounded-3xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shadow-[0_0_20px_rgba(16,185,129,0.25)]">
-              <CrossedPaddles className="w-8 h-8" />
-            </div>
-            <div className="space-y-1 max-w-xs">
-              <h4 className="text-base font-bold text-white">
-                {filter === 'TODAY' ? 'No matches played today' : 'No matches played yet'}
-              </h4>
-              <p className="text-xs text-text-light/70">
-                {filter === 'TODAY'
-                  ? 'Play a match today to start your daily session, or check Recent to see your past records!'
-                  : 'Start your first match in the Play tab to build your match history and earn CR rating!'}
-              </p>
-            </div>
-            {filter === 'TODAY' && (
-              <div className="flex items-center gap-2.5">
-                {matches.length > 0 && (
-                  <button
-                    onClick={() => setFilter('ALL')}
-                    className="bg-white/10 hover:bg-white/15 border border-white/15 text-white px-4 py-2 rounded-full text-xs font-bold active:scale-95 transition-all"
+                {displayedMatches.map((match, idx) => (
+                  <motion.div
+                    key={match.id + idx}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: idx * 0.05 }}
+                    className="bg-white/[0.025] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4.5 rounded-3xl flex justify-between items-center relative overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
                   >
-                    View Recent ({matches.length})
-                  </button>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold font-mono bg-white/10 text-white px-2 py-0.5 rounded-md border border-white/10">{match.id}</span>
+                        <span className="text-[11px] text-text-light flex items-center gap-1 font-medium">
+                          <Calendar className="w-3 h-3 text-text-light" /> {match.date}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-extrabold text-white">
+                          {match.result === 'REFEREED' ? match.opponent : `vs ${match.opponent}`}
+                        </h4>
+                        <p className="text-[11px] text-text-light font-semibold mt-0.5">
+                          {match.result === 'REFEREED' ? `Court Refereed • Score: ${match.score}` : `${match.type} • Score: ${match.score}`}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right space-y-1.5 flex-shrink-0 pl-3">
+                      <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${match.result === 'REFEREED'
+                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
+                        : match.result === 'WON'
+                          ? 'bg-primary/15 text-primary border border-primary/20 shadow-[0_0_10px_rgba(16,185,129,0.15)]'
+                          : 'bg-red-500/15 text-red-400 border border-red-500/20'
+                        }`}>
+                        {match.result === 'REFEREED' ? 'REFEREED 🛡️' : match.result}
+                      </span>
+                      <div className="text-[10px] font-bold space-y-0.5">
+                        <p className="text-primary font-mono">{match.xpEarned}</p>
+                        <p className={match.crChange.startsWith('+') ? 'text-[#38bdf8] font-mono' : 'text-red-400 font-mono'}>
+                          {match.crChange}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-white/[0.025] backdrop-blur-md rounded-3xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+                  <CrossedPaddles className="w-8 h-8" />
+                </div>
+                <div className="space-y-1 max-w-xs">
+                  <h4 className="text-base font-bold text-white">
+                    {filter === 'TODAY' ? 'No matches played today' : 'No matches played yet'}
+                  </h4>
+                  <p className="text-xs text-text-light/70">
+                    {filter === 'TODAY'
+                      ? 'Play a match today to start your daily session, or check Recent to see your past records!'
+                      : 'Start your first match in the Play tab to build your match history and earn CR rating!'}
+                  </p>
+                </div>
+                {filter === 'TODAY' && (
+                  <div className="flex items-center gap-2.5">
+                    {matches.length > 0 && (
+                      <button
+                        onClick={() => setFilter('ALL')}
+                        className="bg-white/10 hover:bg-white/15 border border-white/15 text-white px-4 py-2 rounded-full text-xs font-bold active:scale-95 transition-all"
+                      >
+                        View Recent ({matches.length})
+                      </button>
+                    )}
+                    <Link
+                      to="/play"
+                      className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-96 transition-transform"
+                    >
+                      <PlusCircle className="w-4 h-4" /> Start A Match
+                    </Link>
+                  </div>
                 )}
-                <Link
-                  to="/play"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-96 transition-transform"
-                >
-                  <PlusCircle className="w-4 h-4" /> Start A Match
-                </Link>
               </div>
             )}
-          </div>
-        )}
+          </motion.div>
+        </AnimatePresence>
       </motion.div>
     </div>
   );

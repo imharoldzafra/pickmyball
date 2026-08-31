@@ -150,27 +150,43 @@ export default function Leaderboard() {
             <span>Play Arena</span>
           </button>
 
-          {/* Glass Dual Tab Selector (Local vs Friends) */}
-          <div className="flex bg-white/[0.04] backdrop-blur-2xl p-0.5 rounded-full border border-white/10 shadow-sm shrink-0">
+          {/* Glass Dual Tab Selector (Local vs Friends) with Sliding Spring Pill */}
+          <div className="flex items-center bg-white/[0.04] backdrop-blur-2xl p-0.5 rounded-full border border-white/10 shadow-sm shrink-0 relative">
             <button
+              type="button"
               onClick={() => setActiveTab('global')}
-              className={`px-3 py-1 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1 ${
+              className={`relative px-3.5 py-1 text-xs font-bold rounded-full transition-colors duration-200 flex items-center justify-center gap-1.5 active:scale-95 z-10 select-none ${
                 activeTab === 'global'
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+                  ? 'text-slate-950 font-black'
                   : 'text-text-light/70 hover:text-white'
               }`}
             >
+              {activeTab === 'global' && (
+                <motion.div
+                  layoutId="activeLeaderboardTab"
+                  className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_14px_rgba(16,185,129,0.35)] -z-10"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
               <MapPin className="w-3 h-3" />
               <span>Local</span>
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab('friends')}
-              className={`px-3 py-1 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1 ${
+              className={`relative px-3.5 py-1 text-xs font-bold rounded-full transition-colors duration-200 flex items-center justify-center gap-1.5 active:scale-95 z-10 select-none ${
                 activeTab === 'friends'
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+                  ? 'text-slate-950 font-black'
                   : 'text-text-light/70 hover:text-white'
               }`}
             >
+              {activeTab === 'friends' && (
+                <motion.div
+                  layoutId="activeLeaderboardTab"
+                  className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_14px_rgba(16,185,129,0.35)] -z-10"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
               <Users className="w-3 h-3" />
               <span>Friends</span>
             </button>

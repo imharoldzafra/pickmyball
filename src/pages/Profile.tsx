@@ -206,7 +206,7 @@ export default function Profile() {
             whileTap={{ scale: 0.96 }}
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] py-3.5 rounded-2xl font-extrabold uppercase tracking-wider text-xs shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all disabled:opacity-70"
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] py-3.5 rounded-2xl font-extrabold uppercase tracking-wider text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all disabled:opacity-70"
           >
             <Save className="w-4 h-4" />
             {isSaving ? 'Saving Changes...' : 'Save Profile'}
