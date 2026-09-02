@@ -178,8 +178,15 @@ export default function ResetPasswordModal() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-400 to-cyan-400 hover:opacity-95 text-[#04080a] py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all active:scale-[0.97] flex items-center justify-center gap-2 mt-4 disabled:opacity-50 group"
+                className="w-full relative overflow-hidden bg-emerald-400 hover:bg-emerald-300 text-[#04080a] py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:shadow-[0_0_35px_rgba(16,185,129,0.65)] transition-all active:scale-[0.97] flex items-center justify-center gap-2 mt-4 disabled:opacity-50 group"
               >
+                {/* Sweeping Light Shimmer Reflection */}
+                <motion.div
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut", repeatDelay: 1.5 }}
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -skew-x-12 pointer-events-none"
+                />
+
                 <span className="relative z-10 font-black">
                   {isSubmitting ? 'Updating Password...' : 'Save New Password'}
                 </span>

@@ -623,7 +623,7 @@ export default function Login() {
                       <button
                         type="submit"
                         disabled={isResetting}
-                        className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-[#050a0a] text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-transform active:scale-96 disabled:opacity-50"
+                        className="flex-1 py-3 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-[#04080a] text-xs font-black uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-transform active:scale-96 disabled:opacity-50"
                       >
                         {isResetting ? 'Sending...' : 'Send Reset Link'}
                       </button>
