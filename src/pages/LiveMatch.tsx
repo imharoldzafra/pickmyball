@@ -33,7 +33,10 @@ export default function LiveMatch() {
 
   // Fetch match from Supabase
   const fetchMatch = async () => {
-    if (!matchId) return;
+    if (!matchId || !/^PKB-[A-Z0-9]{6}$/i.test(matchId)) {
+      setLoading(false);
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('matches')
@@ -81,6 +84,8 @@ export default function LiveMatch() {
 
   const lastLocalActionTime = React.useRef<number>(0);
   const channelRef = React.useRef<any>(null);
+  const matchRef = React.useRef<Match | null>(null);
+  matchRef.current = match;
 
   // Real-time Supabase High-Speed Broadcast + Database Subscription (< 30ms)
   useEffect(() => {
@@ -96,6 +101,26 @@ export default function LiveMatch() {
       // ⚡ Direct High-Speed Peer-to-Peer WebSocket Broadcast (< 30ms)
       .on('broadcast', { event: 'SCORE_UPDATE' }, ({ payload }) => {
         if (payload) {
+          // 🛡️ Security Guard 1: Score & state sanity checks
+          if (
+            typeof payload.teamAScore !== 'number' || payload.teamAScore < 0 || payload.teamAScore > 99 ||
+            typeof payload.teamBScore !== 'number' || payload.teamBScore < 0 || payload.teamBScore > 99 ||
+            typeof payload.currentGame !== 'number' || payload.currentGame < 1 || payload.currentGame > 5
+          ) {
+            console.warn('⚠️ Rejected malformed score broadcast payload:', payload);
+            return;
+          }
+
+          // 🛡️ Security Guard 2: Authorized Referee / Host verification
+          const currentMatch = matchRef.current;
+          if (currentMatch) {
+            const validReferee = currentMatch.refereeId || currentMatch.creatorId;
+            if (payload._senderId && validReferee && payload._senderId !== validReferee) {
+              console.warn('⚠️ Rejected unauthorized scoreboard broadcast from non-referee sender:', payload._senderId);
+              return;
+            }
+          }
+
           setMatch(payload);
           if (payload.status === 'FINISHED') {
             try {
@@ -336,7 +361,11 @@ export default function LiveMatch() {
       channelRef.current.send({
         type: 'broadcast',
         event: 'SCORE_UPDATE',
-        payload: nextState,
+        payload: {
+          ...nextState,
+          _senderId: user?.id,
+          _timestamp: Date.now(),
+        },
       });
     }
 

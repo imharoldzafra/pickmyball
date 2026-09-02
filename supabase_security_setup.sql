@@ -58,6 +58,78 @@ FOR UPDATE
 USING (auth.uid() = id)
 WITH CHECK (auth.uid() = id);
 
+-- ------------------------------------------------------------------------------
+-- 1B. #8: BLOCK FIELD TAMPERING (ANTI-CHEAT TRIGGER)
+-- ------------------------------------------------------------------------------
+-- Prevents malicious players from directly tampering with CR rating, rank,
+-- wins, losses, or level to arbitrary numbers via DevTools or Supabase client.
+CREATE OR REPLACE FUNCTION public.validate_profile_stats_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Allow legitimate reset back to rookie defaults (from Reset Stats in Profile settings)
+  IF NEW.rating = 0 AND NEW.wins = 0 AND NEW.losses = 0 AND NEW.battles = 0 AND NEW.xp = 0 AND NEW.level = 1 THEN
+    NEW.rank := 'Rookie';
+    NEW.updated_at := now();
+    RETURN NEW;
+  END IF;
+
+  -- 1. Anti-Cheat: Rating Increment / Decrement Bounds
+  -- Rating cannot jump by more than +100 CR in a single match/update
+  IF (NEW.rating - OLD.rating) > 100 THEN
+    RAISE EXCEPTION 'Security violation: Rating increment exceeds maximum allowable match limit (+100 CR).';
+  END IF;
+
+  -- Rating cannot drop by more than -60 CR in a single match/update
+  IF (OLD.rating - NEW.rating) > 60 THEN
+    RAISE EXCEPTION 'Security violation: Rating decrement exceeds maximum allowable match limit (-60 CR).';
+  END IF;
+
+  -- 2. Anti-Cheat: Match Count Integrity
+  -- Wins, battles, and losses can each only increment by at most 1 per match update
+  IF (NEW.wins - OLD.wins) > 1 THEN
+    RAISE EXCEPTION 'Security violation: Cannot increment wins by more than 1 per update.';
+  END IF;
+  IF (NEW.battles - OLD.battles) > 1 THEN
+    RAISE EXCEPTION 'Security violation: Cannot increment battles by more than 1 per update.';
+  END IF;
+  IF (NEW.losses - OLD.losses) > 1 THEN
+    RAISE EXCEPTION 'Security violation: Cannot increment losses by more than 1 per update.';
+  END IF;
+
+  -- 3. Anti-Cheat: XP Progression Integrity
+  -- XP cannot increase by more than 300 in a single update
+  IF (NEW.xp - OLD.xp) > 300 THEN
+    RAISE EXCEPTION 'Security violation: XP gain exceeds allowable match maximum (+300 XP).';
+  END IF;
+
+  -- 4. Anti-Cheat: Automated Rank Synchronization
+  -- Enforce mathematically correct rank based on rating so an attacker cannot set rating=100 and rank='Legend'
+  IF NEW.rating >= 2000 THEN
+    NEW.rank := 'Legend';
+  ELSIF NEW.rating >= 1600 THEN
+    NEW.rank := 'Expert';
+  ELSIF NEW.rating >= 1200 THEN
+    NEW.rank := 'Veteran';
+  ELSIF NEW.rating >= 800 THEN
+    NEW.rank := 'Challenger';
+  ELSE
+    NEW.rank := 'Rookie';
+  END IF;
+
+  -- Maintain updated_at timestamp
+  NEW.updated_at := now();
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_prevent_profile_tampering ON public.profiles;
+
+CREATE TRIGGER trg_prevent_profile_tampering
+BEFORE UPDATE ON public.profiles
+FOR EACH ROW
+EXECUTE FUNCTION public.validate_profile_stats_update();
+
 
 -- ------------------------------------------------------------------------------
 -- 2. MATCHES TABLE SECURITY & INTEGRITY

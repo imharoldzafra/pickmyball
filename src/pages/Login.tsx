@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { UserPlus, LogIn, ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, User, Lock } from 'lucide-react';
+import { UserPlus, LogIn, ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, User, Lock, ShieldAlert } from 'lucide-react';
 import Pickleball3DSphere from '../components/Pickleball3DSphere';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 3 * 60 * 1000; // 3 minutes lockout
+const RATE_LIMIT_STORAGE_KEY = 'pkb_auth_rate_limit';
+
+const formatCooldown = (totalSeconds: number): string => {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+};
 
 export default function Login() {
   const { user, signIn, signUp, resetPassword } = useAuth();
@@ -17,6 +27,47 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Bot Protection (Honeypot)
+  const [honeypot, setHoneypot] = useState('');
+
+  // Rate Limiting & Security Lockout State
+  const [lockoutSecondsLeft, setLockoutSecondsLeft] = useState<number>(() => {
+    try {
+      const stored = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.lockedUntil && parsed.lockedUntil > Date.now()) {
+          return Math.ceil((parsed.lockedUntil - Date.now()) / 1000);
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return 0;
+  });
+
+  // Countdown timer effect for lockout
+  useEffect(() => {
+    if (lockoutSecondsLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setLockoutSecondsLeft((prev) => {
+        if (prev <= 1) {
+          // Lockout ended, reset attempts in localStorage
+          try {
+            localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify({ attempts: 0, lockedUntil: null }));
+          } catch {
+            // ignore
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [lockoutSecondsLeft]);
 
   // Forgot Password Modal State
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -37,10 +88,55 @@ export default function Login() {
     setShowConfirmPassword(false);
   };
 
+  const recordFailedAttempt = () => {
+    try {
+      let currentAttempts = 0;
+      const stored = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        currentAttempts = Number(parsed.attempts) || 0;
+      }
+
+      const nextAttempts = currentAttempts + 1;
+
+      if (nextAttempts >= MAX_FAILED_ATTEMPTS) {
+        const lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
+        localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify({ attempts: nextAttempts, lockedUntil }));
+        setLockoutSecondsLeft(Math.ceil(LOCKOUT_DURATION_MS / 1000));
+        setErrorMsg(`Too many failed attempts. Login locked for 3 minutes to protect your account.`);
+      } else {
+        localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify({ attempts: nextAttempts, lockedUntil: null }));
+        const remaining = MAX_FAILED_ATTEMPTS - nextAttempts;
+        if (remaining <= 2) {
+          setErrorMsg(`Invalid credentials. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining before temporary security lockout.`);
+        } else {
+          setErrorMsg('Invalid username/email or password.');
+        }
+      }
+    } catch {
+      setErrorMsg('Invalid username/email or password.');
+    }
+  };
+
+  const clearFailedAttempts = () => {
+    try {
+      localStorage.removeItem(RATE_LIMIT_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    setLockoutSecondsLeft(0);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setInfoMsg(null);
+
+    // Bot detection check
+    if (honeypot.trim() !== '') {
+      setErrorMsg('Automated submission detected. Access denied.');
+      return;
+    }
 
     if (authMode === 'signup') {
       if (!displayName.trim()) {
@@ -68,17 +164,23 @@ export default function Login() {
         setErrorMsg('Passwords do not match');
         return;
       }
-      
+
       setIsSubmitting(true);
       const res = await signUp(displayName.trim(), email.trim(), password);
       setIsSubmitting(false);
-      
+
       if (res.error) {
         setErrorMsg(res.error);
       } else if (res.needsVerification) {
         setInfoMsg(res.message || 'Verification email sent! Please check your inbox.');
       }
     } else {
+      // Sign In Flow
+      if (lockoutSecondsLeft > 0) {
+        setErrorMsg(`Too many failed attempts. Please wait ${formatCooldown(lockoutSecondsLeft)} before retrying.`);
+        return;
+      }
+
       if (!displayName.trim()) {
         setErrorMsg('Please enter your username or email');
         return;
@@ -93,7 +195,9 @@ export default function Login() {
       setIsSubmitting(false);
 
       if (res.error) {
-        setErrorMsg(res.error);
+        recordFailedAttempt();
+      } else {
+        clearFailedAttempts();
       }
     }
   };
@@ -123,11 +227,11 @@ export default function Login() {
     <div className="min-h-screen bg-[#040709] flex justify-center selection:bg-primary/30 relative overflow-hidden">
       {/* Phone Mock Container */}
       <div className="w-full max-w-md min-h-screen flex flex-col bg-[#05080c] relative shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:border-x border-white/5 sm:rounded-3xl overflow-hidden my-0 sm:my-3 sm:max-h-[96vh]">
-        
+
         {/* 🎾 Relaxing Pickleball Court & Floating Aurora Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          <svg 
-            className="absolute inset-0 w-full h-full opacity-25" 
+          <svg
+            className="absolute inset-0 w-full h-full opacity-25"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 400 800"
             preserveAspectRatio="none"
@@ -142,19 +246,19 @@ export default function Login() {
           </svg>
 
           {/* Sweeping Light Waves */}
-          <motion.div 
+          <motion.div
             animate={{ y: [-300, 850], opacity: [0, 0.6, 0] }}
             transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
             className="absolute left-0 right-0 h-44 bg-gradient-to-b from-transparent via-emerald-400/10 to-transparent pointer-events-none -skew-y-12"
           />
 
           {/* Aurora Orbs */}
-          <motion.div 
+          <motion.div
             animate={{ x: [0, 35, -25, 0], y: [0, -25, 20, 0], scale: [1, 1.2, 0.95, 1], opacity: [0.35, 0.55, 0.35] }}
             transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
             className="absolute -top-16 -left-16 w-80 h-80 rounded-full bg-emerald-500/25 blur-[85px]"
           />
-          <motion.div 
+          <motion.div
             animate={{ x: [0, -35, 25, 0], y: [0, 30, -25, 0], scale: [1, 1.25, 0.9, 1], opacity: [0.25, 0.45, 0.25] }}
             transition={{ duration: 22, repeat: Infinity, ease: "easeInOut", delay: 2 }}
             className="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-cyan-500/20 blur-[95px]"
@@ -163,10 +267,10 @@ export default function Login() {
 
         {/* Main Content Area */}
         <div className="flex-1 px-5 sm:px-7 py-3 flex flex-col justify-center relative z-10 overflow-hidden">
-          
+
           <div className="w-full max-w-sm mx-auto my-auto space-y-4">
             {/* Top Brand & Dynamic Tagline */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35 }}
@@ -185,8 +289,8 @@ export default function Login() {
                   {authMode === 'signin' ? 'Ready to Serve.' : 'Join the Arena.'}
                 </p>
                 <p className="text-[11px] text-text-light/70 font-medium">
-                  {authMode === 'signin' 
-                    ? 'Sign in to track your matches & climb the ranks.' 
+                  {authMode === 'signin'
+                    ? 'Sign in to track your matches & climb the ranks.'
                     : 'Create your player profile & compete on live courts.'}
                 </p>
               </div>
@@ -200,8 +304,26 @@ export default function Login() {
               transition={{ duration: 0.3 }}
               className="bg-[#070e14]/90 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.75)] space-y-3.5"
             >
+              {authMode === 'signin' && lockoutSecondsLeft > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-3.5 bg-rose-950/40 border border-rose-500/40 rounded-2xl text-left backdrop-blur-md flex items-center gap-3 shadow-[0_0_25px_rgba(244,63,94,0.25)]"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center shrink-0 text-rose-400">
+                    <ShieldAlert className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-rose-200">Security Cooldown Active</p>
+                    <p className="text-[11px] text-rose-300/80 mt-0.5">
+                      Too many attempts. Retry in: <span className="font-mono font-bold text-white tracking-wider">{formatCooldown(lockoutSecondsLeft)}</span>
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
               {errorMsg && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-2xl text-left backdrop-blur-md"
@@ -211,7 +333,7 @@ export default function Login() {
               )}
 
               {infoMsg && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="p-3.5 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-left backdrop-blur-md flex items-start gap-2.5"
@@ -222,13 +344,25 @@ export default function Login() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-3">
+                {/* 🛡️ Hidden Honeypot Field for Bot Protection */}
+                <input
+                  type="text"
+                  name="b_profile_validation"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  className="hidden absolute -left-[9999px]"
+                  aria-hidden="true"
+                />
+
                 {authMode === 'signup' && (
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
                       Player Username
                     </label>
                     <div className="relative flex items-center">
-                      <input 
+                      <input
                         type="text"
                         required
                         value={displayName}
@@ -246,13 +380,14 @@ export default function Login() {
                     {authMode === 'signup' ? 'Email Address' : 'Username / Email'}
                   </label>
                   <div className="relative flex items-center">
-                    <input 
+                    <input
                       type={authMode === 'signup' ? 'email' : 'text'}
                       required
+                      disabled={isSubmitting || (authMode === 'signin' && lockoutSecondsLeft > 0)}
                       value={authMode === 'signup' ? email : displayName}
                       onChange={(e) => authMode === 'signup' ? setEmail(e.target.value) : setDisplayName(e.target.value)}
                       placeholder={authMode === 'signup' ? 'player@email.com' : 'e.g. kakarotbomba'}
-                      className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-medium"
+                      className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     {authMode === 'signup' ? (
                       <Mail className="w-4 h-4 text-cyan-400/80 absolute left-4 pointer-events-none" />
@@ -283,12 +418,13 @@ export default function Login() {
                     )}
                   </div>
                   <div className="relative flex items-center">
-                    <input 
+                    <input
                       type={showPassword ? 'text' : 'password'}
+                      disabled={isSubmitting || (authMode === 'signin' && lockoutSecondsLeft > 0)}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-mono"
+                      className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-mono disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
                     <button
@@ -308,7 +444,7 @@ export default function Login() {
                       Confirm Password
                     </label>
                     <div className="relative flex items-center">
-                      <input 
+                      <input
                         type={showConfirmPassword ? 'text' : 'password'}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -329,24 +465,26 @@ export default function Login() {
                 )}
 
                 {/* ⚡ High-Energy Electric Volt CTA Button with Shimmer */}
-                <button 
+                <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || (authMode === 'signin' && lockoutSecondsLeft > 0)}
                   className="w-full relative overflow-hidden bg-emerald-400 hover:bg-emerald-300 text-[#04080a] py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:shadow-[0_0_35px_rgba(16,185,129,0.65)] transition-all active:scale-[0.97] flex items-center justify-center gap-2 mt-3 disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
                   {/* Sweeping Light Shimmer Reflection */}
-                  <motion.div 
+                  <motion.div
                     animate={{ x: ['-100%', '200%'] }}
                     transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut", repeatDelay: 1.5 }}
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -skew-x-12 pointer-events-none"
                   />
-                  
+
                   <span className="relative z-10 font-black">
-                    {isSubmitting 
-                      ? 'Connecting Arena...' 
+                    {authMode === 'signin' && lockoutSecondsLeft > 0
+                      ? `Locked (${formatCooldown(lockoutSecondsLeft)})`
+                      : isSubmitting
+                      ? 'Connecting Arena...'
                       : (authMode === 'signup' ? 'Create Account' : 'Sign In')}
                   </span>
-                  {!isSubmitting && (
+                  {!isSubmitting && !(authMode === 'signin' && lockoutSecondsLeft > 0) && (
                     <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
                   )}
                 </button>
@@ -413,11 +551,10 @@ export default function Login() {
                 </p>
 
                 {forgotMsg && (
-                  <div className={`p-3 rounded-2xl text-xs flex items-start gap-2 ${
-                    forgotSuccess 
-                      ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300' 
+                  <div className={`p-3 rounded-2xl text-xs flex items-start gap-2 ${forgotSuccess
+                      ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
                       : 'bg-red-500/15 border border-red-500/30 text-red-300'
-                  }`}>
+                    }`}>
                     {forgotSuccess && <CheckCircle className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" />}
                     <p className="font-medium">{forgotMsg}</p>
                   </div>

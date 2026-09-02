@@ -93,17 +93,19 @@ export default function Play() {
   const handleManualJoin = (e: React.FormEvent) => {
     e.preventDefault();
     setJoinError(null);
-    const cleaned = manualCode.trim().toUpperCase();
+    let cleaned = manualCode.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
     if (!cleaned) {
       setJoinError('Please enter a match code');
       return;
     }
-    const finalCode = cleaned.startsWith('PKB-') ? cleaned : `PKB-${cleaned}`;
-    if (!/^PKB-[A-Z0-9]{3,12}$/i.test(finalCode)) {
-      setJoinError('Invalid match code format. Example: PKB-ABC123');
+    if (!cleaned.startsWith('PKB-')) {
+      cleaned = `PKB-${cleaned.replace(/^PKB/i, '')}`;
+    }
+    if (!/^PKB-[A-Z0-9]{6}$/.test(cleaned)) {
+      setJoinError('Invalid code format. Must be PKB- followed by 6 characters (e.g. PKB-X7K92P)');
       return;
     }
-    navigate(`/match/${finalCode}/lobby`);
+    navigate(`/match/${cleaned}/lobby`);
   };
 
   // On-Demand Rear Camera QR Code Scanner Setup
@@ -135,15 +137,20 @@ export default function Play() {
           };
 
           const handleScanSuccess = (text: string) => {
-            if (html5QrCode && html5QrCode.isScanning) {
-              html5QrCode.stop().then(() => {
-                html5QrCode?.clear();
-              }).catch(() => {});
-            }
             const raw = text.trim();
-            const matchFound = raw.match(/PKB-[A-Z0-9_-]+/i);
-            const matchIdToJoin = matchFound ? matchFound[0].toUpperCase() : raw.toUpperCase();
-            navigate(`/match/${matchIdToJoin}/lobby`);
+            // Strictly extract and validate official PickMyBall pattern (PKB- followed by 6 alphanumeric characters)
+            const matchFound = raw.match(/PKB-[A-Z0-9]{6}/i);
+            if (matchFound) {
+              if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                  html5QrCode?.clear();
+                }).catch(() => {});
+              }
+              navigate(`/match/${matchFound[0].toUpperCase()}/lobby`);
+            } else {
+              setCameraError('Not a valid PickMyBall match QR code. Please scan an official court code.');
+              setTimeout(() => setCameraError(null), 3500);
+            }
           };
 
           // Directly launch the rear/environment camera
@@ -563,7 +570,12 @@ export default function Play() {
                   type="text"
                   placeholder="e.g. PKB-X7K92P"
                   value={manualCode}
-                  onChange={(e) => { setManualCode(e.target.value); setJoinError(null); }}
+                  maxLength={10}
+                  onChange={(e) => {
+                    const sanitized = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+                    setManualCode(sanitized);
+                    setJoinError(null);
+                  }}
                   className="flex-1 bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white font-mono uppercase tracking-widest placeholder:text-text-light/30 focus:outline-none focus:border-emerald-400 transition-colors"
                 />
                 <button

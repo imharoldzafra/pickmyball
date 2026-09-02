@@ -20,6 +20,14 @@ export default function MatchLobby() {
   // Fetch initial match details
   const fetchMatch = async () => {
     if (!matchId) return;
+
+    // Validate match code format (PKB- followed by 6 alphanumeric chars)
+    if (!/^PKB-[A-Z0-9]{6}$/i.test(matchId)) {
+      setErrorMsg('Invalid match room format. Match codes must be PKB- followed by 6 characters.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('matches')
