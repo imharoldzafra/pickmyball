@@ -18,6 +18,7 @@ import Friends from './pages/Friends';
 import History from './pages/History';
 import WinnerProfile from './pages/WinnerProfile';
 import Leaderboard from './pages/Leaderboard';
+import ResetPasswordModal from './components/ResetPasswordModal';
 
 import Pickleball3DSphere from './components/Pickleball3DSphere';
 import { motion } from 'framer-motion';
@@ -87,6 +88,7 @@ export default function App() {
             <Route path="match/:matchId/winner" element={<WinnerProfile />} />
           </Route>
         </Routes>
+        <ResetPasswordModal />
       </BrowserRouter>
     </AuthProvider>
   );

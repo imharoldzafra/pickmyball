@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { UserPlus, LogIn, ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, User, Lock, ShieldAlert } from 'lucide-react';
 import Pickleball3DSphere from '../components/Pickleball3DSphere';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -69,12 +70,27 @@ export default function Login() {
     return () => clearInterval(timer);
   }, [lockoutSecondsLeft]);
 
-  // Forgot Password Modal State
+  // 🔑 Forgot Password Modal State
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotMsg, setForgotMsg] = useState<string | null>(null);
   const [forgotSuccess, setForgotSuccess] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+
+  // Check if user opened an expired/invalid reset link
+  useEffect(() => {
+    const hash = window.location.hash;
+    const search = window.location.search;
+    if (
+      hash.includes('error=access_denied') || 
+      hash.includes('otp_expired') || 
+      search.includes('error=access_denied') || 
+      search.includes('otp_expired')
+    ) {
+      setErrorMsg('This password reset link has expired or has already been used. Please request a fresh one below.');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   if (user) return <Navigate to="/" />;
 
@@ -205,13 +221,19 @@ export default function Login() {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setForgotMsg(null);
-    if (!forgotEmail.trim()) {
+    const cleaned = forgotEmail.trim();
+    if (!cleaned) {
       setForgotMsg('Please enter your registered email address');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleaned)) {
+      setForgotMsg('Please enter a valid email address');
       return;
     }
 
     setIsResetting(true);
-    const res = await resetPassword(forgotEmail.trim());
+    const res = await resetPassword(cleaned);
     setIsResetting(false);
 
     if (res.error) {
@@ -219,7 +241,7 @@ export default function Login() {
       setForgotSuccess(false);
     } else {
       setForgotSuccess(true);
-      setForgotMsg('Password reset link sent! Please check your email inbox.');
+      setForgotMsg('Password reset link sent! Please check your email inbox and click the reset link.');
     }
   };
 
@@ -516,47 +538,58 @@ export default function Login() {
           </p>
         </div>
 
-        {/* 🔒 Forgot Password Modal */}
+        {/* 🔒 Reset Password Modal (Standard Email Link Flow) */}
         <AnimatePresence>
           {showForgotModal && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-6"
+              className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-5"
             >
               <motion.div
                 initial={{ scale: 0.92, opacity: 0, y: 10 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.92, opacity: 0, y: 10 }}
-                className="w-full max-w-sm bg-[#0a1015] border border-white/15 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative space-y-4"
+                className="w-full max-w-sm bg-[#0a1015] border border-white/15 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.9)] relative space-y-4"
               >
                 {/* Close Button */}
                 <button
                   type="button"
-                  onClick={() => setShowForgotModal(false)}
-                  className="absolute top-4 right-4 text-text-light/60 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+                  onClick={() => {
+                    setShowForgotModal(false);
+                    setForgotMsg(null);
+                    setForgotSuccess(false);
+                  }}
+                  className="absolute top-4 right-4 text-text-light/60 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors z-10"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" />
                 </button>
 
+                {/* Header */}
                 <div>
                   <h3 className="text-base font-black text-white">Reset Password</h3>
                   <p className="text-[11px] text-text-light/70">PickMyBall Account Recovery</p>
                 </div>
 
-                <p className="text-xs text-text-light/80 leading-relaxed">
-                  Enter your registered email address and we'll send you a secure link to reset your password.
-                </p>
+                {!forgotSuccess && (
+                  <p className="text-xs text-text-light/80 leading-relaxed">
+                    Enter your registered email address and we'll send you a secure link to choose a new password.
+                  </p>
+                )}
 
+                {/* Status / Error Message */}
                 {forgotMsg && (
-                  <div className={`p-3 rounded-2xl text-xs flex items-start gap-2 ${forgotSuccess
-                      ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-                      : 'bg-red-500/15 border border-red-500/30 text-red-300'
-                    }`}>
+                  <div
+                    className={`p-3 rounded-2xl text-xs flex items-start gap-2 ${
+                      forgotSuccess
+                        ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+                        : 'bg-red-500/15 border border-red-500/30 text-red-300'
+                    }`}
+                  >
                     {forgotSuccess && <CheckCircle className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" />}
-                    <p className="font-medium">{forgotMsg}</p>
+                    <p className="font-medium leading-tight">{forgotMsg}</p>
                   </div>
                 )}
 
@@ -573,9 +606,9 @@ export default function Login() {
                           value={forgotEmail}
                           onChange={(e) => setForgotEmail(e.target.value)}
                           placeholder="player@email.com"
-                          className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-primary/60 focus:bg-white/[0.06] transition-all outline-none"
+                          className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:bg-white/[0.06] transition-all outline-none"
                         />
-                        <Mail className="w-4 h-4 text-text-light/50 absolute left-3.5 pointer-events-none" />
+                        <Mail className="w-4 h-4 text-emerald-400/80 absolute left-3.5 pointer-events-none" />
                       </div>
                     </div>
 
@@ -592,7 +625,7 @@ export default function Login() {
                         disabled={isResetting}
                         className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-[#050a0a] text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-transform active:scale-96 disabled:opacity-50"
                       >
-                        {isResetting ? 'Sending...' : 'Send Link'}
+                        {isResetting ? 'Sending...' : 'Send Reset Link'}
                       </button>
                     </div>
                   </form>
@@ -600,7 +633,11 @@ export default function Login() {
                   <div className="pt-2">
                     <button
                       type="button"
-                      onClick={() => setShowForgotModal(false)}
+                      onClick={() => {
+                        setShowForgotModal(false);
+                        setForgotSuccess(false);
+                        setForgotMsg(null);
+                      }}
                       className="w-full py-3 rounded-2xl bg-white/[0.08] hover:bg-white/[0.12] text-white text-xs font-bold transition-all active:scale-96"
                     >
                       Back to Sign In

@@ -10,6 +10,9 @@ interface AuthContextType {
   signUp: (displayName: string, email: string, password?: string) => Promise<{ error?: string; success?: boolean; needsVerification?: boolean; message?: string }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error?: string; success?: boolean }>;
+  updateUserPassword: (password: string) => Promise<{ error?: string; success?: boolean }>;
+  isPasswordRecovery: boolean;
+  setIsPasswordRecovery: (val: boolean) => void;
   loginMock: (displayName?: string, password?: string) => Promise<{ error?: string }>;
   signupMock: (displayName: string, email?: string, password?: string) => Promise<{ error?: string }>;
   logoutMock: () => void;
@@ -63,6 +66,9 @@ const AuthContext = createContext<AuthContextType>({
   signUp: async () => ({}),
   signOut: async () => {},
   resetPassword: async () => ({}),
+  updateUserPassword: async () => ({}),
+  isPasswordRecovery: false,
+  setIsPasswordRecovery: () => {},
   loginMock: async () => ({}),
   signupMock: async () => ({}),
   logoutMock: () => {},
@@ -90,6 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       return null;
     }
+  });
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(() => {
+    return window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery');
   });
   const [loading, setLoading] = useState(true);
 
@@ -180,7 +189,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // Realtime auth listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
+      }
       if (session?.user) {
         setUser(session.user);
         fetchProfile(session.user.id, session.user.user_metadata);
@@ -363,6 +375,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true };
   };
 
+  const updateUserPassword = async (newPassword: string): Promise<{ error?: string; success?: boolean }> => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        return { error: error.message };
+      }
+
+      // Clean recovery URL fragment/hash from browser address bar
+      if (window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery')) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+      setIsPasswordRecovery(false);
+      return { success: true };
+    } catch (err: any) {
+      return { error: err.message || 'Failed to update password' };
+    }
+  };
+
   const updateProfileMock = async (updates: Partial<UserProfile>): Promise<{ error?: string }> => {
     if (!user?.id) return {};
     
@@ -530,6 +563,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signOut,
         resetPassword,
+        updateUserPassword,
+        isPasswordRecovery,
+        setIsPasswordRecovery,
         loginMock: signIn, 
         signupMock: (name, email, pwd) => signUp(name, email || '', pwd), 
         logoutMock: signOut, 
