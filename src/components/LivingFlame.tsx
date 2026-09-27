@@ -105,8 +105,8 @@ export default function LivingFlame({ streak, className = '', size = 'md' }: Liv
           }}
           className={`absolute top-0 w-1 h-1 rounded-full pointer-events-none ${
             isCosmic 
-              ? 'bg-cyan-300 shadow-[0_0_6px_#22d3ee]' 
-              : 'bg-amber-200 shadow-[0_0_5px_#fde047]'
+              ? 'bg-cyan-300' 
+              : 'bg-amber-200'
           }`}
         />
       ))}

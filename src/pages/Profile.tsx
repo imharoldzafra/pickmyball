@@ -153,7 +153,7 @@ export default function Profile() {
           onClick={handleAvatarClick}
           className="relative cursor-pointer group"
         >
-          <div className="w-28 h-28 rounded-full border-2 border-primary/50 overflow-hidden bg-white/[0.03] shadow-[0_0_30px_rgba(16,185,129,0.2)] flex items-center justify-center transition-all group-hover:border-primary">
+          <div className="w-28 h-28 rounded-full border-2 border-primary/50 overflow-hidden bg-white/[0.03] shadow-md flex items-center justify-center transition-all group-hover:border-primary">
             {photoURL ? (
               <img src={photoURL} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
@@ -170,13 +170,13 @@ export default function Profile() {
       {/* Form Fields */}
       <div className="space-y-4">
         {errorMsg && (
-          <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold">
+          <div className="w-[84%] max-w-[290px] mx-auto p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold text-center">
             {errorMsg}
           </div>
         )}
 
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between pl-1">
+        <div className="w-[84%] max-w-[290px] mx-auto space-y-1.5">
+          <div className="flex items-center justify-between px-1">
             <label className="text-xs font-bold text-text-light uppercase tracking-wider">
               Display Name
             </label>
@@ -190,7 +190,7 @@ export default function Profile() {
             maxLength={25}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="Enter your username"
-            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-4 py-3.5 text-white font-medium focus:outline-none focus:border-primary/50 transition-all text-sm"
+            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-4 py-3 text-white font-medium focus:outline-none focus:border-primary/50 transition-all text-sm"
           />
         </div>
 
@@ -199,26 +199,27 @@ export default function Profile() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.1 }}
-          className="space-y-3 pt-2"
+          className="space-y-3 pt-2 flex flex-col items-center"
         >
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] py-3.5 rounded-2xl font-extrabold uppercase tracking-wider text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all disabled:opacity-70"
+            className="w-[68%] max-w-[240px] flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] py-3 rounded-2xl font-extrabold uppercase tracking-wider text-xs shadow-sm transition-all disabled:opacity-70"
           >
             <Save className="w-4 h-4" />
             {isSaving ? 'Saving Changes...' : 'Save Profile'}
           </motion.button>
 
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 bg-red-500/15 text-red-400 border border-red-500/30 backdrop-blur-md py-3.5 rounded-2xl font-bold uppercase tracking-wider text-xs hover:bg-red-500/25 transition-all"
+            className="flex items-center justify-center gap-1.5 text-red-400 hover:text-red-300 font-bold uppercase tracking-wider text-xs py-2 px-4 transition-colors"
           >
-            <LogOut className="w-4 h-4" /> Sign Out
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
           </motion.button>
         </motion.div>
       </div>

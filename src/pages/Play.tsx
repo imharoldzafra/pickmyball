@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
-import { PlusCircle, QrCode, Users, User, Trophy, Shield, ArrowRight, ArrowLeft, ChevronRight, ChevronDown, ChevronUp, Sparkles, Camera, X } from 'lucide-react';
+import { PlusCircle, QrCode, Users, User, Trophy, Shield, ArrowRight, ArrowLeft, ChevronRight, ChevronDown, ChevronUp, Sparkles, Camera, X, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -16,6 +16,14 @@ export default function Play() {
   const [viewState, setViewState] = useState<'hub' | 'configure' | 'scan'>(
     initialAction === 'scan' ? 'scan' : initialAction === 'create' ? 'configure' : 'hub'
   );
+
+  useEffect(() => {
+    if (initialAction === 'create') {
+      setViewState('configure');
+    } else if (initialAction === 'scan') {
+      setViewState('scan');
+    }
+  }, [initialAction]);
 
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -87,6 +95,88 @@ export default function Play() {
 
     setCreating(false);
     navigate(`/match/${matchId}/lobby`);
+  };
+
+  // Start Direct Friendly Match (No QR, No Lobby, Direct to Court Scoring)
+  const handleStartFriendlyMatch = () => {
+    setCreating(true);
+
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let randomSuffix = '';
+    for (let i = 0; i < 6; i++) {
+      randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const matchId = `PKB-FR-${randomSuffix}`;
+
+    let targetPoints = 11;
+    if (gameFormat === 'single_15') targetPoints = 15;
+    if (gameFormat === 'single_21') targetPoints = 21;
+
+    const hostReferee = {
+      id: 'friendly_ref',
+      displayName: 'Court Referee',
+      photoURL: '',
+      rating: 0,
+      rank: 'Rookie',
+    };
+
+    const teamA = matchType === '2v2'
+      ? [
+          { id: 'friendly_a1', displayName: 'Alpha 1', rating: 0, rank: 'Rookie' },
+          { id: 'friendly_a2', displayName: 'Alpha 2', rating: 0, rank: 'Rookie' },
+        ]
+      : [
+          { id: 'friendly_a1', displayName: 'Team Alpha', rating: 0, rank: 'Rookie' },
+        ];
+
+    const teamB = matchType === '2v2'
+      ? [
+          { id: 'friendly_b1', displayName: 'Beta 1', rating: 0, rank: 'Rookie' },
+          { id: 'friendly_b2', displayName: 'Beta 2', rating: 0, rank: 'Rookie' },
+        ]
+      : [
+          { id: 'friendly_b1', displayName: 'Team Beta', rating: 0, rank: 'Rookie' },
+        ];
+
+    const matchPayload = {
+      id: matchId,
+      creatorId: hostReferee.id,
+      hostId: hostReferee.id,
+      hostName: hostReferee.displayName,
+      hostAvatar: hostReferee.photoURL,
+      matchType,
+      gameFormat,
+      targetPoints,
+      status: 'IN_PROGRESS',
+      teamA,
+      teamB,
+      refereeId: hostReferee.id,
+      referee: hostReferee,
+      currentGame: 1,
+      teamAScore: 0,
+      teamBScore: 0,
+      teamAGamesWon: 0,
+      teamBGamesWon: 0,
+      servingTeam: 'A' as const,
+      serverNumber: 2 as const,
+      gameResults: [],
+      matchWinner: 'NONE' as const,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      isFriendly: true,
+    };
+
+    // ⚡ Instant Synchronous Storage for zero delay or network dependency
+    try {
+      sessionStorage.setItem(`pkb_match_${matchId}`, JSON.stringify(matchPayload));
+      localStorage.setItem(`pkb_match_${matchId}`, JSON.stringify(matchPayload));
+      sessionStorage.setItem(`pkb_is_friendly_${matchId}`, 'true');
+    } catch (e) {
+      console.warn('Storage error:', e);
+    }
+
+    setCreating(false);
+    navigate(`/match/${matchId}/live`);
   };
 
   // Join via manual code
@@ -327,7 +417,7 @@ export default function Play() {
                         threshold: '—', 
                         crRatio: '+80 / -40',
                         color: 'text-slate-400',
-                        activeContainer: 'bg-gradient-to-r from-slate-400/20 via-slate-400/5 to-transparent border-slate-400/60 border-l-[3.5px] border-l-slate-400 shadow-[0_0_20px_rgba(148,163,184,0.2)]',
+                        activeContainer: 'bg-gradient-to-r from-slate-400/20 via-slate-400/5 to-transparent border-slate-400/60 border-l-[3.5px] border-l-slate-400',
                         activeText: 'text-text-light/80'
                       },
                       { 
@@ -335,7 +425,7 @@ export default function Play() {
                         threshold: '800+ CR', 
                         crRatio: '+40 / -20',
                         color: 'text-emerald-400',
-                        activeContainer: 'bg-gradient-to-r from-emerald-500/20 via-emerald-500/5 to-transparent border-emerald-400/60 border-l-[3.5px] border-l-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]',
+                        activeContainer: 'bg-gradient-to-r from-emerald-500/20 via-emerald-500/5 to-transparent border-emerald-400/60 border-l-[3.5px] border-l-emerald-400',
                         activeText: 'text-emerald-300'
                       },
                       { 
@@ -343,7 +433,7 @@ export default function Play() {
                         threshold: '1,200+ CR', 
                         crRatio: '+30 / -20',
                         color: 'text-cyan-400',
-                        activeContainer: 'bg-gradient-to-r from-cyan-500/20 via-cyan-500/5 to-transparent border-cyan-400/60 border-l-[3.5px] border-l-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.2)]',
+                        activeContainer: 'bg-gradient-to-r from-cyan-500/20 via-cyan-500/5 to-transparent border-cyan-400/60 border-l-[3.5px] border-l-cyan-400',
                         activeText: 'text-cyan-300'
                       },
                       { 
@@ -351,7 +441,7 @@ export default function Play() {
                         threshold: '1,600+ CR', 
                         crRatio: '+25 / -25',
                         color: 'text-amber-400',
-                        activeContainer: 'bg-gradient-to-r from-amber-500/20 via-amber-500/5 to-transparent border-amber-400/60 border-l-[3.5px] border-l-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]',
+                        activeContainer: 'bg-gradient-to-r from-amber-500/20 via-amber-500/5 to-transparent border-amber-400/60 border-l-[3.5px] border-l-amber-400',
                         activeText: 'text-amber-300'
                       },
                       { 
@@ -359,7 +449,7 @@ export default function Play() {
                         threshold: '2,000+ CR', 
                         crRatio: '+20 / -30',
                         color: 'text-orange-400',
-                        activeContainer: 'bg-gradient-to-r from-orange-500/25 via-orange-500/5 to-transparent border-orange-500/60 border-l-[3.5px] border-l-orange-500 shadow-[0_0_25px_rgba(249,115,22,0.25)]',
+                        activeContainer: 'bg-gradient-to-r from-orange-500/25 via-orange-500/5 to-transparent border-orange-500/60 border-l-[3.5px] border-l-orange-500',
                         activeText: 'text-orange-300'
                       },
                     ].map((tier) => {
@@ -434,9 +524,15 @@ export default function Play() {
           {/* Top Back Navigation */}
           <div className="flex items-center">
             <button
-              onClick={() => setViewState('hub')}
+              onClick={() => {
+                if (!user || sessionStorage.getItem('pkb_guest_offline') === 'true') {
+                  navigate('/login');
+                } else {
+                  setViewState('hub');
+                }
+              }}
               className="w-9 h-9 flex items-center justify-center text-text-light hover:text-white transition-all bg-white/[0.04] hover:bg-white/[0.08] rounded-full border border-white/10 active:scale-95 shadow-sm"
-              title="Back to Arena"
+              title="Back"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -457,7 +553,7 @@ export default function Play() {
                 onClick={() => setMatchType('1v1')}
                 className={`p-3.5 rounded-2xl border transition-all flex flex-col items-center gap-1.5 text-center active:scale-96 ${
                   matchType === '1v1'
-                    ? 'bg-emerald-500/15 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.25)]'
+                    ? 'bg-emerald-500/15 border-emerald-400 text-white'
                     : 'bg-white/[0.02] border-white/10 text-text-light hover:text-white'
                 }`}
               >
@@ -471,7 +567,7 @@ export default function Play() {
                 onClick={() => setMatchType('2v2')}
                 className={`p-3.5 rounded-2xl border transition-all flex flex-col items-center gap-1.5 text-center active:scale-96 ${
                   matchType === '2v2'
-                    ? 'bg-cyan-500/15 border-cyan-400 text-white shadow-[0_0_15px_rgba(6,182,212,0.25)]'
+                    ? 'bg-cyan-500/15 border-cyan-400 text-white'
                     : 'bg-white/[0.02] border-white/10 text-text-light hover:text-white'
                 }`}
               >
@@ -504,7 +600,7 @@ export default function Play() {
                   onClick={() => setGameFormat(rule.id as any)}
                   className={`p-3 rounded-2xl border text-left transition-all active:scale-96 ${
                     gameFormat === rule.id
-                      ? 'bg-emerald-500/15 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                      ? 'bg-emerald-500/15 border-emerald-400'
                       : 'bg-white/[0.02] border-white/10 hover:border-white/20'
                   }`}
                 >
@@ -515,17 +611,30 @@ export default function Play() {
             </div>
           </div>
 
-          {/* Generate Button */}
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={handleCreateMatch} 
-            disabled={creating}
-            className="bg-gradient-to-r from-primary via-emerald-400 to-secondary text-[#050a0a] w-full py-4 rounded-2xl font-black uppercase tracking-wider text-xs shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-          >
-            <span>{creating ? 'Generating Room...' : 'Generate Match Room & QR'}</span>
-            <ArrowRight className="w-4 h-4" />
-          </motion.button>
+          {/* Action Buttons: Friendly Match (Local Court Scorer) vs Online Room with QR */}
+          <div className="space-y-3 pt-3 flex flex-col items-center">
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={handleStartFriendlyMatch} 
+              disabled={creating}
+              className="w-[72%] max-w-[260px] flex items-center justify-center bg-gradient-to-r from-primary to-secondary text-[#050a0a] py-3 rounded-2xl font-extrabold uppercase tracking-wider text-xs shadow-sm transition-all disabled:opacity-70"
+            >
+              <span>{creating ? 'Starting Match...' : 'Start Friendly Match'}</span>
+            </motion.button>
+
+            {user && (
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={handleCreateMatch} 
+                disabled={creating}
+                className="w-[72%] max-w-[260px] flex items-center justify-center bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white py-3 rounded-2xl font-extrabold uppercase tracking-wider text-xs transition-all disabled:opacity-50"
+              >
+                <span>{creating ? 'Generating Room...' : 'Generate Match Room & QR'}</span>
+              </motion.button>
+            )}
+          </div>
         </motion.div>
       )}
 
@@ -580,7 +689,7 @@ export default function Play() {
                 />
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-primary to-emerald-400 text-[#050a0a] px-5 py-3 rounded-2xl font-black uppercase tracking-wider text-xs shadow-[0_0_18px_rgba(16,185,129,0.4)] active:scale-95 transition-all hover:brightness-105"
+                  className="bg-gradient-to-r from-primary to-emerald-400 text-[#050a0a] px-5 py-3 rounded-2xl font-black uppercase tracking-wider text-xs shadow-sm active:scale-95 transition-all hover:brightness-105"
                 >
                   Join
                 </button>

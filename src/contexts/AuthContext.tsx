@@ -6,8 +6,8 @@ interface AuthContextType {
   user: any;
   profile: UserProfile | null;
   loading: boolean;
-  signIn: (identifier: string, password?: string) => Promise<{ error?: string }>;
-  signUp: (displayName: string, email: string, password?: string) => Promise<{ error?: string; success?: boolean; needsVerification?: boolean; message?: string }>;
+  signIn: (identifier: string, password?: string) => Promise<{ error?: string; errorField?: 'identifier' | 'password' }>;
+  signUp: (displayName: string, email: string, password?: string) => Promise<{ error?: string; errorField?: 'username' | 'email' | 'password' | 'confirmPassword'; success?: boolean; needsVerification?: boolean; message?: string }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error?: string; success?: boolean }>;
   updateUserPassword: (password: string) => Promise<{ error?: string; success?: boolean }>;
@@ -102,6 +102,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
   const [loading, setLoading] = useState(true);
 
+  // 🧹 One-time wipe of testing match history and reset testing XP / CR
+  useEffect(() => {
+    const hasCleanedTestData = localStorage.getItem('pkb_test_cleanup_v4');
+    if (!hasCleanedTestData) {
+      localStorage.setItem('pkb_test_cleanup_v4', 'true');
+      localStorage.removeItem('matchHistory');
+
+      const targetId = user?.id || profile?.uid;
+      if (targetId) {
+        supabase.from('profiles').update({
+          xp: 0,
+          rating: 0,
+          rank: 'Rookie',
+          wins: 0,
+          losses: 0,
+          battles: 0,
+          current_streak: 0,
+          longest_streak: 0,
+          highest_rating: 0,
+          level: 1,
+        }).eq('id', targetId).then();
+      }
+
+      setProfile((prev) => prev ? {
+        ...prev,
+        xp: 0,
+        rating: 0,
+        rank: 'Rookie',
+        wins: 0,
+        losses: 0,
+        battles: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        highestRating: 0,
+        level: 1,
+      } : null);
+
+      const cachedMock = localStorage.getItem('mockProfile');
+      if (cachedMock) {
+        try {
+          const parsed = JSON.parse(cachedMock);
+          parsed.xp = 0;
+          parsed.rating = 0;
+          parsed.rank = 'Rookie';
+          parsed.wins = 0;
+          parsed.losses = 0;
+          parsed.battles = 0;
+          parsed.currentStreak = 0;
+          parsed.longestStreak = 0;
+          parsed.highestRating = 0;
+          parsed.level = 1;
+          localStorage.setItem('mockProfile', JSON.stringify(parsed));
+        } catch (e) {}
+      }
+    }
+  }, [user?.id, profile?.uid]);
+
   // Helper to fetch profile from Supabase profiles table
   const fetchProfile = async (userId: string, userMeta?: any) => {
     try {
@@ -118,6 +175,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const todayStr = new Date().toISOString().split('T')[0];
 
       if (data) {
+        // Ensure email is synced in profiles table if missing
+        if (!data.email && (userMeta?.email || user?.email)) {
+          const emailToSet = userMeta?.email || user?.email;
+          supabase.from('profiles').update({ email: emailToSet }).eq('id', userId).then();
+        }
+
         // Daily Stamina Auto-Reset Check: resets to 100% every new day
         const needsDailyReset = !data.last_stamina_reset || data.last_stamina_reset !== todayStr;
         const initialStamina = needsDailyReset ? 100 : (data.stamina ?? 100);
@@ -145,6 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         // Create initial fallback profile if trigger has delay
         const fallbackName = userMeta?.display_name || 'Player';
+        const fallbackEmail = userMeta?.email || user?.email || '';
         const initialProfile: UserProfile = {
           uid: userId,
           displayName: fallbackName,
@@ -164,6 +228,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           lastStaminaReset: todayStr,
         };
         setProfile(initialProfile);
+
+        // Also upsert to profiles table in Supabase
+        supabase.from('profiles').upsert({
+          id: userId,
+          display_name: fallbackName,
+          email: fallbackEmail,
+          level: 1,
+          xp: 0,
+          rating: 0,
+          rank: 'Rookie',
+          stamina: 100,
+          last_stamina_reset: todayStr,
+        }, { onConflict: 'id' }).then();
       }
     } catch (err) {
       console.error('Profile fetch error:', err);
@@ -256,7 +333,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (displayName: string, email: string, password = 'password123') => {
     const trimmedName = displayName.trim();
     if (!trimmedName) {
-      return { error: 'Please choose a username' };
+      return { error: 'Please choose a username', errorField: 'username' as const };
     }
 
     // Check if username already exists in Supabase (case-insensitive)
@@ -268,7 +345,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (existingUser) {
-        return { error: 'Username already exists. Please choose a different username.' };
+        return { error: 'Username already exists. Please choose a different username', errorField: 'username' as const };
       }
     } catch (err) {
       console.warn('Username check warning:', err);
@@ -276,7 +353,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const finalEmail = email.trim();
     if (!finalEmail) {
-      return { error: 'Please enter a valid email address' };
+      return { error: 'Please enter a valid email address', errorField: 'email' as const };
+    }
+
+    // Check if email already exists in Supabase profiles (case-insensitive)
+    try {
+      const { data: existingEmail } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .ilike('email', finalEmail)
+        .maybeSingle();
+
+      if (existingEmail) {
+        return { error: 'An account with this email already exists', errorField: 'email' as const };
+      }
+    } catch (err) {
+      console.warn('Email check warning:', err);
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -290,14 +382,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
-      if (error.message.toLowerCase().includes('already registered')) {
-        return { error: 'An account with this email already exists.' };
+      const errLower = error.message.toLowerCase();
+      if (errLower.includes('already registered') || errLower.includes('already exists') || errLower.includes('email address')) {
+        return { error: 'An account with this email already exists', errorField: 'email' as const };
+      }
+      if (errLower.includes('password')) {
+        return { error: error.message, errorField: 'password' as const };
       }
       return { error: error.message };
     }
 
     // When email verification is enabled in Supabase, data.session is null until verified
     if (data.user && !data.session) {
+      try {
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          display_name: trimmedName,
+          email: finalEmail,
+          level: 1,
+          xp: 0,
+          rating: 0,
+          rank: 'Rookie',
+          stamina: 100,
+        }, { onConflict: 'id' });
+      } catch (err) {
+        console.warn('Pre-insert profile warning:', err);
+      }
+
       return {
         success: true,
         needsVerification: true,
@@ -308,46 +419,93 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (data.user && data.session) {
       setUser(data.user);
       localStorage.setItem('mockUser', JSON.stringify({ uid: data.user.id, displayName: trimmedName, email: finalEmail }));
-      await fetchProfile(data.user.id, { display_name: trimmedName });
+      await fetchProfile(data.user.id, { display_name: trimmedName, email: finalEmail });
     }
 
     return { success: true };
   };
 
-  const signIn = async (identifier: string, password = 'password123') => {
+  const signIn = async (identifier: string, password = 'password123'): Promise<{ error?: string; errorField?: 'identifier' | 'password' }> => {
     const trimmed = identifier.trim();
-    let emailToUse = trimmed;
+    if (!trimmed) {
+      return { error: 'Please enter your username', errorField: 'identifier' };
+    }
+    if (!password) {
+      return { error: 'Please enter your password', errorField: 'password' };
+    }
 
-    // If identifier is not an email, lookup user by display_name
-    if (!trimmed.includes('@')) {
-      const { data: profileData } = await supabase
+    // Disallow email input directly on login
+    if (trimmed.includes('@')) {
+      return {
+        error: 'Please enter your username, not your email',
+        errorField: 'identifier',
+      };
+    }
+
+    // Look up user account in profiles by username (display_name)
+    let userProfile: { id: string; email?: string; display_name?: string } | null = null;
+
+    try {
+      const { data, error } = await supabase
         .from('profiles')
-        .select('email, display_name')
+        .select('id, email, display_name')
         .ilike('display_name', trimmed)
         .maybeSingle();
 
-      if (profileData?.email) {
-        emailToUse = profileData.email;
-      } else {
-        emailToUse = `${trimmed.toLowerCase().replace(/[^a-z0-9]/g, '')}@pickmyball.app`;
+      if (!error && data) {
+        userProfile = data;
       }
+    } catch (err) {
+      console.warn('Profile lookup error:', err);
     }
 
+    if (!userProfile) {
+      return {
+        error: `Username "${trimmed}" not found`,
+        errorField: 'identifier',
+      };
+    }
+
+    if (!userProfile.email) {
+      return {
+        error: 'Account missing registered email',
+        errorField: 'identifier',
+      };
+    }
+
+    // Attempt authentication with Supabase Auth using the user profile's email
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: emailToUse,
+      email: userProfile.email,
       password: password,
     });
 
     if (error) {
-      if (error.message.toLowerCase().includes('invalid login credentials')) {
-        return { error: 'Invalid username/email or password.' };
+      const errLower = error.message.toLowerCase();
+
+      if (errLower.includes('invalid login credentials')) {
+        return {
+          error: 'Incorrect password',
+          errorField: 'password',
+        };
       }
+
+      if (errLower.includes('email not confirmed')) {
+        return {
+          error: 'Email not verified yet',
+          errorField: 'identifier',
+        };
+      }
+
       return { error: error.message };
     }
 
     if (data.user) {
       setUser(data.user);
-      await fetchProfile(data.user.id);
+      await fetchProfile(data.user.id, {
+        display_name: userProfile.display_name,
+        email: userProfile.email,
+        ...data.user.user_metadata,
+      });
     }
 
     return {};
@@ -455,6 +613,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const recordMatchResult = async (won: boolean, xpEarned: number, crChange: number, matchDetails: any) => {
+    // 🛡️ Security Guard: Never record friendly, offline, or practice matches in history or career stats
+    if (
+      matchDetails?.isFriendly || 
+      matchDetails?.id?.includes('FR') || 
+      matchDetails?.type?.toLowerCase().includes('friendly') || 
+      matchDetails?.type?.toLowerCase().includes('practice') || 
+      matchDetails?.opponent?.includes('Alpha') ||
+      matchDetails?.opponent?.includes('Beta')
+    ) {
+      return;
+    }
+
     // 1. Update match history records in localStorage
     const savedHistory = localStorage.getItem('matchHistory');
     const historyList = savedHistory ? JSON.parse(savedHistory) : [];

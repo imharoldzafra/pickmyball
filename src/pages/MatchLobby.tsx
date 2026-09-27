@@ -387,7 +387,7 @@ export default function MatchLobby() {
                       ? 'bg-white/[0.04] text-text-light/40 border border-white/5 cursor-not-allowed'
                       : inTeamB
                         ? 'hidden'
-                        : 'bg-cyan-400 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)] active:scale-96'
+                        : 'bg-cyan-400 text-slate-950 shadow-sm active:scale-96'
                   }`}
                 >
                   {teamAFull ? 'Team Alpha Full' : 'Join Team Alpha'}
@@ -479,7 +479,7 @@ export default function MatchLobby() {
                       ? 'bg-white/[0.04] text-text-light/40 border border-white/5 cursor-not-allowed'
                       : inTeamA
                         ? 'hidden'
-                        : 'bg-emerald-400 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.4)] active:scale-96'
+                        : 'bg-emerald-400 text-slate-950 shadow-sm active:scale-96'
                   }`}
                 >
                   {teamBFull ? 'Team Beta Full' : 'Join Team Beta'}
@@ -521,7 +521,7 @@ export default function MatchLobby() {
             type="button"
             onClick={handleStartMatch}
             disabled={!canStartMatch}
-            className={`w-full py-3 rounded-xl font-black uppercase tracking-wider text-xs shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all flex items-center justify-center gap-2 ${
+            className={`w-full py-3 rounded-xl font-black uppercase tracking-wider text-xs shadow-sm transition-all flex items-center justify-center gap-2 ${
               canStartMatch
                 ? 'bg-gradient-to-r from-primary via-emerald-400 to-secondary text-[#050a0a] active:scale-96'
                 : 'bg-white/[0.05] text-text-light/40 border border-white/10 cursor-not-allowed'

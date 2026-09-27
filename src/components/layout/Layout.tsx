@@ -3,8 +3,10 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Home, Trophy, Users, History, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Layout() {
+  const { user } = useAuth();
   const location = useLocation();
   const isMatchView = location.pathname.includes('/match/');
   const isLiveMatch = location.pathname.includes('/live');
@@ -140,9 +142,9 @@ export default function Layout() {
           <Outlet />
         </main>
         
-        {/* Fixed Anchored Floating Ultra-Slim Organic Pill Navigation Bar (Only on primary 1st pages) */}
-        {isFirstPageTab && !isMatchView && (
-          <nav className="fixed bottom-3.5 inset-x-4 max-w-[390px] mx-auto bg-[#070b10]/90 backdrop-blur-2xl border border-white/10 rounded-full px-3 py-1.5 flex justify-between items-center shadow-[0_15px_40px_rgba(0,0,0,0.85),0_0_20px_rgba(16,185,129,0.06)] z-50">
+        {/* Fixed Anchored Floating Ultra-Slim Organic Pill Navigation Bar (Only on primary 1st pages for logged-in users) */}
+        {isFirstPageTab && !isMatchView && Boolean(user) && (
+          <nav className="fixed bottom-3.5 inset-x-4 max-w-[390px] mx-auto bg-[#070b10]/95 backdrop-blur-2xl border border-white/10 rounded-full px-3 py-1.5 flex justify-between items-center shadow-[0_15px_40px_rgba(0,0,0,0.85)] z-50">
             <NavItem to="/" icon={<Home className="w-5 h-5" />} label="Home" />
             <NavItem to="/history" icon={<History className="w-5 h-5" />} label="History" />
             <NavItem to="/play" isCenter icon={<Trophy className="w-6 h-6" />} label="Play" />
@@ -174,25 +176,17 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
     >
       {({ isActive }) => (
         <>
-          {/* Cyber-Sport Floating Elevated Center Button */}
+          {/* Floating Elevated Center Button */}
           {isCenter ? (
             <div className="relative group flex flex-col items-center">
-              {/* Soothing Ambient Aurora Glow */}
-              <div className={cn(
-                "absolute -inset-1 rounded-full blur-md transition-all duration-300 pointer-events-none",
-                isActive 
-                  ? "bg-gradient-to-r from-emerald-500/35 via-teal-400/30 to-cyan-500/35 opacity-90 scale-105" 
-                  : "bg-emerald-500/15 opacity-40 group-hover:opacity-75 group-hover:blur-lg"
-              )} />
-              
               {/* The Elevated Center Circular Badge */}
               <div className={cn(
-                "relative w-[48px] h-[48px] rounded-full flex items-center justify-center transition-all duration-300 border shadow-2xl active:scale-95",
+                "relative w-[48px] h-[48px] rounded-full flex items-center justify-center transition-all duration-300 border active:scale-95",
                 isActive 
-                  ? "bg-gradient-to-b from-[#0f212c] via-[#09161e] to-[#050d12] text-emerald-300 border-emerald-400/50 shadow-[0_0_20px_rgba(16,185,129,0.25),0_6px_20px_rgba(0,0,0,0.8)] scale-105" 
+                  ? "bg-gradient-to-b from-[#0f212c] via-[#09161e] to-[#050d12] text-emerald-300 border-emerald-400/50 shadow-[0_6px_20px_rgba(0,0,0,0.8)] scale-105" 
                   : "bg-gradient-to-b from-[#0e1820] to-[#060c10] text-emerald-400/70 border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.7)] group-hover:scale-105 group-hover:border-emerald-400/40 group-hover:text-emerald-400"
               )}>
-                {/* 🎾 Satisfying Bouncing Neon Pickleball with Physics Squash & Stretch */}
+                {/* 🎾 Bouncing Pickleball with Physics Squash & Stretch */}
                 <motion.div
                   animate={{
                     y: [-4, 3.5, -4],
@@ -207,14 +201,14 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
                   className={cn(
                     "absolute top-1.5 w-[5px] h-[5px] rounded-full transition-all",
                     isActive 
-                      ? "bg-gradient-to-tr from-emerald-400 to-lime-300 shadow-[0_0_10px_#34d399,0_0_4px_#10b981]" 
-                      : "bg-emerald-400/70 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                      ? "bg-emerald-400" 
+                      : "bg-emerald-400/70"
                   )}
                 />
                 
                 <div className={cn(
                   "transition-all duration-300 mt-1", 
-                  isActive ? "scale-105 text-emerald-300 drop-shadow-[0_0_10px_rgba(52,211,153,0.7)]" : "text-emerald-400/70"
+                  isActive ? "scale-105 text-emerald-300" : "text-emerald-400/70"
                 )}>
                   {icon}
                 </div>
@@ -222,11 +216,11 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
             </div>
           ) : (
             <div className="relative flex flex-col items-center justify-center py-1">
-              {/* Icon with scale & glow */}
+              {/* Icon with scale */}
               <div className={cn(
                 "transition-all duration-200", 
                 isActive 
-                  ? "scale-110 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" 
+                  ? "scale-110 text-emerald-400" 
                   : "text-text-light/50 group-hover:text-white/80"
               )}>
                 {icon}
@@ -240,11 +234,11 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
                 {label}
               </span>
 
-              {/* Glowing Micro-Dot on Active Tab */}
+              {/* Clean Micro-Dot on Active Tab */}
               {isActive && (
                 <motion.div 
                   layoutId="activeNavDot"
-                  className="absolute -bottom-1 w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-[0_0_8px_#10b981]"
+                  className="absolute -bottom-1 w-1.5 h-1.5 bg-emerald-400 rounded-full"
                   transition={{ type: "spring", stiffness: 450, damping: 35 }}
                 />
               )}

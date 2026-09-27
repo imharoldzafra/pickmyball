@@ -32,6 +32,21 @@ export default function WinnerProfile() {
       const cached = sessionStorage.getItem(`pkb_match_${matchId}`);
       if (cached) {
         const parsed = JSON.parse(cached);
+        const isFriendly = Boolean(
+          matchId.includes('FR') ||
+          parsed.isFriendly ||
+          parsed.matchType === 'friendly' ||
+          parsed.creatorId?.startsWith('friendly') ||
+          parsed.refereeId?.startsWith('friendly') ||
+          parsed.teamA?.some((p: any) => p.id?.startsWith('friendly_')) ||
+          parsed.teamB?.some((p: any) => p.id?.startsWith('friendly_')) ||
+          sessionStorage.getItem(`pkb_is_friendly_${matchId}`) === 'true' ||
+          sessionStorage.getItem('pkb_guest_offline') === 'true'
+        );
+        if (isFriendly) {
+          navigate(`/match/${matchId}/live`, { replace: true });
+          return;
+        }
         setMatch(parsed);
         setLoading(false);
         return;
@@ -187,7 +202,7 @@ export default function WinnerProfile() {
         }`} />
 
         {/* Top Winner Ribbon */}
-        <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400/20 via-yellow-400/30 to-amber-400/20 border border-amber-400/40 px-4 py-1.5 rounded-full text-amber-300 text-xs font-black uppercase tracking-widest shadow-[0_0_20px_rgba(251,191,36,0.35)]">
+        <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400/20 via-yellow-400/30 to-amber-400/20 border border-amber-400/40 px-4 py-1.5 rounded-full text-amber-300 text-xs font-black uppercase tracking-widest shadow-sm">
           <Trophy className="w-3.5 h-3.5 text-amber-400" />
           <span>Match Winner</span>
         </div>
@@ -195,14 +210,14 @@ export default function WinnerProfile() {
         {/* Winner Avatar with Crown */}
         <div className="relative inline-block my-2">
           {/* Crown */}
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-2xl drop-shadow-[0_0_12px_rgba(251,191,36,0.9)] z-20 animate-bounce">
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-2xl z-20 animate-bounce">
             👑
           </div>
 
-          <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1.5 border-2 shadow-2xl relative z-10 ${
+          <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1.5 border-2 shadow-lg relative z-10 ${
             isWinnerAlpha 
-              ? 'border-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.6)] bg-cyan-950/40' 
-              : 'border-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.6)] bg-emerald-950/40'
+              ? 'border-cyan-400 bg-cyan-950/40' 
+              : 'border-emerald-400 bg-emerald-950/40'
           }`}>
             {primaryWinner.photoURL ? (
               <img 
@@ -271,10 +286,10 @@ export default function WinnerProfile() {
           </p>
 
           <div className="grid grid-cols-2 gap-2.5">
-            {/* Rating Gain Card with Glow Shimmer */}
+            {/* Rating Gain Card */}
             <div className={`p-2.5 rounded-2xl flex flex-col justify-between transition-all duration-500 border ${
               counterFinished 
-                ? 'bg-emerald-500/15 border-emerald-400/40 shadow-[0_0_15px_rgba(16,185,129,0.2)]' 
+                ? 'bg-emerald-500/15 border-emerald-400/40 shadow-sm' 
                 : 'bg-emerald-500/10 border-emerald-400/20'
             }`}>
               <span className="text-[10px] font-bold text-emerald-300">Competitive Rating</span>
@@ -289,7 +304,7 @@ export default function WinnerProfile() {
                   initial={{ opacity: 0, y: 8, scale: 0.8 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ delay: 0.35, duration: 0.45, ease: "easeOut" }}
-                  className="text-[10px] font-mono font-black text-emerald-300 bg-emerald-500/25 border border-emerald-400/40 px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.25)]"
+                  className="text-[10px] font-mono font-black text-emerald-300 bg-emerald-500/25 border border-emerald-400/40 px-2 py-0.5 rounded-full shadow-sm"
                 >
                   +{earnedCR}
                 </motion.span>
@@ -368,7 +383,7 @@ export default function WinnerProfile() {
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="w-full bg-gradient-to-r from-primary via-emerald-400 to-secondary text-[#050a0a] py-3.5 rounded-2xl font-black uppercase tracking-wider text-xs shadow-[0_0_25px_rgba(16,185,129,0.45)] active:scale-96 transition-all flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-primary via-emerald-400 to-secondary text-[#050a0a] py-3.5 rounded-2xl font-black uppercase tracking-wider text-xs shadow-sm active:scale-96 transition-all flex items-center justify-center gap-2"
         >
           <span>Return to Arena Home</span>
           <ChevronRight className="w-4 h-4 text-[#050a0a]" />

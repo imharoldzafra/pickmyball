@@ -9,10 +9,10 @@ import LivingFlame from '../components/LivingFlame';
 
 const getTierBadgeStyle = (rank: string) => {
   switch (rank.toLowerCase()) {
-    case 'legend': return 'text-orange-300 bg-orange-500/20 border-orange-500/40 shadow-[0_0_12px_rgba(249,115,22,0.35)]';
-    case 'expert': return 'text-amber-300 bg-amber-400/20 border-amber-400/40 shadow-[0_0_12px_rgba(251,191,36,0.35)]';
-    case 'veteran': return 'text-cyan-300 bg-cyan-500/20 border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.35)]';
-    case 'challenger': return 'text-emerald-300 bg-emerald-500/20 border-emerald-400/35 shadow-[0_0_12px_rgba(16,185,129,0.35)]';
+    case 'legend': return 'text-orange-300 bg-orange-500/20 border-orange-500/40';
+    case 'expert': return 'text-amber-300 bg-amber-400/20 border-amber-400/40';
+    case 'veteran': return 'text-cyan-300 bg-cyan-500/20 border-cyan-400/40';
+    case 'challenger': return 'text-emerald-300 bg-emerald-500/20 border-emerald-400/35';
     case 'rookie':
     default: return 'text-slate-300 bg-slate-500/20 border-slate-500/30';
   }
@@ -76,7 +76,7 @@ export default function Home() {
       >
         <Link to="/profile" className="flex items-center gap-4 group">
           <div className="relative shrink-0">
-            <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-2 border-primary/60 overflow-hidden bg-white/[0.03] shadow-[0_0_35px_rgba(16,185,129,0.35)] flex items-center justify-center transition-all group-hover:border-primary group-hover:scale-105 duration-300">
+            <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-2 border-primary/60 overflow-hidden bg-white/[0.03] shadow-md flex items-center justify-center transition-all group-hover:border-primary group-hover:scale-105 duration-300">
               {profile.photoURL ? (
                 <img src={profile.photoURL} alt={profile.displayName} className="w-full h-full object-cover" />
               ) : (
@@ -155,7 +155,7 @@ export default function Home() {
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.7)]"
+                className="h-full bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full"
               />
             </div>
           </div>
@@ -211,60 +211,60 @@ export default function Home() {
             if (count >= 10) {
               return {
                 title: 'GODLIKE',
-                flameClass: 'text-purple-400 fill-purple-400 drop-shadow-[0_0_16px_rgba(168,85,247,0.95)]',
-                textColor: 'text-purple-300 drop-shadow-[0_0_12px_rgba(168,85,247,0.7)] font-black',
+                flameClass: 'text-purple-400 fill-purple-400',
+                textColor: 'text-purple-300 font-black',
                 subTextColor: 'text-purple-300 font-bold',
-                boxClass: 'bg-purple-600/[0.09] border-t-purple-400/60 border-x-purple-500/30 border-b-purple-500/10 shadow-[0_0_40px_rgba(168,85,247,0.35)]',
+                boxClass: 'bg-purple-600/[0.09] border-t-purple-400/60 border-x-purple-500/30 border-b-purple-500/10 shadow-lg',
                 auraColor: 'from-purple-600 via-violet-500 to-cyan-400',
               };
             }
             if (count >= 5) {
               return {
                 title: 'ON FIRE',
-                flameClass: 'text-orange-400 fill-orange-500 drop-shadow-[0_0_14px_rgba(249,115,22,0.95)]',
-                textColor: 'text-orange-400 drop-shadow-[0_0_10px_rgba(249,115,22,0.6)]',
+                flameClass: 'text-orange-400 fill-orange-500',
+                textColor: 'text-orange-400',
                 subTextColor: 'text-orange-300 font-bold',
-                boxClass: 'bg-orange-500/[0.08] border-t-orange-400/50 border-x-orange-500/25 border-b-orange-500/10 shadow-[0_0_35px_rgba(239,68,68,0.3)]',
+                boxClass: 'bg-orange-500/[0.08] border-t-orange-400/50 border-x-orange-500/25 border-b-orange-500/10 shadow-lg',
                 auraColor: 'from-red-600 via-orange-500 to-amber-400',
               };
             }
             if (count === 4) {
               return {
                 title: 'Heating Up',
-                flameClass: 'text-orange-500 fill-orange-500/80 drop-shadow-[0_0_10px_rgba(249,115,22,0.8)]',
+                flameClass: 'text-orange-500 fill-orange-500/80',
                 textColor: 'text-orange-400',
                 subTextColor: 'text-orange-300',
-                boxClass: 'bg-orange-500/[0.05] border-t-orange-500/40 border-x-orange-500/20 border-b-white/5 shadow-[0_8px_30px_rgba(249,115,22,0.25)]',
+                boxClass: 'bg-orange-500/[0.05] border-t-orange-500/40 border-x-orange-500/20 border-b-white/5 shadow-md',
                 auraColor: 'from-orange-600 to-amber-500',
               };
             }
             if (count === 3) {
               return {
                 title: 'Current Win Streak',
-                flameClass: 'text-amber-400 fill-amber-400/70 drop-shadow-[0_0_10px_rgba(245,158,11,0.8)]',
+                flameClass: 'text-amber-400 fill-amber-400/70',
                 textColor: 'text-amber-400',
                 subTextColor: 'text-amber-300',
-                boxClass: 'bg-amber-500/[0.05] border-t-amber-400/40 border-x-amber-500/20 border-b-white/5 shadow-[0_8px_30px_rgba(245,158,11,0.25)]',
+                boxClass: 'bg-amber-500/[0.05] border-t-amber-400/40 border-x-amber-500/20 border-b-white/5 shadow-md',
                 auraColor: 'from-amber-500 to-yellow-400',
               };
             }
             if (count === 2) {
               return {
                 title: 'Current Win Streak',
-                flameClass: 'text-cyan-400 fill-cyan-400/60 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]',
+                flameClass: 'text-cyan-400 fill-cyan-400/60',
                 textColor: 'text-cyan-300',
                 subTextColor: 'text-cyan-400',
-                boxClass: 'bg-cyan-500/[0.04] border-t-cyan-400/35 border-x-cyan-500/15 border-b-white/5 shadow-[0_8px_30px_rgba(6,182,212,0.2)]',
+                boxClass: 'bg-cyan-500/[0.04] border-t-cyan-400/35 border-x-cyan-500/15 border-b-white/5 shadow-md',
                 auraColor: 'from-cyan-500 to-teal-400',
               };
             }
             if (count === 1) {
               return {
                 title: 'Current Win Streak',
-                flameClass: 'text-emerald-400 fill-emerald-400/50 drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]',
+                flameClass: 'text-emerald-400 fill-emerald-400/50',
                 textColor: 'text-text-light',
                 subTextColor: 'text-emerald-400',
-                boxClass: 'bg-white/[0.03] border-t-emerald-400/30 border-x-emerald-500/15 border-b-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.35)]',
+                boxClass: 'bg-white/[0.03] border-t-emerald-400/30 border-x-emerald-500/15 border-b-white/5 shadow-md',
                 auraColor: 'from-emerald-500 to-teal-400',
               };
             }
@@ -284,27 +284,21 @@ export default function Home() {
           // Distinct Bar Style for each thermal stage
           const getBarStyle = () => {
             if (isGodlike) {
-              // ⚡ STAGE 10+ (GODLIKE): COSMIC ULTRAVIOLET PLASMA WITH ELECTRIC CYAN LASER EDGE
-              return 'bg-gradient-to-t from-purple-700 via-violet-500 to-cyan-300 shadow-[0_0_20px_rgba(168,85,247,0.95)] border border-cyan-300/80';
+              return 'bg-gradient-to-t from-purple-700 via-violet-500 to-cyan-300 border border-cyan-300/80';
             }
             if (isSuperCharged) {
-              // 🔥 STAGE 5-7: ALL BARS TURN INTO BLAZING MOLTEN FIRE
-              return 'bg-gradient-to-t from-red-600 via-orange-500 to-amber-300 shadow-[0_0_16px_rgba(249,115,22,0.95)] border border-orange-400/70';
+              return 'bg-gradient-to-t from-red-600 via-orange-500 to-amber-300 border border-orange-400/70';
             }
             if (streak === 4) {
-              // 🟠 STAGE 4: BLAZING CRIMSON ORANGE
-              return 'bg-gradient-to-t from-orange-600 via-orange-500 to-amber-300 shadow-[0_0_14px_rgba(249,115,22,0.85)] border border-orange-400/60';
+              return 'bg-gradient-to-t from-orange-600 via-orange-500 to-amber-300 border border-orange-400/60';
             }
             if (streak === 3) {
-              // 🟡 STAGE 3: GOLDEN YELLOW / WARM AMBER
-              return 'bg-gradient-to-t from-amber-600 via-yellow-400 to-yellow-200 shadow-[0_0_14px_rgba(234,179,8,0.85)] border border-amber-400/60';
+              return 'bg-gradient-to-t from-amber-600 via-yellow-400 to-yellow-200 border border-amber-400/60';
             }
             if (streak === 2) {
-              // 🟦 STAGE 2: ELECTRIC CYAN / IN THE ZONE
-              return 'bg-gradient-to-t from-cyan-600 via-cyan-400 to-teal-200 shadow-[0_0_12px_rgba(6,182,212,0.8)] border border-cyan-400/50';
+              return 'bg-gradient-to-t from-cyan-600 via-cyan-400 to-teal-200 border border-cyan-400/50';
             }
-            // 🟩 STAGE 1: COOL EMERALD / TEAL
-            return 'bg-gradient-to-t from-emerald-600 via-teal-400 to-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.8)] border border-emerald-400/50';
+            return 'bg-gradient-to-t from-emerald-600 via-teal-400 to-emerald-200 border border-emerald-400/50';
           };
 
           return (
@@ -380,13 +374,13 @@ export default function Home() {
                       className={`absolute bottom-0 rounded-full ${ember.size} ${
                         isGodlike
                           ? i % 3 === 0
-                            ? 'bg-cyan-300 shadow-[0_0_4px_#22d3ee]'
+                            ? 'bg-cyan-300'
                             : i % 3 === 1
-                              ? 'bg-purple-300 shadow-[0_0_4px_#c084fc]'
-                              : 'bg-white shadow-[0_0_5px_#ffffff]'
+                              ? 'bg-purple-300'
+                              : 'bg-white'
                           : i % 2 === 0
-                            ? 'bg-amber-200 shadow-[0_0_5px_#fde047]'
-                            : 'bg-orange-400 shadow-[0_0_5px_#ea580c]'
+                            ? 'bg-amber-200'
+                            : 'bg-orange-400'
                       }`}
                     />
                   ))}
@@ -401,18 +395,18 @@ export default function Home() {
                     {theme.title}
                   </h4>
                   {streak >= 10 ? (
-                    <span className="text-[9px] font-black tracking-wider px-1.5 py-0.2 rounded-full bg-purple-500/25 border border-purple-400/40 text-purple-200 shadow-[0_0_8px_rgba(168,85,247,0.4)] leading-tight">
+                    <span className="text-[9px] font-black tracking-wider px-1.5 py-0.2 rounded-full bg-purple-500/25 border border-purple-400/40 text-purple-200 leading-tight">
                       +20 CR
                     </span>
                   ) : streak >= 5 ? (
-                    <span className="text-[9px] font-black tracking-wider px-1.5 py-0.2 rounded-full bg-orange-500/25 border border-orange-400/40 text-orange-200 shadow-[0_0_8px_rgba(249,115,22,0.4)] leading-tight">
+                    <span className="text-[9px] font-black tracking-wider px-1.5 py-0.2 rounded-full bg-orange-500/25 border border-orange-400/40 text-orange-200 leading-tight">
                       +15 CR
                     </span>
                   ) : null}
                 </div>
 
                 <div className="flex items-baseline gap-1.5">
-                  <span className={`text-3xl font-black text-white ${isGodlike ? 'drop-shadow-[0_0_18px_rgba(168,85,247,0.95)]' : isSuperCharged ? 'drop-shadow-[0_0_15px_rgba(249,115,22,0.9)]' : 'drop-shadow-md'}`}>
+                  <span className="text-3xl font-black text-white">
                     {streak}
                   </span>
                   <span className={`text-xs font-bold ${theme.subTextColor}`}>
@@ -545,7 +539,7 @@ export default function Home() {
                         }}
                       >
                         {isGodlike && (
-                          <div className="absolute top-0 left-0 right-0 h-1 bg-cyan-200 rounded-full shadow-[0_0_8px_#22d3ee]" />
+                          <div className="absolute top-0 left-0 right-0 h-1 bg-cyan-200 rounded-full" />
                         )}
                       </motion.div>
                     );

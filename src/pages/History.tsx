@@ -132,14 +132,13 @@ export default function History() {
             <button
               type="button"
               onClick={() => setFilter('TODAY')}
-              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${
-                filter === 'TODAY' ? 'text-slate-950 font-black' : 'text-text-light/70 hover:text-white'
-              }`}
+              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${filter === 'TODAY' ? 'text-slate-950 font-black' : 'text-text-light/70 hover:text-white'
+                }`}
             >
               {filter === 'TODAY' && (
                 <motion.div
                   layoutId="activeHistoryFilter"
-                  className="absolute inset-0 bg-primary rounded-xl shadow-[0_0_14px_rgba(16,185,129,0.45)] -z-10"
+                  className="absolute inset-0 bg-primary rounded-xl shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -148,14 +147,13 @@ export default function History() {
             <button
               type="button"
               onClick={() => setFilter('ALL')}
-              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${
-                filter === 'ALL' ? 'text-slate-950 font-black' : 'text-text-light/70 hover:text-white'
-              }`}
+              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${filter === 'ALL' ? 'text-slate-950 font-black' : 'text-text-light/70 hover:text-white'
+                }`}
             >
               {filter === 'ALL' && (
                 <motion.div
                   layoutId="activeHistoryFilter"
-                  className="absolute inset-0 bg-primary rounded-xl shadow-[0_0_14px_rgba(16,185,129,0.45)] -z-10"
+                  className="absolute inset-0 bg-primary rounded-xl shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -209,9 +207,9 @@ export default function History() {
 
                     <div className="text-right space-y-1.5 flex-shrink-0 pl-3">
                       <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${match.result === 'REFEREED'
-                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
+                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/25'
                         : match.result === 'WON'
-                          ? 'bg-primary/15 text-primary border border-primary/20 shadow-[0_0_10px_rgba(16,185,129,0.15)]'
+                          ? 'bg-primary/15 text-primary border border-primary/20'
                           : 'bg-red-500/15 text-red-400 border border-red-500/20'
                         }`}>
                         {match.result === 'REFEREED' ? 'REFEREED 🛡️' : match.result}
@@ -228,7 +226,7 @@ export default function History() {
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-white/[0.025] backdrop-blur-md rounded-3xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shadow-sm">
                   <CrossedPaddles className="w-8 h-8" />
                 </div>
                 <div className="space-y-1 max-w-xs">
@@ -253,7 +251,7 @@ export default function History() {
                     )}
                     <Link
                       to="/play"
-                      className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-96 transition-transform"
+                      className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm active:scale-96 transition-transform"
                     >
                       <PlusCircle className="w-4 h-4" /> Start A Match
                     </Link>

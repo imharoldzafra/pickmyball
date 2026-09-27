@@ -301,7 +301,7 @@ export default function AvatarCropperModal({
             <button
               type="button"
               onClick={handleFinish}
-              className="w-full py-3.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-[#050a0a] rounded-2xl text-xs font-black uppercase tracking-wider shadow-[0_0_25px_rgba(16,185,129,0.45)] active:scale-96 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-[#050a0a] rounded-2xl text-xs font-black uppercase tracking-wider shadow-sm active:scale-96 transition-all flex items-center justify-center gap-2"
             >
               <Check className="w-4 h-4 text-[#050a0a]" /> Finished
             </button>

@@ -65,16 +65,14 @@ export default function ResetPasswordModal() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+        className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-lg flex items-center justify-center p-4 sm:p-6"
       >
         <motion.div
           initial={{ scale: 0.92, opacity: 0, y: 15 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.92, opacity: 0, y: 15 }}
-          className="w-full max-w-sm bg-[#0a1015] border border-white/15 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.9)] relative space-y-4 overflow-hidden"
+          className="w-full max-w-sm bg-[#080d12] border border-white/15 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] relative space-y-4 overflow-hidden"
         >
-          {/* Subtle Aurora Ambient Glow */}
-          <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
 
           {/* Close Button */}
           <button
@@ -88,7 +86,7 @@ export default function ResetPasswordModal() {
 
           {/* Header */}
           <div className="text-center space-y-1.5 pt-2">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-sm">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <h2 className="text-lg font-black text-white tracking-tight">
@@ -136,7 +134,7 @@ export default function ResetPasswordModal() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Min. 6 characters"
-                    className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-3 text-sm text-white placeholder:text-white/40 focus:border-emerald-400 focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none"
+                    className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-3 text-sm text-white placeholder:text-white/40 focus:border-emerald-500 focus:bg-black/70 transition-all outline-none"
                   />
                   <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
                   <button
@@ -161,7 +159,7 @@ export default function ResetPasswordModal() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter password"
-                    className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-3 text-sm text-white placeholder:text-white/40 focus:border-emerald-400 focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none"
+                    className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-3 text-sm text-white placeholder:text-white/40 focus:border-emerald-500 focus:bg-black/70 transition-all outline-none"
                   />
                   <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
                   <button
@@ -178,7 +176,7 @@ export default function ResetPasswordModal() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full relative overflow-hidden bg-emerald-400 hover:bg-emerald-300 text-[#04080a] py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:shadow-[0_0_35px_rgba(16,185,129,0.65)] transition-all active:scale-[0.97] flex items-center justify-center gap-2 mt-4 disabled:opacity-50 group"
+                className="w-full relative overflow-hidden bg-emerald-400 hover:bg-emerald-300 text-[#04080a] py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50 group"
               >
                 {/* Sweeping Light Shimmer Reflection */}
                 <motion.div

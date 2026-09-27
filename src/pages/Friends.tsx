@@ -38,7 +38,7 @@ export default function Friends() {
           onClick={() => setActiveTab('friends')}
           className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1.5 ${
             activeTab === 'friends' 
-              ? 'bg-primary text-[#050a0a] shadow-[0_0_12px_rgba(16,185,129,0.25)] font-extrabold' 
+              ? 'bg-primary text-[#050a0a] shadow-sm font-extrabold' 
               : 'text-text-light hover:text-text-main'
           }`}
         >
@@ -48,7 +48,7 @@ export default function Friends() {
           onClick={() => setActiveTab('requests')}
           className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1.5 ${
             activeTab === 'requests' 
-              ? 'bg-primary text-[#050a0a] shadow-[0_0_12px_rgba(16,185,129,0.25)] font-extrabold' 
+              ? 'bg-primary text-[#050a0a] shadow-sm font-extrabold' 
               : 'text-text-light hover:text-text-main'
           }`}
         >
@@ -63,7 +63,7 @@ export default function Friends() {
           transition={{ duration: 0.35 }}
           className="flex flex-col items-center justify-center text-center p-10 bg-white/[0.03] backdrop-blur-md rounded-3xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.3)] space-y-4"
         >
-          <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(16,185,129,0.15)] backdrop-blur-md">
+          <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-sm backdrop-blur-md">
             <HeartHandshake className="w-8 h-8" />
           </div>
           <div className="space-y-1 max-w-xs">

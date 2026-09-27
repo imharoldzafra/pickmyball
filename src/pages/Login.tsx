@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { UserPlus, LogIn, ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, User, Lock, ShieldAlert } from 'lucide-react';
@@ -16,9 +16,20 @@ const formatCooldown = (totalSeconds: number): string => {
   return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
 };
 
+const formatErrorWithExclamation = (text: string): string => {
+  const cleaned = text.trim().replace(/[.!]+$/, '');
+  return `${cleaned}!`;
+};
+
 export default function Login() {
   const { user, signIn, signUp, resetPassword } = useAuth();
+  const navigate = useNavigate();
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+
+  const handleQuickOfflineScoreboard = () => {
+    sessionStorage.setItem('pkb_guest_offline', 'true');
+    navigate('/play?action=create');
+  };
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,6 +37,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorField, setErrorField] = useState<'identifier' | 'password' | 'username' | 'email' | 'confirmPassword' | null>(null);
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -97,6 +109,7 @@ export default function Login() {
   const handleModeSwitch = (mode: 'signin' | 'signup') => {
     setAuthMode(mode);
     setErrorMsg(null);
+    setErrorField(null);
     setInfoMsg(null);
     setPassword('');
     setConfirmPassword('');
@@ -104,7 +117,8 @@ export default function Login() {
     setShowConfirmPassword(false);
   };
 
-  const recordFailedAttempt = () => {
+  const recordFailedAttempt = (errorMessage: string, field?: 'identifier' | 'password') => {
+    setErrorField(field || null);
     try {
       let currentAttempts = 0;
       const stored = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
@@ -119,18 +133,19 @@ export default function Login() {
         const lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
         localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify({ attempts: nextAttempts, lockedUntil }));
         setLockoutSecondsLeft(Math.ceil(LOCKOUT_DURATION_MS / 1000));
-        setErrorMsg(`Too many failed attempts. Login locked for 3 minutes to protect your account.`);
+        setErrorField(null);
+        setErrorMsg(null);
       } else {
         localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify({ attempts: nextAttempts, lockedUntil: null }));
         const remaining = MAX_FAILED_ATTEMPTS - nextAttempts;
         if (remaining <= 2) {
-          setErrorMsg(`Invalid credentials. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining before temporary security lockout.`);
+          setErrorMsg(`${errorMessage} • ${remaining} attempt${remaining === 1 ? '' : 's'} left`);
         } else {
-          setErrorMsg('Invalid username/email or password.');
+          setErrorMsg(errorMessage);
         }
       }
     } catch {
-      setErrorMsg('Invalid username/email or password.');
+      setErrorMsg(errorMessage);
     }
   };
 
@@ -150,70 +165,95 @@ export default function Login() {
 
     // Bot detection check
     if (honeypot.trim() !== '') {
-      setErrorMsg('Automated submission detected. Access denied.');
+      setErrorMsg('Automated submission detected');
       return;
     }
 
     if (authMode === 'signup') {
-      if (!displayName.trim()) {
+      const trimmedName = displayName.trim();
+      if (!trimmedName) {
         setErrorMsg('Please choose a username');
+        setErrorField('username');
         return;
       }
-      if (!email.trim()) {
+      if (trimmedName.length < 2) {
+        setErrorMsg('Username must be at least 2 characters');
+        setErrorField('username');
+        return;
+      }
+      const finalEmail = email.trim();
+      if (!finalEmail) {
         setErrorMsg('Please enter your email address');
+        setErrorField('email');
         return;
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
+      if (!emailRegex.test(finalEmail)) {
         setErrorMsg('Please enter a valid email address');
+        setErrorField('email');
         return;
       }
       if (!password) {
         setErrorMsg('Please enter a password');
+        setErrorField('password');
         return;
       }
       if (password.length < 6) {
         setErrorMsg('Password should be at least 6 characters');
+        setErrorField('password');
         return;
       }
       if (password !== confirmPassword) {
         setErrorMsg('Passwords do not match');
+        setErrorField('confirmPassword');
         return;
       }
 
       setIsSubmitting(true);
-      const res = await signUp(displayName.trim(), email.trim(), password);
+      const res = await signUp(trimmedName, finalEmail, password);
       setIsSubmitting(false);
 
       if (res.error) {
         setErrorMsg(res.error);
+        if (res.errorField) {
+          setErrorField(res.errorField);
+        }
       } else if (res.needsVerification) {
         setInfoMsg(res.message || 'Verification email sent! Please check your inbox.');
       }
     } else {
-      // Sign In Flow
+      // Sign In Flow (Username only)
       if (lockoutSecondsLeft > 0) {
-        setErrorMsg(`Too many failed attempts. Please wait ${formatCooldown(lockoutSecondsLeft)} before retrying.`);
+        setErrorMsg(`Account locked • Retry in ${formatCooldown(lockoutSecondsLeft)}`);
         return;
       }
 
-      if (!displayName.trim()) {
-        setErrorMsg('Please enter your username or email');
+      const trimmedUser = displayName.trim();
+      if (!trimmedUser) {
+        setErrorMsg('Please enter your username');
+        setErrorField('identifier');
+        return;
+      }
+      if (trimmedUser.includes('@')) {
+        setErrorMsg('Please enter your username, not your email');
+        setErrorField('identifier');
         return;
       }
       if (!password) {
         setErrorMsg('Please enter your password');
+        setErrorField('password');
         return;
       }
 
       setIsSubmitting(true);
-      const res = await signIn(displayName.trim(), password);
+      const res = await signIn(trimmedUser, password);
       setIsSubmitting(false);
 
       if (res.error) {
-        recordFailedAttempt();
+        recordFailedAttempt(res.error, res.errorField);
       } else {
         clearFailedAttempts();
+        setErrorField(null);
       }
     }
   };
@@ -305,7 +345,7 @@ export default function Login() {
 
               <div>
                 <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-                  Pick<span className="text-emerald-400 drop-shadow-[0_0_18px_rgba(16,185,129,0.4)]">MyBall</span>
+                  Pick<span className="text-emerald-400">MyBall</span>
                 </h1>
                 <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mt-1">
                   {authMode === 'signin' ? 'Ready to Serve.' : 'Join the Arena.'}
@@ -326,33 +366,6 @@ export default function Login() {
               transition={{ duration: 0.3 }}
               className="bg-[#070e14]/90 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.75)] space-y-3.5"
             >
-              {authMode === 'signin' && lockoutSecondsLeft > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="p-3.5 bg-rose-950/40 border border-rose-500/40 rounded-2xl text-left backdrop-blur-md flex items-center gap-3 shadow-[0_0_25px_rgba(244,63,94,0.25)]"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center shrink-0 text-rose-400">
-                    <ShieldAlert className="w-5 h-5 animate-pulse" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-rose-200">Security Cooldown Active</p>
-                    <p className="text-[11px] text-rose-300/80 mt-0.5">
-                      Too many attempts. Retry in: <span className="font-mono font-bold text-white tracking-wider">{formatCooldown(lockoutSecondsLeft)}</span>
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              {errorMsg && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-2xl text-left backdrop-blur-md"
-                >
-                  <p className="text-xs text-rose-300 font-semibold">{errorMsg}</p>
-                </motion.div>
-              )}
 
               {infoMsg && (
                 <motion.div
@@ -388,18 +401,37 @@ export default function Login() {
                         type="text"
                         required
                         value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
+                        onChange={(e) => {
+                          setDisplayName(e.target.value);
+                          if (errorMsg && errorField === 'username') {
+                            setErrorMsg(null);
+                            setErrorField(null);
+                          }
+                        }}
                         placeholder="e.g. kakarotbomba"
-                        className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-medium"
+                        className={`w-full bg-black/50 border rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:bg-black/70 transition-all outline-none font-medium ${
+                          errorField === 'username'
+                            ? 'border-rose-500 focus:border-rose-400'
+                            : 'border-white/12 hover:border-white/25 focus:border-emerald-500'
+                        }`}
                       />
                       <User className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
                     </div>
+                    {errorField === 'username' && errorMsg && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-[11px] font-semibold text-rose-400 mt-1.5 px-1 leading-tight"
+                      >
+                        {formatErrorWithExclamation(errorMsg)}
+                      </motion.p>
+                    )}
                   </div>
                 )}
 
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
-                    {authMode === 'signup' ? 'Email Address' : 'Username / Email'}
+                    {authMode === 'signup' ? 'Email Address' : 'Username'}
                   </label>
                   <div className="relative flex items-center">
                     <input
@@ -407,9 +439,27 @@ export default function Login() {
                       required
                       disabled={isSubmitting || (authMode === 'signin' && lockoutSecondsLeft > 0)}
                       value={authMode === 'signup' ? email : displayName}
-                      onChange={(e) => authMode === 'signup' ? setEmail(e.target.value) : setDisplayName(e.target.value)}
-                      placeholder={authMode === 'signup' ? 'player@email.com' : 'e.g. kakarotbomba'}
-                      className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      onChange={(e) => {
+                        if (authMode === 'signup') {
+                          setEmail(e.target.value);
+                          if (errorMsg && errorField === 'email') {
+                            setErrorMsg(null);
+                            setErrorField(null);
+                          }
+                        } else {
+                          setDisplayName(e.target.value);
+                          if (errorMsg && errorField === 'identifier') {
+                            setErrorMsg(null);
+                            setErrorField(null);
+                          }
+                        }
+                      }}
+                      placeholder={authMode === 'signup' ? 'player@email.com' : 'e.g. imharoldzafra'}
+                      className={`w-full bg-black/50 border rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:bg-black/70 transition-all outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                        ((authMode === 'signin' && errorField === 'identifier') || (authMode === 'signup' && errorField === 'email')) && lockoutSecondsLeft === 0
+                          ? 'border-rose-500 focus:border-rose-400'
+                          : 'border-white/12 hover:border-white/25 focus:border-emerald-500'
+                      }`}
                     />
                     {authMode === 'signup' ? (
                       <Mail className="w-4 h-4 text-cyan-400/80 absolute left-4 pointer-events-none" />
@@ -417,6 +467,15 @@ export default function Login() {
                       <User className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
                     )}
                   </div>
+                  {lockoutSecondsLeft === 0 && ((authMode === 'signin' && errorField === 'identifier') || (authMode === 'signup' && errorField === 'email')) && errorMsg && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-[11px] font-semibold text-rose-400 mt-1.5 px-1 leading-tight"
+                    >
+                      {formatErrorWithExclamation(errorMsg)}
+                    </motion.p>
+                  )}
                 </div>
 
                 <div>
@@ -429,7 +488,7 @@ export default function Login() {
                         type="button"
                         onClick={() => {
                           setShowForgotModal(true);
-                          setForgotEmail(email || displayName.includes('@') ? displayName : '');
+                          setForgotEmail(email || '');
                           setForgotMsg(null);
                           setForgotSuccess(false);
                         }}
@@ -444,9 +503,19 @@ export default function Login() {
                       type={showPassword ? 'text' : 'password'}
                       disabled={isSubmitting || (authMode === 'signin' && lockoutSecondsLeft > 0)}
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (errorMsg && errorField === 'password') {
+                          setErrorMsg(null);
+                          setErrorField(null);
+                        }
+                      }}
                       placeholder="••••••••"
-                      className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`w-full bg-black/50 border rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:bg-black/70 transition-all outline-none font-mono disabled:opacity-50 disabled:cursor-not-allowed ${
+                        errorField === 'password' && lockoutSecondsLeft === 0
+                          ? 'border-rose-500 focus:border-rose-400'
+                          : 'border-white/12 hover:border-white/25 focus:border-emerald-500'
+                      }`}
                     />
                     <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
                     <button
@@ -458,6 +527,15 @@ export default function Login() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  {lockoutSecondsLeft === 0 && errorField === 'password' && errorMsg && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-[11px] font-semibold text-rose-400 mt-1.5 px-1 leading-tight"
+                    >
+                      {formatErrorWithExclamation(errorMsg)}
+                    </motion.p>
+                  )}
                 </div>
 
                 {authMode === 'signup' && (
@@ -469,9 +547,19 @@ export default function Login() {
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
                         value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (errorMsg && errorField === 'confirmPassword') {
+                            setErrorMsg(null);
+                            setErrorField(null);
+                          }
+                        }}
                         placeholder="••••••••"
-                        className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:border-primary focus:bg-black/70 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all outline-none font-mono"
+                        className={`w-full bg-black/50 border rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:bg-black/70 transition-all outline-none font-mono ${
+                          errorField === 'confirmPassword'
+                            ? 'border-rose-500 focus:border-rose-400'
+                            : 'border-white/12 hover:border-white/25 focus:border-emerald-500'
+                        }`}
                       />
                       <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
                       <button
@@ -483,53 +571,111 @@ export default function Login() {
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+                    {errorField === 'confirmPassword' && errorMsg && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-[11px] font-semibold text-rose-400 mt-1.5 px-1 leading-tight"
+                      >
+                        {formatErrorWithExclamation(errorMsg)}
+                      </motion.p>
+                    )}
                   </div>
                 )}
 
-                {/* ⚡ High-Energy Electric Volt CTA Button with Shimmer */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting || (authMode === 'signin' && lockoutSecondsLeft > 0)}
-                  className="w-full relative overflow-hidden bg-emerald-400 hover:bg-emerald-300 text-[#04080a] py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:shadow-[0_0_35px_rgba(16,185,129,0.65)] transition-all active:scale-[0.97] flex items-center justify-center gap-2 mt-3 disabled:opacity-50 disabled:cursor-not-allowed group"
-                >
-                  {/* Sweeping Light Shimmer Reflection */}
-                  <motion.div
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut", repeatDelay: 1.5 }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -skew-x-12 pointer-events-none"
-                  />
+                {/* General fallback error if not tied to specific input column */}
+                {lockoutSecondsLeft === 0 && !errorField && errorMsg && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-[11px] font-semibold text-rose-400 text-center px-1 leading-tight"
+                  >
+                    {formatErrorWithExclamation(errorMsg)}
+                  </motion.p>
+                )}
 
-                  <span className="relative z-10 font-black">
-                    {authMode === 'signin' && lockoutSecondsLeft > 0
-                      ? `Locked (${formatCooldown(lockoutSecondsLeft)})`
-                      : isSubmitting
-                      ? 'Connecting Arena...'
-                      : (authMode === 'signup' ? 'Create Account' : 'Sign In')}
-                  </span>
-                  {!isSubmitting && !(authMode === 'signin' && lockoutSecondsLeft > 0) && (
-                    <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
-                  )}
-                </button>
+                {authMode === 'signin' && lockoutSecondsLeft > 0 ? (
+                  <button
+                    type="button"
+                    disabled
+                    aria-disabled="true"
+                    tabIndex={-1}
+                    className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 mt-3 bg-rose-950/20 border border-rose-500/25 text-rose-300/70 shadow-none cursor-not-allowed select-none transition-none"
+                  >
+                    <ShieldAlert className="w-4 h-4 text-rose-400/80 shrink-0" />
+                    <span className="font-mono font-bold tracking-wider">LOCKED ({formatCooldown(lockoutSecondsLeft)})</span>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`w-full relative overflow-hidden py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 mt-3 group ${
+                      isSubmitting
+                        ? 'bg-emerald-400/60 text-[#04080a] cursor-not-allowed'
+                        : 'bg-emerald-400 hover:bg-emerald-300 text-[#04080a] shadow-sm active:scale-[0.98]'
+                    }`}
+                  >
+                    {/* Sweeping Light Shimmer Reflection */}
+                    <motion.div
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut", repeatDelay: 1.5 }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -skew-x-12 pointer-events-none"
+                    />
+
+                    <span className="relative z-10 font-black">
+                      {isSubmitting ? 'Connecting Arena...' : (authMode === 'signup' ? 'Create Account' : 'Sign In')}
+                    </span>
+                    {!isSubmitting && (
+                      <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
+                    )}
+                  </button>
+                )}
               </form>
 
               {/* Bottom Switcher Toggle Link inside Card */}
               <div className="pt-2 text-center border-t border-white/5">
+                <p className="text-xs text-text-light/70">
+                  {authMode === 'signin' ? (
+                    <>
+                      <span>New to PickMyBall?</span>
+                      <button
+                        type="button"
+                        onClick={() => handleModeSwitch('signup')}
+                        className="text-emerald-400 hover:text-emerald-300 font-bold hover:underline transition-colors ml-1.5 focus:outline-none focus:underline"
+                      >
+                        Create Account
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span>Already have an account?</span>
+                      <button
+                        type="button"
+                        onClick={() => handleModeSwitch('signin')}
+                        className="text-emerald-400 hover:text-emerald-300 font-bold hover:underline transition-colors ml-1.5 focus:outline-none focus:underline"
+                      >
+                        Sign In
+                      </button>
+                    </>
+                  )}
+                </p>
+              </div>
+
+              {/* ⚡ Quick Offline Scoreboard (Court Utility without Login) */}
+              <div className="pt-2 text-center border-t border-white/5">
                 <button
                   type="button"
-                  onClick={() => handleModeSwitch(authMode === 'signin' ? 'signup' : 'signin')}
-                  className="text-xs text-text-light/80 hover:text-white transition-colors active:scale-96"
+                  onClick={handleQuickOfflineScoreboard}
+                  className="w-full py-2.5 px-3 rounded-xl border border-white/10 hover:border-emerald-500/40 bg-white/[0.03] hover:bg-emerald-500/[0.08] text-white/80 hover:text-white transition-all text-xs font-bold flex items-center justify-center active:scale-[0.98]"
                 >
-                  {authMode === 'signin' ? (
-                    <span>New to PickMyBall? <strong className="text-emerald-400 font-bold hover:underline ml-1">Create Account</strong></span>
-                  ) : (
-                    <span>Already have an account? <strong className="text-emerald-400 font-bold hover:underline ml-1">Sign In</strong></span>
-                  )}
+                  Quick Offline Scoreboard
                 </button>
               </div>
             </motion.div>
           </div>
 
         </div>
+
 
         {/* 🔒 Fixed Pinned Footer (Exact Identical Position on Both Sign In & Sign Up) */}
         <div className="relative z-10 text-center py-2.5 flex-shrink-0">
@@ -623,7 +769,7 @@ export default function Login() {
                       <button
                         type="submit"
                         disabled={isResetting}
-                        className="flex-1 py-3 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-[#04080a] text-xs font-black uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-transform active:scale-96 disabled:opacity-50"
+                        className="flex-1 py-3 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-[#04080a] text-xs font-black uppercase tracking-wider shadow-sm transition-transform active:scale-96 disabled:opacity-50"
                       >
                         {isResetting ? 'Sending...' : 'Send Reset Link'}
                       </button>

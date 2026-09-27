@@ -64,11 +64,8 @@ export default function Pickleball3DSphere({ className = '', size = 72 }: Pickle
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.strokeStyle = '#10B981';
-      ctx.lineWidth = 3;
-      ctx.shadowColor = 'rgba(16, 185, 129, 0.6)';
-      ctx.shadowBlur = 12;
+      ctx.lineWidth = 2.5;
       ctx.stroke();
-      ctx.shadowBlur = 0;
 
       // 2. Project and draw holes on the 3D surface
       for (const p of points) {
@@ -108,9 +105,7 @@ export default function Pickleball3DSphere({ className = '', size = 72 }: Pickle
           ctx.beginPath();
           ctx.ellipse(0, 0, holeRy, holeRx, 0, 0, Math.PI * 2);
           ctx.strokeStyle = '#10B981';
-          ctx.lineWidth = 2;
-          ctx.shadowColor = 'rgba(16, 185, 129, 0.4)';
-          ctx.shadowBlur = 6;
+          ctx.lineWidth = 1.8;
           ctx.stroke();
 
           ctx.restore();
@@ -129,8 +124,6 @@ export default function Pickleball3DSphere({ className = '', size = 72 }: Pickle
 
   return (
     <div className={`relative flex items-center justify-center ${className}`}>
-      {/* Ambient Radial Spotlight Aura */}
-      <div className="absolute w-20 h-20 rounded-full bg-emerald-400/20 blur-[22px] pointer-events-none" />
       <canvas
         ref={canvasRef}
         style={{ width: size, height: size }}

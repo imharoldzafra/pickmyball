@@ -141,9 +141,7 @@ export default function CourtStaminaCard() {
                   initial={false}
                   animate={{ width: `${stamina}%` }}
                   transition={{ duration: 0.45, ease: "easeOut" }}
-                  className={`h-full rounded-full bg-gradient-to-r ${getBatteryColor()} ${
-                    stamina > 0 ? 'shadow-[0_0_12px_rgba(16,185,129,0.5)]' : ''
-                  }`}
+                  className={`h-full rounded-full bg-gradient-to-r ${getBatteryColor()}`}
                 />
 
                 {/* 2. Precision Segment Notches (Dividing into 5 Matches at 20%, 40%, 60%, 80%) */}

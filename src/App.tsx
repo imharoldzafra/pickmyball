@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/layout/Layout';
 
@@ -40,7 +40,7 @@ function ArenaSplashLoader() {
 
         <div className="space-y-1.5 pt-1">
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Pick<span className="text-emerald-400 drop-shadow-[0_0_18px_rgba(16,185,129,0.4)]">MyBall</span>
+            Pick<span className="text-emerald-400">MyBall</span>
           </h1>
 
           <div className="flex items-center justify-center gap-1 text-[11px] font-bold uppercase tracking-widest text-emerald-400">
@@ -60,10 +60,16 @@ function ArenaSplashLoader() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
+  const isFriendlyOffline = (location.pathname.includes('/live') || location.pathname.includes('/play')) && (
+    location.pathname.includes('PKB-FR-') || 
+    sessionStorage.getItem('pkb_guest_offline') === 'true'
+  );
+
   if (loading) {
     return <ArenaSplashLoader />;
   }
-  if (!user) {
+  if (!user && !isFriendlyOffline) {
     return <Navigate to="/login" />;
   }
   return <>{children}</>;

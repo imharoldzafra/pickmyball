@@ -28,11 +28,8 @@ export default function ChallengerUnlockModal({ isOpen, onClose }: ChallengerUnl
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: 'spring', damping: 22, stiffness: 260 }}
-          className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-[#091313] border border-emerald-400/40 p-6 shadow-[0_0_50px_rgba(16,185,129,0.35)] z-10 text-center"
+          className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-[#091313] border border-emerald-400/40 p-6 shadow-2xl z-10 text-center"
         >
-          {/* Ambient Top Glow */}
-          <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-500/25 rounded-full blur-3xl pointer-events-none" />
-
           {/* Header Texts */}
           <div className="space-y-1.5 mb-5 pt-1">
             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-400/25 px-2.5 py-0.5 rounded-full inline-block">
@@ -88,7 +85,7 @@ export default function ChallengerUnlockModal({ isOpen, onClose }: ChallengerUnl
           {/* CTA Button */}
           <button
             onClick={onClose}
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-95 active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-95 active:scale-[0.98] transition-all shadow-sm"
           >
             <span>Step on the Court</span>
             <ArrowRight className="w-3.5 h-3.5" />

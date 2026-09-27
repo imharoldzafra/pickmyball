@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Match, Team } from '../types';
 import { useAuth, calculateTierCR } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Flame, Trophy, Shield, Swords, Sparkles, Activity, Check, RotateCcw, User } from 'lucide-react';
+import { Flame, Trophy, Shield, Swords, Sparkles, Activity, Check, RotateCcw, User, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LiveMatch() {
@@ -11,12 +11,40 @@ export default function LiveMatch() {
   const { user, profile, recordMatchResult } = useAuth();
   const navigate = useNavigate();
 
-  const [match, setMatch] = useState<Match | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [match, setMatch] = useState<Match | null>(() => {
+    if (!matchId) return null;
+    try {
+      const cached = sessionStorage.getItem(`pkb_match_${matchId}`) || localStorage.getItem(`pkb_match_${matchId}`);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (e) {
+      console.warn('Initial cache parse error:', e);
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState<boolean>(!match);
   const hasNavigatedRef = React.useRef(false);
+
+  const isFriendlyMatch = Boolean(
+    matchId?.includes('FR') || 
+    (match as any)?.isFriendly || 
+    (match as any)?.matchType === 'friendly' ||
+    (match as any)?.creatorId?.startsWith('friendly') ||
+    (match as any)?.refereeId?.startsWith('friendly') ||
+    match?.teamA?.some((p: any) => p.id?.startsWith('friendly_')) ||
+    match?.teamB?.some((p: any) => p.id?.startsWith('friendly_')) ||
+    sessionStorage.getItem(`pkb_is_friendly_${matchId}`) === 'true' ||
+    sessionStorage.getItem('pkb_guest_offline') === 'true'
+  );
+  const [showExitModal, setShowExitModal] = useState(false);
 
   // ⚡ Auto-Navigate to Winner's Profile upon match victory (< 350ms transition)
   useEffect(() => {
+    if (isFriendlyMatch) {
+      // Friendly offline matches stay right here on the digital court scoreboard!
+      return;
+    }
     if (match?.status === 'FINISHED' && matchId && !hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
       try {
@@ -29,16 +57,59 @@ export default function LiveMatch() {
       }, 350);
       return () => clearTimeout(timer);
     }
-  }, [match?.status, matchId, match, navigate]);
+  }, [match?.status, matchId, match, navigate, isFriendlyMatch]);
 
-  // Fetch match from Supabase
+  // Fetch match from local cache or Supabase
   const fetchMatch = async () => {
-    if (!matchId || !/^PKB-[A-Z0-9]{6}$/i.test(matchId)) {
+    if (!matchId) {
       setLoading(false);
       return;
     }
+
+    // 1. Instant check from local / session cache (0ms instant display for friendly & offline matches)
+    const cached = sessionStorage.getItem(`pkb_match_${matchId}`) || localStorage.getItem(`pkb_match_${matchId}`);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        const hydratedMatch: Match = {
+          id: parsed.id || matchId,
+          creatorId: parsed.creatorId || parsed.host_id || user?.id || 'referee',
+          hostId: parsed.hostId || parsed.host_id || user?.id || 'referee',
+          hostName: parsed.hostName || parsed.host_name || 'Referee',
+          hostAvatar: parsed.hostAvatar || parsed.host_avatar || '',
+          matchType: parsed.matchType || parsed.match_type || '1v1',
+          gameFormat: parsed.gameFormat || parsed.game_format || 'single_11',
+          targetPoints: parsed.targetPoints || parsed.target_points || 11,
+          status: parsed.status || 'IN_PROGRESS',
+          teamA: parsed.teamA || parsed.team_a || [],
+          teamB: parsed.teamB || parsed.team_b || [],
+          refereeId: parsed.refereeId || parsed.referee_id || user?.id || 'referee',
+          referee: parsed.referee || null,
+          currentGame: parsed.currentGame || parsed.current_game || 1,
+          teamAScore: parsed.teamAScore ?? parsed.team_a_score ?? 0,
+          teamBScore: parsed.teamBScore ?? parsed.team_b_score ?? 0,
+          teamAGamesWon: parsed.teamAGamesWon ?? parsed.team_a_games_won ?? 0,
+          teamBGamesWon: parsed.teamBGamesWon ?? parsed.team_b_games_won ?? 0,
+          servingTeam: parsed.servingTeam || parsed.serving_team || 'A',
+          serverNumber: parsed.serverNumber || parsed.server_number || 2,
+          gameResults: parsed.gameResults || parsed.game_results || [],
+          matchWinner: parsed.matchWinner || parsed.match_winner || 'NONE',
+          createdAt: parsed.createdAt || Date.now(),
+          updatedAt: parsed.updatedAt || Date.now(),
+        };
+        setMatch(hydratedMatch);
+        setLoading(false);
+
+        // If friendly match, local is the primary source of truth!
+        if (matchId.includes('FR')) return;
+      } catch (e) {
+        console.warn('Cache parse error:', e);
+      }
+    }
+
+    // 2. Fetch from Supabase for online network matches
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('matches')
         .select('*')
         .eq('id', matchId)
@@ -48,6 +119,7 @@ export default function LiveMatch() {
         setMatch({
           id: data.id,
           creatorId: data.host_id,
+          hostId: data.host_id,
           hostName: data.host_name,
           hostAvatar: data.host_avatar,
           matchType: data.match_type || '1v1',
@@ -89,7 +161,7 @@ export default function LiveMatch() {
 
   // Real-time Supabase High-Speed Broadcast + Database Subscription (< 30ms)
   useEffect(() => {
-    if (!matchId) return;
+    if (!matchId || matchId.includes('FR')) return;
 
     const channel = supabase.channel(`live-court-${matchId}`, {
       config: {
@@ -122,7 +194,7 @@ export default function LiveMatch() {
           }
 
           setMatch(payload);
-          if (payload.status === 'FINISHED') {
+          if (payload.status === 'FINISHED' && !isFriendlyMatch) {
             try {
               sessionStorage.setItem(`pkb_match_${payload.id}`, JSON.stringify(payload));
             } catch (e) {
@@ -192,16 +264,37 @@ export default function LiveMatch() {
     };
   }, [matchId, user?.id, navigate]);
 
-  if (loading || !match) {
+  if (loading && !match) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-3 bg-[#05080c]">
+      <div className="flex-1 w-full h-full min-h-[60vh] flex flex-col items-center justify-center p-6 space-y-3">
         <div className="w-10 h-10 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
         <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Connecting to Court...</p>
       </div>
     );
   }
 
-  const isReferee = user?.id === match.refereeId || user?.id === match.creatorId;
+  if (!match) {
+    return (
+      <div className="flex-1 w-full h-full min-h-[60vh] flex flex-col items-center justify-center p-6 space-y-4 text-center">
+        <p className="text-sm font-bold text-white">Match not found</p>
+        <button
+          onClick={() => navigate('/play')}
+          className="px-5 py-2.5 bg-gradient-to-r from-primary to-secondary text-slate-950 rounded-2xl text-xs font-black uppercase tracking-wider"
+        >
+          Return to Arena
+        </button>
+      </div>
+    );
+  }
+
+  const isReferee = Boolean(match) && (
+    user?.id === match.refereeId || 
+    user?.id === match.creatorId || 
+    user?.id === match.hostId || 
+    Boolean(match.creatorId?.startsWith('friendly')) || 
+    Boolean(match.refereeId?.startsWith('friendly')) ||
+    Boolean(sessionStorage.getItem(`pkb_match_${match.id}`))
+  );
   const targetPoints = match.targetPoints || 11;
   const isBestOfThree = match.gameFormat === 'best_of_3';
 
@@ -261,59 +354,62 @@ export default function LiveMatch() {
           newWinner = newTeamAGamesWon >= setsToWin ? 'A' : 'B';
           newStatus = 'FINISHED';
 
-          // ⏱️ 60-Second Minimum Match Validity Check (Prevents rapid alt/spam farming)
-          const matchDurationSec = match.createdAt ? Math.floor((Date.now() - match.createdAt) / 1000) : 120;
-          const isOfficialRated = matchDurationSec >= 60;
+          // If NOT friendly match, record career progression (XP / CR)
+          if (!isFriendlyMatch) {
+            // ⏱️ 60-Second Minimum Match Validity Check (Prevents rapid alt/spam farming)
+            const matchDurationSec = match.createdAt ? Math.floor((Date.now() - match.createdAt) / 1000) : 120;
+            const isOfficialRated = matchDurationSec >= 60;
 
-          // Record player or referee results
-          const userIsTeamA = match.teamA.some((p) => p.id === user?.id);
-          const userIsTeamB = match.teamB.some((p) => p.id === user?.id);
-          const userIsPlaying = userIsTeamA || userIsTeamB;
-          const userIsReferee = !userIsPlaying && (match.hostId === user?.id || match.creatorId === user?.id || match.refereeId === user?.id);
+            // Record player or referee results
+            const userIsTeamA = match.teamA.some((p) => p.id === user?.id);
+            const userIsTeamB = match.teamB.some((p) => p.id === user?.id);
+            const userIsPlaying = userIsTeamA || userIsTeamB;
+            const userIsReferee = !userIsPlaying && (match.hostId === user?.id || match.creatorId === user?.id || match.refereeId === user?.id);
 
-          const teamANames = match.teamA.map((p) => p.displayName).filter(Boolean).join(' & ') || 'Team Alpha';
-          const teamBNames = match.teamB.map((p) => p.displayName).filter(Boolean).join(' & ') || 'Team Beta';
-          const scoreSummary = newGameResults.map((g) => `${g.teamAScore}-${g.teamBScore}`).join(', ');
+            const teamANames = match.teamA.map((p) => p.displayName).filter(Boolean).join(' & ') || 'Team Alpha';
+            const teamBNames = match.teamB.map((p) => p.displayName).filter(Boolean).join(' & ') || 'Team Beta';
+            const scoreSummary = newGameResults.map((g) => `${g.teamAScore}-${g.teamBScore}`).join(', ');
 
-          if (userIsPlaying) {
-            const userWon = (newWinner === 'A' && userIsTeamA) || (newWinner === 'B' && userIsTeamB);
-            const opponentNames = userIsTeamA ? teamBNames : teamANames;
+            if (userIsPlaying) {
+              const userWon = (newWinner === 'A' && userIsTeamA) || (newWinner === 'B' && userIsTeamB);
+              const opponentNames = userIsTeamA ? teamBNames : teamANames;
 
-            const crEarned = isOfficialRated
-              ? calculateTierCR(profile?.rating || 0, userWon, profile?.currentStreak || 0)
-              : 0;
-            const xpEarned = isOfficialRated ? (userWon ? 150 : 50) : (userWon ? 40 : 15);
-            const matchTypeDesc = isOfficialRated
-              ? (match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)')
-              : `${match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)'} • Practice`;
+              const crEarned = isOfficialRated
+                ? calculateTierCR(profile?.rating || 0, userWon, profile?.currentStreak || 0)
+                : 0;
+              const xpEarned = isOfficialRated ? (userWon ? 150 : 50) : (userWon ? 40 : 15);
+              const matchTypeDesc = isOfficialRated
+                ? (match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)')
+                : `${match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)'} • Practice`;
 
-            recordMatchResult(
-              userWon,
-              xpEarned,
-              crEarned,
-              {
-                id: match.id,
-                type: matchTypeDesc,
-                opponent: opponentNames,
-                score: scoreSummary || `${newTeamAScore} - ${newTeamBScore}`,
-                role: 'PLAYER',
-              }
-            );
-          } else if (userIsReferee) {
-            // Referee officiated the match (+75 XP referee bonus if official, +25 XP if practice)
-            const refXP = isOfficialRated ? 75 : 25;
-            recordMatchResult(
-              true,
-              refXP,
-              0,
-              {
-                id: match.id,
-                type: isOfficialRated ? (match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)') : `${match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)'} • Practice`,
-                opponent: `${teamANames} vs ${teamBNames}`,
-                score: scoreSummary || `${newTeamAScore} - ${newTeamBScore}`,
-                role: 'REFEREE',
-              }
-            );
+              recordMatchResult(
+                userWon,
+                xpEarned,
+                crEarned,
+                {
+                  id: match.id,
+                  type: matchTypeDesc,
+                  opponent: opponentNames,
+                  score: scoreSummary || `${newTeamAScore} - ${newTeamBScore}`,
+                  role: 'PLAYER',
+                }
+              );
+            } else if (userIsReferee) {
+              // Referee officiated the match (+75 XP referee bonus if official, +25 XP if practice)
+              const refXP = isOfficialRated ? 75 : 25;
+              recordMatchResult(
+                true,
+                refXP,
+                0,
+                {
+                  id: match.id,
+                  type: isOfficialRated ? (match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)') : `${match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)'} • Practice`,
+                  opponent: `${teamANames} vs ${teamBNames}`,
+                  score: scoreSummary || `${newTeamAScore} - ${newTeamBScore}`,
+                  role: 'REFEREE',
+                }
+              );
+            }
           }
         } else {
           // Next Set
@@ -369,34 +465,39 @@ export default function LiveMatch() {
       });
     }
 
+    // ⚡ 2.5 Always sync state to local & session cache for instant offline reliability
+    try {
+      sessionStorage.setItem(`pkb_match_${match.id}`, JSON.stringify(nextState));
+      localStorage.setItem(`pkb_match_${match.id}`, JSON.stringify(nextState));
+    } catch (e) {
+      console.warn('Storage sync error:', e);
+    }
+
     // ⚡ 3. If Match Finished, navigate to Winner Profile
     if (newStatus === 'FINISHED') {
-      try {
-        sessionStorage.setItem(`pkb_match_${match.id}`, JSON.stringify(nextState));
-      } catch (e) {
-        console.warn('Session storage error:', e);
-      }
       setTimeout(() => {
         navigate(`/match/${match.id}/winner`, { replace: true });
       }, 350);
     }
 
-    // ⚡ 4. Silently sync to Supabase in background (Non-blocking)
-    supabase.from('matches').update({
-      team_a_score: newTeamAScore,
-      team_b_score: newTeamBScore,
-      team_a_games_won: newTeamAGamesWon,
-      team_b_games_won: newTeamBGamesWon,
-      serving_team: newServingTeam,
-      server_number: newServerNumber,
-      current_game: newCurrentGame,
-      game_results: newGameResults,
-      status: newStatus,
-      match_winner: newWinner,
-      updated_at: new Date().toISOString(),
-    }).eq('id', match.id).then(({ error }) => {
-      if (error) console.warn('Background sync warning:', error.message);
-    });
+    // ⚡ 4. Silently sync to Supabase in background for online matches
+    if (!match.id.includes('FR')) {
+      supabase.from('matches').update({
+        team_a_score: newTeamAScore,
+        team_b_score: newTeamBScore,
+        team_a_games_won: newTeamAGamesWon,
+        team_b_games_won: newTeamBGamesWon,
+        serving_team: newServingTeam,
+        server_number: newServerNumber,
+        current_game: newCurrentGame,
+        game_results: newGameResults,
+        status: newStatus,
+        match_winner: newWinner,
+        updated_at: new Date().toISOString(),
+      }).eq('id', match.id).then(({ error }) => {
+        if (error) console.warn('Background sync warning:', error.message);
+      });
+    }
   };
 
   const isFinished = match.status === 'FINISHED';
@@ -409,9 +510,15 @@ export default function LiveMatch() {
   const winningTeamScore = isWinnerAlpha ? tAScore : tBScore;
   const losingTeamScore = isWinnerAlpha ? tBScore : tAScore;
 
+  // Handle exit navigation to create match setup page
+  const handleExitMatch = () => {
+    navigate('/play?action=create');
+  };
+
   // Handle Rematch / Play Again on court
   const handleRematch = async () => {
     if (!isReferee) return;
+    hasNavigatedRef.current = false;
     const resetState: Partial<Match> = {
       teamAScore: 0,
       teamBScore: 0,
@@ -426,34 +533,62 @@ export default function LiveMatch() {
       updatedAt: Date.now(),
     };
 
-    setMatch((prev) => (prev ? { ...prev, ...resetState } : null));
+    setMatch((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...resetState };
+      try {
+        sessionStorage.setItem(`pkb_match_${prev.id}`, JSON.stringify(updated));
+        localStorage.setItem(`pkb_match_${prev.id}`, JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
 
-    await supabase.from('matches').update({
-      team_a_score: 0,
-      team_b_score: 0,
-      team_a_games_won: 0,
-      team_b_games_won: 0,
-      serving_team: 'A',
-      server_number: 2,
-      current_game: 1,
-      game_results: [],
-      status: 'IN_PROGRESS',
-      match_winner: 'NONE',
-      updated_at: new Date().toISOString(),
-    }).eq('id', match.id);
+    if (!match.id.includes('FR')) {
+      await supabase.from('matches').update({
+        team_a_score: 0,
+        team_b_score: 0,
+        team_a_games_won: 0,
+        team_b_games_won: 0,
+        serving_team: 'A',
+        server_number: 2,
+        current_game: 1,
+        game_results: [],
+        status: 'IN_PROGRESS',
+        match_winner: 'NONE',
+        updated_at: new Date().toISOString(),
+      }).eq('id', match.id);
+    }
   };
 
   return (
     <div className="h-full min-h-[92vh] flex flex-col p-4 sm:p-5 max-w-lg mx-auto select-none touch-manipulation overflow-hidden">
 
-      {/* 🎾 1. Top Match Header Pill (Stays in its top position) */}
-      <div className="text-center pt-0.5 shrink-0">
-        <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/10 px-4 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-widest text-text-light backdrop-blur-md">
+      {/* 🎾 1. Top Match Header Pill with Back Navigation */}
+      <div className="relative flex items-center justify-between pt-0.5 shrink-0 px-1">
+        {/* Back Button */}
+        <button
+          type="button"
+          onClick={() => setShowExitModal(true)}
+          className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/15 border border-white/10 flex items-center justify-center text-text-light hover:text-white transition-all active:scale-90 z-20"
+          aria-label="Back / Leave match"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+
+        {/* Center Pill */}
+        <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/10 px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-widest text-text-light backdrop-blur-md">
           <Swords className="w-3.5 h-3.5 text-primary" />
-          <span>{isBestOfThree ? `Set ${match.currentGame} of 3` : `Single Game • First to ${targetPoints}`}</span>
-          <span className="text-white/30">•</span>
-          <span className="text-emerald-400 font-mono">{match.id}</span>
+          <span>{isFriendlyMatch ? `Friendly Match • First to ${targetPoints}` : (isBestOfThree ? `Set ${match.currentGame} of 3` : `First to ${targetPoints}`)}</span>
+          {!isFriendlyMatch && (
+            <>
+              <span className="text-white/30">•</span>
+              <span className="text-emerald-400 font-mono">{match.id}</span>
+            </>
+          )}
         </div>
+
+        {/* Spacer to keep balance */}
+        <div className="w-8 h-8 pointer-events-none" />
       </div>
 
       {/* 🎾 2. All Other Layouts Centered Together as One Unit */}
@@ -472,7 +607,7 @@ export default function LiveMatch() {
             <div className="flex items-center justify-center gap-4 my-1 font-mono relative z-10">
               {/* 1st: Serving Team Score */}
               <div className="flex flex-col items-center">
-                <span className={`text-5xl sm:text-6xl font-black tracking-tight ${isAlphaServing ? 'text-cyan-400 drop-shadow-[0_0_15px_rgba(6,182,212,0.7)]' : 'text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.7)]'}`}>
+                <span className={`text-5xl sm:text-6xl font-black tracking-tight ${isAlphaServing ? 'text-cyan-400' : 'text-emerald-400'}`}>
                   {isAlphaServing ? tAScore : tBScore}
                 </span>
                 <span className="text-[9px] font-bold uppercase text-text-light/50">Server</span>
@@ -482,7 +617,7 @@ export default function LiveMatch() {
 
               {/* 2nd: Receiving Team Score */}
               <div className="flex flex-col items-center">
-                <span className={`text-5xl sm:text-6xl font-black tracking-tight ${isAlphaServing ? 'text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.7)]' : 'text-cyan-400 drop-shadow-[0_0_15px_rgba(6,182,212,0.7)]'}`}>
+                <span className={`text-5xl sm:text-6xl font-black tracking-tight ${isAlphaServing ? 'text-emerald-400' : 'text-cyan-400'}`}>
                   {isAlphaServing ? tBScore : tAScore}
                 </span>
                 <span className="text-[9px] font-bold uppercase text-text-light/50">Receiver</span>
@@ -512,8 +647,8 @@ export default function LiveMatch() {
           <div className="grid grid-cols-2 gap-3.5">
 
             {/* Team Alpha Score Box */}
-            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${isAlphaLeading
-              ? 'border-cyan-400/80 bg-gradient-to-br from-cyan-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-md ${isAlphaLeading
+              ? 'border-cyan-400/80 bg-gradient-to-br from-cyan-500/20 to-white/[0.03]'
               : isAlphaServing
                 ? 'border-cyan-500/50 bg-cyan-950/20'
                 : 'border-white/10 bg-white/[0.03]'
@@ -530,24 +665,30 @@ export default function LiveMatch() {
               </div>
 
               <div className="my-2.5 text-center">
-                <span className="text-5xl font-black font-mono text-cyan-400 drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]">
+                <span className="text-5xl font-black font-mono text-cyan-400">
                   {tAScore}
                 </span>
               </div>
 
               {/* Players in Team Alpha */}
               <div className="space-y-1 pt-2 border-t border-cyan-400/20">
-                {match.teamA.map((p) => (
-                  <p key={p.id} className="text-[11px] font-bold text-white truncate text-center">
-                    {p.displayName}
+                {isFriendlyMatch ? (
+                  <p className="text-[11px] font-bold text-white truncate text-center">
+                    Team Alpha
                   </p>
-                ))}
+                ) : (
+                  (match.teamA || []).map((p, idx) => (
+                    <p key={p?.id || `a_${idx}`} className="text-[11px] font-bold text-white truncate text-center">
+                      {p?.displayName || `Player ${idx + 1}`}
+                    </p>
+                  ))
+                )}
               </div>
             </div>
 
             {/* Team Beta Score Box */}
-            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-lg ${isBetaLeading
-              ? 'border-emerald-400/80 bg-gradient-to-br from-emerald-500/20 to-white/[0.03] shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-md ${isBetaLeading
+              ? 'border-emerald-400/80 bg-gradient-to-br from-emerald-500/20 to-white/[0.03]'
               : !isAlphaServing
                 ? 'border-emerald-500/50 bg-emerald-950/20'
                 : 'border-white/10 bg-white/[0.03]'
@@ -564,18 +705,24 @@ export default function LiveMatch() {
               </div>
 
               <div className="my-2.5 text-center">
-                <span className="text-5xl font-black font-mono text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.6)]">
+                <span className="text-5xl font-black font-mono text-emerald-400">
                   {tBScore}
                 </span>
               </div>
 
               {/* Players in Team Beta */}
               <div className="space-y-1 pt-2 border-t border-emerald-400/20">
-                {match.teamB.map((p) => (
-                  <p key={p.id} className="text-[11px] font-bold text-white truncate text-center">
-                    {p.displayName}
+                {isFriendlyMatch ? (
+                  <p className="text-[11px] font-bold text-white truncate text-center">
+                    Team Beta
                   </p>
-                ))}
+                ) : (
+                  (match.teamB || []).map((p, idx) => (
+                    <p key={p?.id || `b_${idx}`} className="text-[11px] font-bold text-white truncate text-center">
+                      {p?.displayName || `Player ${idx + 1}`}
+                    </p>
+                  ))
+                )}
               </div>
             </div>
 
@@ -592,10 +739,10 @@ export default function LiveMatch() {
             <button
               type="button"
               onClick={() => handleScore('A')}
-              className="w-full bg-gradient-to-r from-cyan-600/30 via-cyan-500/20 to-cyan-700/10 border-2 border-cyan-500/60 p-3.5 rounded-2xl flex items-center justify-between text-cyan-300 font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-lg"
+              className="w-full bg-gradient-to-r from-cyan-600/30 via-cyan-500/20 to-cyan-700/10 border-2 border-cyan-500/60 p-3.5 rounded-2xl flex items-center justify-between text-cyan-300 font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-md"
             >
               <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
                 <span>Rally to Team Alpha</span>
               </div>
               <span className="text-xs bg-cyan-500/20 border border-cyan-500/40 px-3 py-1 rounded-xl text-cyan-200">
@@ -606,10 +753,10 @@ export default function LiveMatch() {
             <button
               type="button"
               onClick={() => handleScore('B')}
-              className="w-full bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-emerald-700/10 border-2 border-emerald-500/60 p-3.5 rounded-2xl flex items-center justify-between text-emerald-300 font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-lg"
+              className="w-full bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-emerald-700/10 border-2 border-emerald-500/60 p-3.5 rounded-2xl flex items-center justify-between text-emerald-300 font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-md"
             >
               <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                 <span>Rally to Team Beta</span>
               </div>
               <span className="text-xs bg-emerald-500/20 border border-emerald-500/40 px-3 py-1 rounded-xl text-emerald-200">
@@ -627,6 +774,121 @@ export default function LiveMatch() {
         )}
 
       </div>
+
+      {/* 🚪 Exit Match Confirmation Modal */}
+      <AnimatePresence>
+        {showExitModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-5"
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 10 }}
+              className="w-full max-w-sm bg-[#0a1015] border border-white/15 rounded-3xl p-6 text-center shadow-[0_20px_60px_rgba(0,0,0,0.9)] space-y-4"
+            >
+              <div>
+                <h3 className="text-base font-black text-white">Leave Match?</h3>
+                <p className="text-xs text-text-light/70 mt-1">
+                  Current court score progress will be abandoned.
+                </p>
+              </div>
+
+              <div className="space-y-2.5 pt-2 flex flex-col items-center">
+                <button
+                  type="button"
+                  onClick={() => setShowExitModal(false)}
+                  className="w-[68%] max-w-[210px] py-3 rounded-2xl font-extrabold uppercase tracking-wider text-xs bg-gradient-to-r from-primary to-secondary text-[#050a0a] shadow-lg shadow-emerald-500/10 hover:brightness-110 active:scale-[0.98] transition-all"
+                >
+                  Keep Playing
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExitMatch}
+                  className="w-[68%] max-w-[210px] py-3 rounded-2xl font-bold uppercase tracking-wider text-xs bg-red-500/15 text-red-400 border border-red-500/30 backdrop-blur-md hover:bg-red-500/25 active:scale-[0.98] transition-all"
+                >
+                  Leave Match
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🏆 Friendly Match Winner Overlay Modal (Pure Offline Scoreboard - No XP / No CR) */}
+      <AnimatePresence>
+        {isFinished && isFriendlyMatch && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-5"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full max-w-sm bg-[#080d12] border border-white/15 rounded-3xl p-6 text-center shadow-[0_25px_60px_rgba(0,0,0,0.9)] space-y-5 relative overflow-hidden"
+            >
+              {/* Ambient glow behind winner badge */}
+              <div
+                className={`absolute -top-12 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full blur-3xl opacity-30 pointer-events-none ${
+                  isWinnerAlpha ? 'bg-cyan-500' : 'bg-emerald-500'
+                }`}
+              />
+
+              <div className="relative z-10 space-y-2">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/[0.06] border border-white/10 mx-auto shadow-inner">
+                  <Trophy className={`w-7 h-7 ${isWinnerAlpha ? 'text-cyan-400' : 'text-emerald-400'}`} />
+                </div>
+
+                <p className="text-[11px] font-black uppercase tracking-widest text-text-light/60">
+                  Match Finished
+                </p>
+                <h2 className="text-2xl font-black text-white tracking-tight">
+                  {isWinnerAlpha ? 'Team Alpha Wins!' : 'Team Beta Wins!'}
+                </h2>
+              </div>
+
+              {/* Final Score Display */}
+              <div className="relative z-10 py-4 px-6 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center gap-6">
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-400">Team Alpha</span>
+                  <span className="text-4xl font-black font-mono text-white">{tAScore}</span>
+                </div>
+                <span className="text-2xl font-light text-white/20">-</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400">Team Beta</span>
+                  <span className="text-4xl font-black font-mono text-white">{tBScore}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="relative z-10 space-y-2.5 pt-1 flex flex-col items-center">
+                <button
+                  type="button"
+                  onClick={handleRematch}
+                  className="w-[68%] max-w-[210px] py-3 rounded-2xl font-extrabold uppercase tracking-wider text-xs bg-gradient-to-r from-primary to-secondary text-[#050a0a] shadow-lg shadow-emerald-500/10 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                >
+                  <RotateCcw className="w-4 h-4 text-[#050a0a]" />
+                  <span>Rematch</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExitMatch}
+                  className="w-[68%] max-w-[210px] py-3 rounded-2xl font-bold uppercase tracking-wider text-xs bg-red-500/15 text-red-400 border border-red-500/30 backdrop-blur-md hover:bg-red-500/25 active:scale-[0.98] transition-all flex items-center justify-center"
+                >
+                  Exit
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

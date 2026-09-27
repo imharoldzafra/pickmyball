@@ -164,7 +164,7 @@ export default function Leaderboard() {
               {activeTab === 'global' && (
                 <motion.div
                   layoutId="activeLeaderboardTab"
-                  className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_14px_rgba(16,185,129,0.35)] -z-10"
+                  className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -183,7 +183,7 @@ export default function Leaderboard() {
               {activeTab === 'friends' && (
                 <motion.div
                   layoutId="activeLeaderboardTab"
-                  className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_14px_rgba(16,185,129,0.35)] -z-10"
+                  className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -226,7 +226,7 @@ export default function Leaderboard() {
                   rankNum={1}
                   height="h-34 sm:h-36"
                   crownColor="text-amber-400"
-                  pedestalBg="bg-gradient-to-b from-amber-400/25 to-yellow-500/5 border-amber-400/40 shadow-[0_0_30px_rgba(251,191,36,0.2)]"
+                  pedestalBg="bg-gradient-to-b from-amber-400/25 to-yellow-500/5 border-amber-400/40 shadow-md"
                   medalBadge="🥇"
                   isFirstPlace
                 />
@@ -284,7 +284,7 @@ export default function Leaderboard() {
                   transition={{ duration: 0.2, delay: idx * 0.03 }}
                   className={`flex items-center justify-between p-2.5 sm:p-3 rounded-2xl border transition-all ${
                     isMe
-                      ? 'bg-emerald-500/15 border-emerald-400/50 shadow-[0_0_20px_rgba(16,185,129,0.25)]'
+                      ? 'bg-emerald-500/15 border-emerald-400/50 shadow-sm'
                       : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]'
                   }`}
                 >
@@ -422,7 +422,7 @@ function PodiumStand({
         {isFirstPlace && (
           <Crown className={`w-5 h-5 absolute -top-4 left-1/2 -translate-x-1/2 ${crownColor} animate-bounce`} />
         )}
-        <div className={`relative p-0.5 rounded-full border-2 ${isFirstPlace ? 'border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.5)]' : 'border-white/20'}`}>
+        <div className={`relative p-0.5 rounded-full border-2 ${isFirstPlace ? 'border-amber-400 shadow-md' : 'border-white/20'}`}>
           <img
             src={user.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
             alt={user.display_name}

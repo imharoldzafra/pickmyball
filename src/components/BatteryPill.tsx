@@ -25,7 +25,7 @@ export default function BatteryPill({
       return {
         fillGradient: 'from-emerald-500 via-teal-400 to-emerald-400',
         borderColor: 'border-emerald-400/40',
-        glowShadow: 'shadow-[0_0_12px_rgba(16,185,129,0.45)]',
+        glowShadow: '',
         terminalColor: 'bg-emerald-400/70',
       };
     }
@@ -33,7 +33,7 @@ export default function BatteryPill({
       return {
         fillGradient: 'from-cyan-500 via-sky-400 to-blue-500',
         borderColor: 'border-cyan-400/50',
-        glowShadow: 'shadow-[0_0_14px_rgba(6,182,212,0.55)]',
+        glowShadow: '',
         terminalColor: 'bg-cyan-400/80',
       };
     }
@@ -41,7 +41,7 @@ export default function BatteryPill({
       return {
         fillGradient: 'from-amber-600 via-orange-500 to-red-500',
         borderColor: 'border-red-400/40',
-        glowShadow: 'shadow-[0_0_12px_rgba(239,68,68,0.45)]',
+        glowShadow: '',
         terminalColor: 'bg-red-400/70',
       };
     }
@@ -49,14 +49,14 @@ export default function BatteryPill({
       return {
         fillGradient: 'from-amber-500 via-yellow-400 to-amber-400',
         borderColor: 'border-amber-400/40',
-        glowShadow: 'shadow-[0_0_12px_rgba(245,158,11,0.4)]',
+        glowShadow: '',
         terminalColor: 'bg-amber-400/70',
       };
     }
     return {
       fillGradient: 'from-emerald-500 via-teal-400 to-emerald-400',
       borderColor: 'border-emerald-400/40',
-      glowShadow: 'shadow-[0_0_12px_rgba(16,185,129,0.45)]',
+      glowShadow: '',
       terminalColor: 'bg-emerald-400/70',
     };
   })();
