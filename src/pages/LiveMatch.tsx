@@ -3,8 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Match, Team } from '../types';
 import { useAuth, calculateTierCR } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Flame, Trophy, Shield, Swords, Sparkles, Activity, Check, RotateCcw, User, ArrowLeft } from 'lucide-react';
+import { Trophy, Shield, Swords, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Counter from '../components/Counter';
+import ScreenHeader from '../components/ScreenHeader';
 
 export default function LiveMatch() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -267,8 +269,8 @@ export default function LiveMatch() {
   if (loading && !match) {
     return (
       <div className="flex-1 w-full h-full min-h-[60vh] flex flex-col items-center justify-center p-6 space-y-3">
-        <div className="w-10 h-10 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
-        <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Connecting to Court...</p>
+        <div className="w-10 h-10 rounded-full border-2 border-[#244434] border-t-transparent animate-spin" />
+        <p className="text-xs font-bold text-[#244434] uppercase tracking-widest">Connecting to Court...</p>
       </div>
     );
   }
@@ -561,83 +563,89 @@ export default function LiveMatch() {
   };
 
   return (
-    <div className="h-full min-h-[92vh] flex flex-col p-4 sm:p-5 max-w-lg mx-auto select-none touch-manipulation overflow-hidden">
+    <div className="h-full min-h-[92vh] flex flex-col select-none touch-manipulation overflow-hidden">
 
-      {/* 🎾 1. Top Match Header Pill with Back Navigation */}
-      <div className="relative flex items-center justify-between pt-0.5 shrink-0 px-1">
-        {/* Back Button */}
-        <button
-          type="button"
-          onClick={() => setShowExitModal(true)}
-          className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/15 border border-white/10 flex items-center justify-center text-text-light hover:text-white transition-all active:scale-90 z-20"
-          aria-label="Back / Leave match"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
+      {/* 🎾 1. Top Match Header Pill with Back Navigation (Shared ScreenHeader) */}
+      <ScreenHeader
+        onBack={() => setShowExitModal(true)}
+        ariaLabel="Go back"
+        titlePill={
+          <div className="inline-flex items-center gap-2 bg-white border border-[#E2DDD4] px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider text-[#18281E] shadow-xs whitespace-nowrap select-none">
+            <Swords className="w-3.5 h-3.5 text-[#244434] shrink-0" />
+            <span className="whitespace-nowrap">{isFriendlyMatch ? `Friendly Match • First to ${targetPoints}` : (isBestOfThree ? `Set ${match.currentGame} of 3` : `First to ${targetPoints}`)}</span>
+            {!isFriendlyMatch && (
+              <>
+                <span className="text-[#94A49A]">•</span>
+                <span className="text-[#244434] font-mono">{match.id}</span>
+              </>
+            )}
+          </div>
+        }
+      />
 
-        {/* Center Pill */}
-        <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/10 px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-widest text-text-light backdrop-blur-md">
-          <Swords className="w-3.5 h-3.5 text-primary" />
-          <span>{isFriendlyMatch ? `Friendly Match • First to ${targetPoints}` : (isBestOfThree ? `Set ${match.currentGame} of 3` : `First to ${targetPoints}`)}</span>
-          {!isFriendlyMatch && (
-            <>
-              <span className="text-white/30">•</span>
-              <span className="text-emerald-400 font-mono">{match.id}</span>
-            </>
-          )}
-        </div>
+      {/* 🎾 2. Scoreboard & Controls Layout */}
+      <div 
+        className="flex-1 flex flex-col justify-center space-y-4 my-auto"
+        style={{
+          paddingLeft: 'var(--screen-padding-x, 1rem)',
+          paddingRight: 'var(--screen-padding-x, 1rem)',
+          paddingBottom: '1rem',
+        }}
+      >
 
-        {/* Spacer to keep balance */}
-        <div className="w-8 h-8 pointer-events-none" />
-      </div>
-
-      {/* 🎾 2. All Other Layouts Centered Together as One Unit */}
-      <div className="flex-1 flex flex-col justify-center space-y-4 my-auto">
-
-        {/* 🌟 Upper Group: Callout Board & Score Cards (Lifted up further) */}
+        {/* Upper Group: Callout Board & Score Cards */}
         <div className="space-y-3.5 -translate-y-7 sm:-translate-y-8">
           {/* 🌟 Dedicated Pickleball Callout Board (Server Score : Receiver Score : Server #) */}
-          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/15 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
-            <div className={`absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-24 rounded-full blur-2xl opacity-35 pointer-events-none ${isAlphaServing ? 'bg-cyan-500' : 'bg-emerald-500'}`} />
-
-            <p className="text-[10px] font-black uppercase tracking-widest text-text-light/70 mb-1 text-center">
+          <div className="p-4 sm:p-5 rounded-3xl bg-white border border-[#E2DDD4] shadow-[0_4px_20px_rgba(24,40,30,0.06)] relative overflow-hidden">
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#6B7E72] mb-1 text-center">
               Pickleball Three-Digit Callout
             </p>
 
             <div className="flex items-center justify-center gap-4 my-1 font-mono relative z-10">
               {/* 1st: Serving Team Score */}
               <div className="flex flex-col items-center">
-                <span className={`text-5xl sm:text-6xl font-black tracking-tight ${isAlphaServing ? 'text-cyan-400' : 'text-emerald-400'}`}>
-                  {isAlphaServing ? tAScore : tBScore}
-                </span>
-                <span className="text-[9px] font-bold uppercase text-text-light/50">Server</span>
+                <Counter
+                  value={isAlphaServing ? tAScore : tBScore}
+                  fontSize={52}
+                  textColor={isAlphaServing ? '#2B4C6F' : '#8C3B30'}
+                  fontWeight={900}
+                  gap={1}
+                />
+                <span className="text-[9px] font-bold uppercase text-[#6B7E72] mt-0.5">Server</span>
               </div>
 
-              <span className="text-3xl font-light text-white/20 -mt-3">:</span>
+              <span className="text-3xl font-light text-[#E2DDD4] -mt-3">:</span>
 
               {/* 2nd: Receiving Team Score */}
               <div className="flex flex-col items-center">
-                <span className={`text-5xl sm:text-6xl font-black tracking-tight ${isAlphaServing ? 'text-emerald-400' : 'text-cyan-400'}`}>
-                  {isAlphaServing ? tBScore : tAScore}
-                </span>
-                <span className="text-[9px] font-bold uppercase text-text-light/50">Receiver</span>
+                <Counter
+                  value={isAlphaServing ? tBScore : tAScore}
+                  fontSize={52}
+                  textColor={isAlphaServing ? '#8C3B30' : '#2B4C6F'}
+                  fontWeight={900}
+                  gap={1}
+                />
+                <span className="text-[9px] font-bold uppercase text-[#6B7E72] mt-0.5">Receiver</span>
               </div>
 
-              <span className="text-3xl font-light text-white/20 -mt-3">:</span>
+              <span className="text-3xl font-light text-[#E2DDD4] -mt-3">:</span>
 
               {/* 3rd: Server Number */}
               <div className="flex flex-col items-center">
-                <span className="text-5xl sm:text-6xl font-black tracking-tight text-white drop-shadow-md">
-                  {match.serverNumber}
-                </span>
-                <span className="text-[9px] font-bold uppercase text-text-light/50">Server #</span>
+                <Counter
+                  value={match.serverNumber}
+                  fontSize={52}
+                  textColor={isAlphaServing ? '#2B4C6F' : '#8C3B30'}
+                  fontWeight={900}
+                  gap={1}
+                />
+                <span className="text-[9px] font-bold uppercase text-[#6B7E72] mt-0.5">Server #</span>
               </div>
             </div>
 
-            {/* Active Serving Pill */}
-            <div className="mt-2.5 pt-2.5 border-t border-white/10 flex items-center justify-center gap-2">
-              <span className={`w-2 h-2 rounded-full animate-ping ${isAlphaServing ? 'bg-cyan-400' : 'bg-emerald-400'}`} />
-              <p className={`text-xs font-black uppercase tracking-widest ${isAlphaServing ? 'text-cyan-400' : 'text-emerald-400'}`}>
+            {/* Active Serving Label */}
+            <div className="mt-2.5 pt-2.5 border-t border-[#E2DDD4] flex items-center justify-center">
+              <p className={`text-xs font-black uppercase tracking-widest ${isAlphaServing ? 'text-[#2B4C6F]' : 'text-[#8C3B30]'}`}>
                 {isAlphaServing ? 'Team Alpha Serving' : 'Team Beta Serving'}
               </p>
             </div>
@@ -646,39 +654,41 @@ export default function LiveMatch() {
           {/* 🥊 Score Cards (Team Alpha vs Team Beta) */}
           <div className="grid grid-cols-2 gap-3.5">
 
-            {/* Team Alpha Score Box */}
-            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-md ${isAlphaLeading
-              ? 'border-cyan-400/80 bg-gradient-to-br from-cyan-500/20 to-white/[0.03]'
-              : isAlphaServing
-                ? 'border-cyan-500/50 bg-cyan-950/20'
-                : 'border-white/10 bg-white/[0.03]'
-              }`}>
-              <div className="flex justify-between items-center">
-                <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider border border-cyan-500/30">
-                  Alpha
-                </span>
+            {/* Team Alpha Score Box (Court Slate Blue #2B4C6F) */}
+            <div className={`p-4 rounded-3xl flex flex-col justify-between border-2 transition-all shadow-xs ${
+              isAlphaLeading
+                ? 'border-[#2B4C6F] bg-[#EDF3F7]'
+                : isAlphaServing
+                  ? 'border-[#2B4C6F]/60 bg-white'
+                  : 'border-[#E2DDD4] bg-white'
+            }`}>
+              <div className="flex justify-end items-center min-h-[22px]">
                 {isAlphaLeading && (
-                  <span className="text-[9px] font-bold text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full">
+                  <span className="text-[9px] font-bold text-[#2B4C6F] bg-[#EDF3F7] px-2 py-0.5 rounded-full border border-[#C8D6E0]">
                     +{tAScore - tBScore} Lead
                   </span>
                 )}
               </div>
 
-              <div className="my-2.5 text-center">
-                <span className="text-5xl font-black font-mono text-cyan-400">
-                  {tAScore}
-                </span>
+              <div className="my-2.5 text-center flex justify-center items-center">
+                <Counter
+                  value={tAScore}
+                  fontSize={48}
+                  textColor="#2B4C6F"
+                  fontWeight={900}
+                  gap={2}
+                />
               </div>
 
               {/* Players in Team Alpha */}
-              <div className="space-y-1 pt-2 border-t border-cyan-400/20">
+              <div className="space-y-1 pt-2 border-t border-[#C8D6E0]/60">
                 {isFriendlyMatch ? (
-                  <p className="text-[11px] font-bold text-white truncate text-center">
+                  <p className="text-[11px] font-bold text-[#18281E] truncate text-center">
                     Team Alpha
                   </p>
                 ) : (
                   (match.teamA || []).map((p, idx) => (
-                    <p key={p?.id || `a_${idx}`} className="text-[11px] font-bold text-white truncate text-center">
+                    <p key={p?.id || `a_${idx}`} className="text-[11px] font-bold text-[#18281E] truncate text-center">
                       {p?.displayName || `Player ${idx + 1}`}
                     </p>
                   ))
@@ -686,39 +696,41 @@ export default function LiveMatch() {
               </div>
             </div>
 
-            {/* Team Beta Score Box */}
-            <div className={`p-4 rounded-3xl flex flex-col justify-between border backdrop-blur-2xl transition-all shadow-md ${isBetaLeading
-              ? 'border-emerald-400/80 bg-gradient-to-br from-emerald-500/20 to-white/[0.03]'
-              : !isAlphaServing
-                ? 'border-emerald-500/50 bg-emerald-950/20'
-                : 'border-white/10 bg-white/[0.03]'
-              }`}>
-              <div className="flex justify-between items-center">
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-500/30">
-                  Beta
-                </span>
+            {/* Team Beta Score Box (Terracotta Clay Red #8C3B30) */}
+            <div className={`p-4 rounded-3xl flex flex-col justify-between border-2 transition-all shadow-xs ${
+              isBetaLeading
+                ? 'border-[#8C3B30] bg-[#FDF3F1]'
+                : !isAlphaServing
+                  ? 'border-[#8C3B30]/60 bg-white'
+                  : 'border-[#E2DDD4] bg-white'
+            }`}>
+              <div className="flex justify-end items-center min-h-[22px]">
                 {isBetaLeading && (
-                  <span className="text-[9px] font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full">
+                  <span className="text-[9px] font-bold text-[#8C3B30] bg-[#FDF3F1] px-2 py-0.5 rounded-full border border-[#F2D2CC]">
                     +{tBScore - tAScore} Lead
                   </span>
                 )}
               </div>
 
-              <div className="my-2.5 text-center">
-                <span className="text-5xl font-black font-mono text-emerald-400">
-                  {tBScore}
-                </span>
+              <div className="my-2.5 text-center flex justify-center items-center">
+                <Counter
+                  value={tBScore}
+                  fontSize={48}
+                  textColor="#8C3B30"
+                  fontWeight={900}
+                  gap={2}
+                />
               </div>
 
               {/* Players in Team Beta */}
-              <div className="space-y-1 pt-2 border-t border-emerald-400/20">
+              <div className="space-y-1 pt-2 border-t border-[#F2D2CC]/60">
                 {isFriendlyMatch ? (
-                  <p className="text-[11px] font-bold text-white truncate text-center">
+                  <p className="text-[11px] font-bold text-[#18281E] truncate text-center">
                     Team Beta
                   </p>
                 ) : (
                   (match.teamB || []).map((p, idx) => (
-                    <p key={p?.id || `b_${idx}`} className="text-[11px] font-bold text-white truncate text-center">
+                    <p key={p?.id || `b_${idx}`} className="text-[11px] font-bold text-[#18281E] truncate text-center">
                       {p?.displayName || `Player ${idx + 1}`}
                     </p>
                   ))
@@ -732,20 +744,20 @@ export default function LiveMatch() {
         {/* 🎮 Referee Controls vs Live Spectator View */}
         {isFinished ? null : isReferee ? (
           <div className="space-y-2.5 pt-1">
-            <div className="flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wider text-text-light">
-              <Shield className="w-3.5 h-3.5 text-emerald-400" /> Host Referee Controls
+            <div className="px-1 text-[11px] font-black uppercase tracking-wider text-[#6B7E72]">
+              Referee Controls
             </div>
 
             <button
               type="button"
               onClick={() => handleScore('A')}
-              className="w-full bg-gradient-to-r from-cyan-600/30 via-cyan-500/20 to-cyan-700/10 border-2 border-cyan-500/60 p-3.5 rounded-2xl flex items-center justify-between text-cyan-300 font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-md"
+              className="w-full bg-[#EDF3F7] hover:bg-[#DFE8EF] border-2 border-[#2B4C6F] p-3.5 rounded-2xl flex items-center justify-between text-[#2B4C6F] font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-xs cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#2B4C6F]" />
                 <span>Rally to Team Alpha</span>
               </div>
-              <span className="text-xs bg-cyan-500/20 border border-cyan-500/40 px-3 py-1 rounded-xl text-cyan-200">
+              <span className="text-xs bg-[#2B4C6F] text-white px-3 py-1 rounded-xl">
                 {isAlphaServing ? '+1 Point' : 'Side Out'}
               </span>
             </button>
@@ -753,21 +765,21 @@ export default function LiveMatch() {
             <button
               type="button"
               onClick={() => handleScore('B')}
-              className="w-full bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-emerald-700/10 border-2 border-emerald-500/60 p-3.5 rounded-2xl flex items-center justify-between text-emerald-300 font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-md"
+              className="w-full bg-[#FDF3F1] hover:bg-[#FBEBE8] border-2 border-[#8C3B30] p-3.5 rounded-2xl flex items-center justify-between text-[#8C3B30] font-mono text-sm font-black uppercase tracking-wider active:scale-96 transition-transform shadow-xs cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#8C3B30]" />
                 <span>Rally to Team Beta</span>
               </div>
-              <span className="text-xs bg-emerald-500/20 border border-emerald-500/40 px-3 py-1 rounded-xl text-emerald-200">
+              <span className="text-xs bg-[#8C3B30] text-white px-3 py-1 rounded-xl">
                 {!isAlphaServing ? '+1 Point' : 'Side Out'}
               </span>
             </button>
           </div>
         ) : (
-          <div className="text-center p-3.5 bg-white/[0.03] backdrop-blur-2xl rounded-2xl border border-white/10 shadow-sm">
-            <p className="text-xs text-text-light font-bold flex items-center justify-center gap-2">
-              <Shield className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="text-center p-3.5 bg-white rounded-2xl border border-[#E2DDD4] shadow-xs">
+            <p className="text-xs text-[#3A4C40] font-bold flex items-center justify-center gap-2">
+              <Shield className="w-3.5 h-3.5 text-[#244434]" />
               <span>Official Court Referee: {match.hostName || 'Host'}</span>
             </p>
           </div>
@@ -782,17 +794,17 @@ export default function LiveMatch() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-5"
+            className="absolute inset-0 z-50 bg-[#18281E]/60 backdrop-blur-sm flex items-center justify-center p-5"
           >
             <motion.div
               initial={{ scale: 0.92, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 10 }}
-              className="w-full max-w-sm bg-[#0a1015] border border-white/15 rounded-3xl p-6 text-center shadow-[0_20px_60px_rgba(0,0,0,0.9)] space-y-4"
+              className="w-full max-w-sm bg-white border border-[#E2DDD4] rounded-3xl p-6 text-center shadow-2xl space-y-4"
             >
               <div>
-                <h3 className="text-base font-black text-white">Leave Match?</h3>
-                <p className="text-xs text-text-light/70 mt-1">
+                <h3 className="text-base font-black text-[#18281E]">Leave Match?</h3>
+                <p className="text-xs text-[#6B7E72] mt-1">
                   Current court score progress will be abandoned.
                 </p>
               </div>
@@ -801,14 +813,14 @@ export default function LiveMatch() {
                 <button
                   type="button"
                   onClick={() => setShowExitModal(false)}
-                  className="w-[68%] max-w-[210px] py-3 rounded-2xl font-extrabold uppercase tracking-wider text-xs bg-gradient-to-r from-primary to-secondary text-[#050a0a] shadow-lg shadow-emerald-500/10 hover:brightness-110 active:scale-[0.98] transition-all"
+                  className="w-[72%] max-w-[220px] py-3 rounded-2xl font-black uppercase tracking-wider text-xs bg-[#244434] hover:bg-[#1A3326] text-white shadow-md active:scale-[0.98] transition-all"
                 >
                   Keep Playing
                 </button>
                 <button
                   type="button"
                   onClick={handleExitMatch}
-                  className="w-[68%] max-w-[210px] py-3 rounded-2xl font-bold uppercase tracking-wider text-xs bg-red-500/15 text-red-400 border border-red-500/30 backdrop-blur-md hover:bg-red-500/25 active:scale-[0.98] transition-all"
+                  className="w-[72%] max-w-[220px] py-3 rounded-2xl font-bold uppercase tracking-wider text-xs bg-[#F8EFEB] text-[#8C3B30] border border-[#EACFC9] hover:bg-[#F0E4E0] active:scale-[0.98] transition-all"
                 >
                   Leave Match
                 </button>
@@ -818,51 +830,44 @@ export default function LiveMatch() {
         )}
       </AnimatePresence>
 
-      {/* 🏆 Friendly Match Winner Overlay Modal (Pure Offline Scoreboard - No XP / No CR) */}
+      {/* 🏆 Friendly Match Winner Overlay Modal */}
       <AnimatePresence>
         {isFinished && isFriendlyMatch && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-5"
+            className="absolute inset-0 z-50 bg-[#18281E]/60 backdrop-blur-sm flex items-center justify-center p-5"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-full max-w-sm bg-[#080d12] border border-white/15 rounded-3xl p-6 text-center shadow-[0_25px_60px_rgba(0,0,0,0.9)] space-y-5 relative overflow-hidden"
+              className="w-full max-w-sm bg-white border border-[#E2DDD4] rounded-3xl p-6 text-center shadow-2xl space-y-5 relative overflow-hidden"
             >
-              {/* Ambient glow behind winner badge */}
-              <div
-                className={`absolute -top-12 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full blur-3xl opacity-30 pointer-events-none ${
-                  isWinnerAlpha ? 'bg-cyan-500' : 'bg-emerald-500'
-                }`}
-              />
-
               <div className="relative z-10 space-y-2">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/[0.06] border border-white/10 mx-auto shadow-inner">
-                  <Trophy className={`w-7 h-7 ${isWinnerAlpha ? 'text-cyan-400' : 'text-emerald-400'}`} />
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#F8F7F3] border border-[#E2DDD4] mx-auto shadow-xs">
+                  <Trophy className={`w-7 h-7 ${isWinnerAlpha ? 'text-[#2B4C6F]' : 'text-[#8C3B30]'}`} />
                 </div>
 
-                <p className="text-[11px] font-black uppercase tracking-widest text-text-light/60">
+                <p className="text-[11px] font-black uppercase tracking-widest text-[#6B7E72]">
                   Match Finished
                 </p>
-                <h2 className="text-2xl font-black text-white tracking-tight">
+                <h2 className="text-2xl font-black text-[#18281E] tracking-tight">
                   {isWinnerAlpha ? 'Team Alpha Wins!' : 'Team Beta Wins!'}
                 </h2>
               </div>
 
               {/* Final Score Display */}
-              <div className="relative z-10 py-4 px-6 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center gap-6">
+              <div className="relative z-10 py-4 px-6 rounded-2xl bg-[#F8F7F3] border border-[#E2DDD4] flex items-center justify-center gap-6">
                 <div className="flex flex-col items-center">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-400">Team Alpha</span>
-                  <span className="text-4xl font-black font-mono text-white">{tAScore}</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#2B4C6F]">Team Alpha</span>
+                  <span className="text-4xl font-black font-mono text-[#18281E]">{tAScore}</span>
                 </div>
-                <span className="text-2xl font-light text-white/20">-</span>
+                <span className="text-2xl font-light text-[#94A49A]">-</span>
                 <div className="flex flex-col items-center">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400">Team Beta</span>
-                  <span className="text-4xl font-black font-mono text-white">{tBScore}</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#8C3B30]">Team Beta</span>
+                  <span className="text-4xl font-black font-mono text-[#18281E]">{tBScore}</span>
                 </div>
               </div>
 
@@ -871,16 +876,16 @@ export default function LiveMatch() {
                 <button
                   type="button"
                   onClick={handleRematch}
-                  className="w-[68%] max-w-[210px] py-3 rounded-2xl font-extrabold uppercase tracking-wider text-xs bg-gradient-to-r from-primary to-secondary text-[#050a0a] shadow-lg shadow-emerald-500/10 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                  className="w-[72%] max-w-[220px] py-3 rounded-2xl font-black uppercase tracking-wider text-xs bg-[#244434] hover:bg-[#1A3326] text-white shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                 >
-                  <RotateCcw className="w-4 h-4 text-[#050a0a]" />
+                  <RotateCcw className="w-4 h-4 text-white" />
                   <span>Rematch</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleExitMatch}
-                  className="w-[68%] max-w-[210px] py-3 rounded-2xl font-bold uppercase tracking-wider text-xs bg-red-500/15 text-red-400 border border-red-500/30 backdrop-blur-md hover:bg-red-500/25 active:scale-[0.98] transition-all flex items-center justify-center"
+                  className="w-[72%] max-w-[220px] py-3 rounded-2xl font-bold uppercase tracking-wider text-xs bg-[#F8EFEB] text-[#8C3B30] border border-[#EACFC9] hover:bg-[#F0E4E0] active:scale-[0.98] transition-all flex items-center justify-center"
                 >
                   Exit
                 </button>

@@ -1,19 +1,69 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="128" fill="#040709" />
-  <circle cx="256" cy="256" r="190" fill="#070e14" stroke="#10B981" stroke-width="16" />
-  
-  <!-- Center Triangle Holes -->
-  <circle cx="256" cy="180" r="32" fill="#040709" stroke="#10B981" stroke-width="14" />
-  <circle cx="190" cy="290" r="32" fill="#040709" stroke="#10B981" stroke-width="14" />
-  <circle cx="322" cy="290" r="32" fill="#040709" stroke="#10B981" stroke-width="14" />
-  
-  <!-- Outer Perspective Curve Holes -->
-  <ellipse cx="256" cy="95" rx="32" ry="14" fill="#040709" stroke="#10B981" stroke-width="14" />
-  <ellipse cx="256" cy="417" rx="32" ry="14" fill="#040709" stroke="#10B981" stroke-width="14" />
-  <ellipse cx="95" cy="256" rx="14" ry="32" fill="#040709" stroke="#10B981" stroke-width="14" />
-  <ellipse cx="417" cy="256" rx="14" ry="32" fill="#040709" stroke="#10B981" stroke-width="14" />
-  <ellipse cx="140" cy="140" rx="32" ry="14" transform="rotate(-45 140 140)" fill="#040709" stroke="#10B981" stroke-width="14" />
-  <ellipse cx="372" cy="140" rx="32" ry="14" transform="rotate(45 372 140)" fill="#040709" stroke="#10B981" stroke-width="14" />
-  <ellipse cx="140" cy="372" rx="32" ry="14" transform="rotate(45 140 372)" fill="#040709" stroke="#10B981" stroke-width="14" />
-  <ellipse cx="372" cy="372" rx="32" ry="14" transform="rotate(-45 372 372)" fill="#040709" stroke="#10B981" stroke-width="14" />
+  <defs>
+    <!-- Background Gradient: Deep Forest Court Green -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#244434" />
+      <stop offset="60%" stop-color="#1D382B" />
+      <stop offset="100%" stop-color="#14281E" />
+    </linearGradient>
+
+    <!-- 3D Pickleball Sphere Shading Gradient -->
+    <radialGradient id="ballShading" cx="36%" cy="34%" r="68%">
+      <stop offset="0%" stop-color="#F9FDB5" />
+      <stop offset="28%" stop-color="#E2F23E" />
+      <stop offset="65%" stop-color="#BED521" />
+      <stop offset="92%" stop-color="#8DA712" />
+      <stop offset="100%" stop-color="#677D0B" />
+    </radialGradient>
+
+    <!-- Hole Cavity Gradient -->
+    <radialGradient id="holeDepth" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#1F2E08" />
+      <stop offset="100%" stop-color="#121C04" />
+    </radialGradient>
+
+    <!-- Subtle Ambient Court Light Glow behind Ball -->
+    <radialGradient id="courtGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#DBEC38" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#244434" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- App Icon Squircle Background -->
+  <rect width="512" height="512" rx="124" fill="url(#bgGrad)" />
+
+  <!-- Subtle Inner Border Inset -->
+  <rect x="6" y="6" width="500" height="500" rx="120" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="3" />
+
+  <!-- Subtle Court Chalk Accent Line (Dashed) -->
+  <line x1="48" y1="256" x2="464" y2="256" stroke="rgba(255, 255, 255, 0.1)" stroke-width="5" stroke-dasharray="14 10" />
+
+  <!-- Ambient Glow Behind Ball -->
+  <circle cx="256" cy="256" r="185" fill="url(#courtGlow)" />
+
+  <!-- 🎾 The Tournament Optic Lime Pickleball Sphere -->
+  <circle cx="256" cy="256" r="144" fill="url(#ballShading)" />
+  <circle cx="256" cy="256" r="144" fill="none" stroke="rgba(80, 100, 15, 0.3)" stroke-width="2.5" />
+
+  <!-- ─── Drilled Holes (Cavity + Rim Highlight) ─── -->
+  <!-- Center Hole -->
+  <circle cx="256" cy="256" r="22" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.35)" stroke-width="1.5" />
+
+  <!-- Inner Ring (6 Holes) -->
+  <circle cx="256" cy="184" r="19" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.35)" stroke-width="1.5" />
+  <circle cx="318" cy="220" r="19" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.35)" stroke-width="1.5" />
+  <circle cx="318" cy="292" r="19" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.35)" stroke-width="1.5" />
+  <circle cx="256" cy="328" r="19" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.35)" stroke-width="1.5" />
+  <circle cx="194" cy="292" r="19" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.35)" stroke-width="1.5" />
+  <circle cx="194" cy="220" r="19" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.35)" stroke-width="1.5" />
+
+  <!-- Outer Perspective Ring (8 Elliptical Holes) -->
+  <ellipse cx="256" cy="132" rx="17" ry="11" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.3)" stroke-width="1.2" />
+  <ellipse cx="342" cy="168" rx="17" ry="12" transform="rotate(35 342 168)" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.3)" stroke-width="1.2" />
+  <ellipse cx="374" cy="256" rx="11" ry="18" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.3)" stroke-width="1.2" />
+  <ellipse cx="342" cy="344" rx="17" ry="12" transform="rotate(-35 342 344)" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.3)" stroke-width="1.2" />
+  <ellipse cx="256" cy="380" rx="17" ry="11" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.3)" stroke-width="1.2" />
+  <ellipse cx="170" cy="344" rx="17" ry="12" transform="rotate(35 170 344)" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.3)" stroke-width="1.2" />
+  <ellipse cx="138" cy="256" rx="11" ry="18" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.3)" stroke-width="1.2" />
+  <ellipse cx="170" cy="168" rx="17" ry="12" transform="rotate(-35 170 168)" fill="url(#holeDepth)" stroke="rgba(249, 253, 181, 0.3)" stroke-width="1.2" />
 </svg>

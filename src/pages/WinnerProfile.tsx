@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Match, UserProfile } from '../types';
+import { Match } from '../types';
 import { useAuth, calculateTierCR } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Trophy, Sparkles, Flame, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
@@ -166,8 +166,8 @@ export default function WinnerProfile() {
   if (loading || !match) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center space-y-3">
-        <div className="w-10 h-10 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs font-bold uppercase tracking-widest text-text-light/60">Loading Winner Profile...</p>
+        <div className="w-10 h-10 border-4 border-[#244434] border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs font-bold uppercase tracking-widest text-[#6B7E72]">Loading Winner Profile...</p>
       </div>
     );
   }
@@ -196,14 +196,14 @@ export default function WinnerProfile() {
         transition={{ duration: 0.4 }}
         className="text-center relative pt-1 space-y-3"
       >
-        {/* Glow Halo */}
-        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-[85px] opacity-35 pointer-events-none ${
-          isWinnerAlpha ? 'bg-cyan-500' : 'bg-emerald-500'
+        {/* Soft Natural Ambient Halo */}
+        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-[70px] opacity-25 pointer-events-none ${
+          isWinnerAlpha ? 'bg-[#2B4C6F]' : 'bg-[#8C3B30]'
         }`} />
 
         {/* Top Winner Ribbon */}
-        <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400/20 via-yellow-400/30 to-amber-400/20 border border-amber-400/40 px-4 py-1.5 rounded-full text-amber-300 text-xs font-black uppercase tracking-widest shadow-sm">
-          <Trophy className="w-3.5 h-3.5 text-amber-400" />
+        <div className="inline-flex items-center gap-1.5 bg-[#FAF4E4] border border-[#E8D6A7] px-4 py-1.5 rounded-full text-[#8C6D23] text-xs font-black uppercase tracking-widest shadow-xs">
+          <Trophy className="w-3.5 h-3.5 text-[#B89230]" />
           <span>Match Winner</span>
         </div>
 
@@ -214,10 +214,10 @@ export default function WinnerProfile() {
             👑
           </div>
 
-          <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1.5 border-2 shadow-lg relative z-10 ${
+          <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1.5 border-2 shadow-md relative z-10 ${
             isWinnerAlpha 
-              ? 'border-cyan-400 bg-cyan-950/40' 
-              : 'border-emerald-400 bg-emerald-950/40'
+              ? 'border-[#2B4C6F] bg-white' 
+              : 'border-[#8C3B30] bg-white'
           }`}>
             {primaryWinner.photoURL ? (
               <img 
@@ -226,25 +226,25 @@ export default function WinnerProfile() {
                 className="w-full h-full rounded-full object-cover shadow-inner" 
               />
             ) : (
-              <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center text-white font-black text-2xl">
+              <div className="w-full h-full rounded-full bg-[#E2DDD4] flex items-center justify-center text-[#18281E] font-black text-2xl">
                 {primaryWinner.displayName?.charAt(0).toUpperCase() || 'P'}
               </div>
             )}
           </div>
 
           {/* Victory Badge */}
-          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-lg z-20 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" />
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-[#244434] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-sm z-20 flex items-center gap-1 border border-white/20">
+            <CheckCircle2 className="w-3 h-3 text-white" />
             <span>Winner</span>
           </div>
         </div>
 
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-[#18281E] tracking-tight">
             {primaryWinner.displayName}
           </h1>
           <p className={`text-xs font-mono font-black uppercase tracking-widest ${
-            isWinnerAlpha ? 'text-cyan-400' : 'text-emerald-400'
+            isWinnerAlpha ? 'text-[#2B4C6F]' : 'text-[#8C3B30]'
           }`}>
             Team {isWinnerAlpha ? 'Alpha' : 'Beta'} Champions
           </p>
@@ -259,52 +259,52 @@ export default function WinnerProfile() {
         className="space-y-3"
       >
         {/* Scorecard Pill */}
-        <div className="bg-white/[0.04] backdrop-blur-2xl p-3.5 rounded-3xl border border-white/10 shadow-lg flex items-center justify-between">
+        <div className="bg-white p-3.5 rounded-2xl border border-[#E2DDD4] shadow-xs flex items-center justify-between">
           <div className="text-left">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-text-light/60">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7E72]">
               Match Score
             </p>
-            <p className="text-xs font-bold text-white">
+            <p className="text-xs font-bold text-[#18281E]">
               {match.matchType === '2v2' ? 'Doubles' : 'Singles'} • First to {match.targetPoints}
             </p>
           </div>
-          <div className="flex items-center gap-2 font-mono bg-black/40 border border-white/10 px-3.5 py-1.5 rounded-2xl">
-            <span className={`text-lg font-black ${isWinnerAlpha ? 'text-cyan-400' : 'text-emerald-400'}`}>
+          <div className="flex items-center gap-2 font-mono bg-[#F8F7F3] border border-[#E2DDD4] px-3.5 py-1.5 rounded-xl">
+            <span className={`text-lg font-black ${isWinnerAlpha ? 'text-[#2B4C6F]' : 'text-[#8C3B30]'}`}>
               {winningScore}
             </span>
-            <span className="text-white/30 font-light">-</span>
-            <span className="text-lg font-bold text-white/50">
+            <span className="text-[#9BAAA0] font-light">-</span>
+            <span className="text-lg font-bold text-[#6B7E72]">
               {losingScore}
             </span>
           </div>
         </div>
 
         {/* ⚡ Rating, XP & Streak Progression Card */}
-        <div className="bg-white/[0.04] backdrop-blur-2xl p-4 rounded-3xl border border-white/10 shadow-lg space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-wider text-text-light/60">
+        <div className="bg-white p-4 rounded-2xl border border-[#E2DDD4] shadow-xs space-y-3">
+          <p className="text-[10px] font-black uppercase tracking-wider text-[#6B7E72]">
             Career Progression
           </p>
 
           <div className="grid grid-cols-2 gap-2.5">
             {/* Rating Gain Card */}
-            <div className={`p-2.5 rounded-2xl flex flex-col justify-between transition-all duration-500 border ${
+            <div className={`p-2.5 rounded-xl flex flex-col justify-between transition-all duration-500 border ${
               counterFinished 
-                ? 'bg-emerald-500/15 border-emerald-400/40 shadow-sm' 
-                : 'bg-emerald-500/10 border-emerald-400/20'
+                ? 'bg-[#EAF4ED] border-[#C8DFD0] shadow-xs' 
+                : 'bg-[#F2F8F4] border-[#DCEBE0]'
             }`}>
-              <span className="text-[10px] font-bold text-emerald-300">Competitive Rating</span>
+              <span className="text-[10px] font-bold text-[#244434]">Competitive Rating</span>
               <div className="flex items-center justify-between mt-1">
                 {/* 🔢 Live Updating CR Counter */}
-                <span className="text-sm font-mono font-black text-white tracking-tight">
+                <span className="text-sm font-mono font-black text-[#18281E] tracking-tight">
                   {displayCR} CR
                 </span>
 
-                {/* 🟢 Rising Fade-In +25 Badge (No Triangle) */}
+                {/* 🟢 Rising Fade-In +25 Badge */}
                 <motion.span 
                   initial={{ opacity: 0, y: 8, scale: 0.8 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ delay: 0.35, duration: 0.45, ease: "easeOut" }}
-                  className="text-[10px] font-mono font-black text-emerald-300 bg-emerald-500/25 border border-emerald-400/40 px-2 py-0.5 rounded-full shadow-sm"
+                  className="text-[10px] font-mono font-black text-white bg-[#244434] px-2 py-0.5 rounded-full shadow-xs"
                 >
                   +{earnedCR}
                 </motion.span>
@@ -312,10 +312,10 @@ export default function WinnerProfile() {
             </div>
 
             {/* XP Gain Card with Fade-In */}
-            <div className="bg-cyan-500/10 border border-cyan-400/25 p-2.5 rounded-2xl flex flex-col justify-between">
-              <span className="text-[10px] font-bold text-cyan-300">Player XP</span>
+            <div className="bg-[#EDF3F7] border border-[#CFDFEB] p-2.5 rounded-xl flex flex-col justify-between">
+              <span className="text-[10px] font-bold text-[#263E50]">Player XP</span>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-sm font-mono font-black text-white">
+                <span className="text-sm font-mono font-black text-[#18281E]">
                   +150 XP
                 </span>
                 <motion.div
@@ -323,31 +323,31 @@ export default function WinnerProfile() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.4, duration: 0.4 }}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#263E50]" />
                 </motion.div>
               </div>
             </div>
           </div>
 
           {/* Win Streak Pill */}
-          <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-red-500/15 border border-amber-400/30 p-2.5 rounded-2xl flex items-center justify-between text-xs">
+          <div className="bg-[#FDF3F1] border border-[#F2D2CC] p-2.5 rounded-xl flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-orange-400 animate-pulse" />
-              <span className="font-bold text-white">Current Win Streak</span>
+              <Flame className="w-4 h-4 text-[#8C3B30] animate-pulse" />
+              <span className="font-bold text-[#18281E]">Current Win Streak</span>
             </div>
-            <span className="font-mono font-black text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
+            <span className="font-mono font-black text-[#8C3B30] bg-[#EFC5BD]/50 px-2.5 py-0.5 rounded-full">
               {streakCount} {streakCount === 1 ? 'Win' : 'Wins'} 🔥
             </span>
           </div>
 
           {/* Court Stamina Momentum Refund Pill (Challenger+) */}
           {(profile?.rating || 0) >= 800 && (
-            <div className="bg-emerald-500/10 border border-emerald-400/30 p-2.5 rounded-2xl flex items-center justify-between text-xs">
+            <div className="bg-[#EAF4ED] border border-[#C8DFD0] p-2.5 rounded-xl flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-emerald-400 animate-pulse" />
-                <span className="font-bold text-white">Court Stamina</span>
+                <Zap className="w-4 h-4 text-[#244434] animate-pulse" />
+                <span className="font-bold text-[#18281E]">Court Stamina</span>
               </div>
-              <span className="font-mono font-black text-emerald-300 bg-emerald-400/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <span className="font-mono font-black text-white bg-[#244434] px-2 py-0.5 rounded-full flex items-center gap-1">
                 +10% Momentum Refund ⚡
               </span>
             </div>
@@ -356,17 +356,17 @@ export default function WinnerProfile() {
 
         {/* Defeated Opponent Handshake Card */}
         {losers.length > 0 && (
-          <div className="bg-white/[0.02] border border-white/5 p-3 rounded-2xl flex items-center justify-between text-xs">
+          <div className="bg-white border border-[#E2DDD4] p-3 rounded-2xl flex items-center justify-between text-xs shadow-xs">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-white text-[10px] font-bold">
+              <div className="w-7 h-7 rounded-full bg-[#E2DDD4] flex items-center justify-center text-[#18281E] text-[10px] font-bold">
                 {losers[0].displayName?.charAt(0).toUpperCase() || 'O'}
               </div>
               <div>
-                <p className="text-[11px] font-bold text-white/80">{losers.map(l => l.displayName).join(' & ')}</p>
-                <p className="text-[9px] text-text-light/50">Opponent</p>
+                <p className="text-[11px] font-bold text-[#18281E]">{losers.map(l => l.displayName).join(' & ')}</p>
+                <p className="text-[9px] text-[#6B7E72]">Opponent</p>
               </div>
             </div>
-            <span className="text-[10px] font-bold text-text-light/50 bg-white/[0.05] px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-[#6B7E72] bg-[#F8F7F3] border border-[#E2DDD4] px-2 py-0.5 rounded-full">
               Match Final
             </span>
           </div>
@@ -383,10 +383,10 @@ export default function WinnerProfile() {
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="w-full bg-gradient-to-r from-primary via-emerald-400 to-secondary text-[#050a0a] py-3.5 rounded-2xl font-black uppercase tracking-wider text-xs shadow-sm active:scale-96 transition-all flex items-center justify-center gap-2"
+          className="w-full bg-[#244434] hover:bg-[#1A3326] text-white py-3.5 rounded-xl font-bold uppercase tracking-wider text-xs shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <span>Return to Arena Home</span>
-          <ChevronRight className="w-4 h-4 text-[#050a0a]" />
+          <ChevronRight className="w-4 h-4 text-white" />
         </button>
       </motion.div>
 

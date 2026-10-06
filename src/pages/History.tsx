@@ -26,13 +26,13 @@ const CrossedPaddles = ({ className }: { className?: string }) => (
     strokeLinejoin="round"
     className={className}
   >
-    {/* Paddle 1 (Top-Left to Bottom-Right) */}
+    {/* Paddle 1 */}
     <g transform="rotate(45 12 12)">
       <rect x="7" y="1" width="10" height="11" rx="3.5" />
       <path d="M12 12v9" strokeWidth="2.5" />
       <path d="M10 21h4" strokeWidth="2.5" />
     </g>
-    {/* Paddle 2 (Top-Right to Bottom-Left) */}
+    {/* Paddle 2 */}
     <g transform="rotate(-45 12 12)">
       <rect x="7" y="1" width="10" height="11" rx="3.5" />
       <path d="M12 12v9" strokeWidth="2.5" />
@@ -86,34 +86,34 @@ export default function History() {
         transition={{ duration: 0.3 }}
         className="flex-shrink-0"
       >
-        <h1 className="text-2xl font-bold tracking-tight text-white">Match History</h1>
-        <p className="text-xs text-text-light font-medium">Review your performance statistics and past matches.</p>
+        <h1 className="text-2xl font-black tracking-tight text-[#18281E]">Match History</h1>
+        <p className="text-xs text-[#6B7E72] font-medium">Review your performance statistics and past matches.</p>
       </motion.div>
 
-      {/* Pinned Glass Stats Overview Card */}
+      {/* Pinned Stats Overview Card */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.05 }}
-        className="flex-shrink-0 bg-white/[0.025] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 py-4 px-2 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.35)] grid grid-cols-3 items-center text-center"
+        className="flex-shrink-0 bg-white border border-[#E2DDD4] py-4 px-2 rounded-3xl shadow-[0_4px_20px_rgba(24,40,30,0.06)] grid grid-cols-3 items-center text-center"
       >
         <div className="flex flex-col items-center justify-center px-1">
-          <span className="block text-[10px] font-bold text-text-light uppercase tracking-wider mb-1">
+          <span className="block text-[10px] font-bold text-[#6B7E72] uppercase tracking-wider mb-1">
             Win Rate
           </span>
-          <span className="text-lg font-extrabold text-white block">
+          <span className="text-lg font-black text-[#18281E] block">
             {winRate}%
           </span>
         </div>
-        <div className="flex flex-col items-center justify-center border-x border-white/10 px-1 py-0.5">
-          <span className="block text-[10px] font-bold text-text-light uppercase tracking-wider mb-1">Total XP</span>
-          <span className="text-lg font-extrabold text-white block">
+        <div className="flex flex-col items-center justify-center border-x border-[#E2DDD4] px-1 py-0.5">
+          <span className="block text-[10px] font-bold text-[#6B7E72] uppercase tracking-wider mb-1">Total XP</span>
+          <span className="text-lg font-black text-[#18281E] block">
             {totalXp} XP
           </span>
         </div>
         <div className="flex flex-col items-center justify-center px-1">
-          <span className="block text-[10px] font-bold text-text-light uppercase tracking-wider mb-1">Current CR</span>
-          <span className="text-lg font-extrabold text-white block">
+          <span className="block text-[10px] font-bold text-[#6B7E72] uppercase tracking-wider mb-1">Current CR</span>
+          <span className="text-lg font-black text-[#18281E] block">
             {netCr}
           </span>
         </div>
@@ -126,19 +126,20 @@ export default function History() {
         transition={{ duration: 0.35, delay: 0.1 }}
         className="flex-1 min-h-0 flex flex-col pt-1"
       >
-        {/* Controls: Smooth Sliding Segmented Filter */}
+        {/* Controls: Segmented Filter */}
         <div className="flex items-center mb-2.5 flex-shrink-0">
-          <div className="flex items-center bg-white/[0.04] p-1 rounded-2xl border border-white/10 shadow-inner relative">
+          <div className="flex items-center bg-[#EBF2EC] p-1 rounded-2xl border border-[#D1DDD3] shadow-inner relative">
             <button
               type="button"
               onClick={() => setFilter('TODAY')}
-              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${filter === 'TODAY' ? 'text-slate-950 font-black' : 'text-text-light/70 hover:text-white'
-                }`}
+              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${
+                filter === 'TODAY' ? 'text-white font-black' : 'text-[#6B7E72] hover:text-[#18281E]'
+              }`}
             >
               {filter === 'TODAY' && (
                 <motion.div
                   layoutId="activeHistoryFilter"
-                  className="absolute inset-0 bg-primary rounded-xl shadow-sm -z-10"
+                  className="absolute inset-0 bg-[#244434] rounded-xl shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -147,13 +148,14 @@ export default function History() {
             <button
               type="button"
               onClick={() => setFilter('ALL')}
-              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${filter === 'ALL' ? 'text-slate-950 font-black' : 'text-text-light/70 hover:text-white'
-                }`}
+              className={`relative px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-200 active:scale-95 z-10 select-none ${
+                filter === 'ALL' ? 'text-white font-black' : 'text-[#6B7E72] hover:text-[#18281E]'
+              }`}
             >
               {filter === 'ALL' && (
                 <motion.div
                   layoutId="activeHistoryFilter"
-                  className="absolute inset-0 bg-primary rounded-xl shadow-sm -z-10"
+                  className="absolute inset-0 bg-[#244434] rounded-xl shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -162,7 +164,7 @@ export default function History() {
           </div>
         </div>
 
-        {/* Scrollable list or Empty State with Smooth Transition */}
+        {/* Scrollable list or Empty State */}
         <AnimatePresence mode="wait">
           <motion.div
             key={filter}
@@ -186,37 +188,38 @@ export default function History() {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: idx * 0.05 }}
-                    className="bg-white/[0.025] backdrop-blur-md border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 p-4.5 rounded-3xl flex justify-between items-center relative overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+                    className="bg-white border border-[#E2DDD4] p-4.5 rounded-3xl flex justify-between items-center relative overflow-hidden shadow-[0_2px_12px_rgba(24,40,30,0.04)]"
                   >
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold font-mono bg-white/10 text-white px-2 py-0.5 rounded-md border border-white/10">{match.id}</span>
-                        <span className="text-[11px] text-text-light flex items-center gap-1 font-medium">
-                          <Calendar className="w-3 h-3 text-text-light" /> {match.date}
+                        <span className="text-[10px] font-bold font-mono bg-[#F8F7F3] text-[#6B7E72] px-2 py-0.5 rounded-md border border-[#E2DDD4]">{match.id}</span>
+                        <span className="text-[11px] text-[#6B7E72] flex items-center gap-1 font-medium">
+                          <Calendar className="w-3 h-3 text-[#6B7E72]" /> {match.date}
                         </span>
                       </div>
                       <div>
-                        <h4 className="text-sm font-extrabold text-white">
+                        <h4 className="text-sm font-black text-[#18281E]">
                           {match.result === 'REFEREED' ? match.opponent : `vs ${match.opponent}`}
                         </h4>
-                        <p className="text-[11px] text-text-light font-semibold mt-0.5">
+                        <p className="text-[11px] text-[#6B7E72] font-semibold mt-0.5">
                           {match.result === 'REFEREED' ? `Court Refereed • Score: ${match.score}` : `${match.type} • Score: ${match.score}`}
                         </p>
                       </div>
                     </div>
 
                     <div className="text-right space-y-1.5 flex-shrink-0 pl-3">
-                      <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${match.result === 'REFEREED'
-                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/25'
-                        : match.result === 'WON'
-                          ? 'bg-primary/15 text-primary border border-primary/20'
-                          : 'bg-red-500/15 text-red-400 border border-red-500/20'
+                      <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                        match.result === 'REFEREED'
+                          ? 'bg-[#EDF3F7] text-[#263E50] border border-[#C8D6E0]'
+                          : match.result === 'WON'
+                            ? 'bg-[#EBF2EC] text-[#244434] border border-[#C6D8CB]'
+                            : 'bg-[#F8EFEB] text-[#8C3B30] border border-[#EACFC9]'
                         }`}>
                         {match.result === 'REFEREED' ? 'REFEREED 🛡️' : match.result}
                       </span>
                       <div className="text-[10px] font-bold space-y-0.5">
-                        <p className="text-primary font-mono">{match.xpEarned}</p>
-                        <p className={match.crChange.startsWith('+') ? 'text-[#38bdf8] font-mono' : 'text-red-400 font-mono'}>
+                        <p className="text-[#244434] font-mono">{match.xpEarned}</p>
+                        <p className={match.crChange.startsWith('+') ? 'text-[#263E50] font-mono font-bold' : 'text-[#8C3B30] font-mono font-bold'}>
                           {match.crChange}
                         </p>
                       </div>
@@ -225,15 +228,15 @@ export default function History() {
                 ))}
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-white/[0.025] backdrop-blur-md rounded-3xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shadow-sm">
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-white rounded-3xl border border-[#E2DDD4] shadow-[0_4px_20px_rgba(24,40,30,0.04)] space-y-4">
+                <div className="w-16 h-16 rounded-full bg-[#EBF2EC] border border-[#D1DDD3] flex items-center justify-center text-[#244434] shadow-sm">
                   <CrossedPaddles className="w-8 h-8" />
                 </div>
                 <div className="space-y-1 max-w-xs">
-                  <h4 className="text-base font-bold text-white">
+                  <h4 className="text-base font-black text-[#18281E]">
                     {filter === 'TODAY' ? 'No matches played today' : 'No matches played yet'}
                   </h4>
-                  <p className="text-xs text-text-light/70">
+                  <p className="text-xs text-[#6B7E72] leading-relaxed">
                     {filter === 'TODAY'
                       ? 'Play a match today to start your daily session, or check Recent to see your past records!'
                       : 'Start your first match in the Play tab to build your match history and earn CR rating!'}
@@ -244,14 +247,14 @@ export default function History() {
                     {matches.length > 0 && (
                       <button
                         onClick={() => setFilter('ALL')}
-                        className="bg-white/10 hover:bg-white/15 border border-white/15 text-white px-4 py-2 rounded-full text-xs font-bold active:scale-95 transition-all"
+                        className="bg-[#F8F7F3] hover:bg-[#EAE6DE] border border-[#E2DDD4] text-[#18281E] px-4 py-2 rounded-full text-xs font-bold active:scale-95 transition-all"
                       >
                         View Recent ({matches.length})
                       </button>
                     )}
                     <Link
                       to="/play"
-                      className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm active:scale-96 transition-transform"
+                      className="inline-flex items-center gap-2 bg-[#244434] hover:bg-[#1A3326] text-white px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm active:scale-96 transition-transform"
                     >
                       <PlusCircle className="w-4 h-4" /> Start A Match
                     </Link>

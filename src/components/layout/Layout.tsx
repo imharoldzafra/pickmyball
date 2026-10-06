@@ -14,118 +14,30 @@ export default function Layout() {
   const isFirstPageTab = ['/', '/history', '/play', '/friends', '/profile'].includes(location.pathname);
 
   return (
-    <div className="min-h-screen h-[100dvh] bg-[#040709] flex justify-center selection:bg-primary/30 overflow-hidden">
+    <div className="min-h-screen h-[100dvh] bg-[#EBE8E1] flex justify-center selection:bg-[#244434]/20 overflow-hidden">
       {/* Phone container on desktop with rounded screen mock */}
-      <div className="w-full max-w-md flex flex-col bg-[#05080c] relative shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:border-x border-white/5 sm:rounded-3xl overflow-hidden my-0 sm:my-3 h-[100dvh] max-h-[100dvh] sm:max-h-[96vh]">
+      <div className="w-full max-w-md flex flex-col bg-[#F7F6F1] relative shadow-[0_10px_40px_rgba(24,40,30,0.08)] sm:border-x border-[#E2DDD4] sm:rounded-3xl overflow-hidden my-0 sm:my-3 h-[100dvh] max-h-[100dvh] sm:max-h-[96vh]">
         
-        {/* 🎾 Relaxing Pickleball Court & Floating Aurora Ambient Background Layer (App-Wide) */}
+        {/* 🎾 Elegant Pickleball Court Chalk Lines Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          {/* Pickleball Court Blueprint Blueprint Lines */}
           <svg 
-            className="absolute inset-0 w-full h-full opacity-20" 
+            className="absolute inset-0 w-full h-full opacity-[0.06]" 
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 400 800"
             preserveAspectRatio="none"
           >
-            {/* Outer Court Boundary */}
-            <rect x="24" y="30" width="352" height="740" rx="12" fill="none" stroke="rgba(16, 185, 129, 0.45)" strokeWidth="1.5" strokeDasharray="8 5" />
-            
-            {/* Non-Volley Kitchen Zones & Net Line */}
-            <line x1="24" y1="280" x2="376" y2="280" stroke="rgba(6, 182, 212, 0.55)" strokeWidth="1.5" />
-            <line x1="24" y1="520" x2="376" y2="520" stroke="rgba(6, 182, 212, 0.55)" strokeWidth="1.5" />
-            <line x1="24" y1="400" x2="376" y2="400" stroke="rgba(255, 255, 255, 0.7)" strokeWidth="2.5" />
-
-            {/* Center Service Dividing Lines */}
-            <line x1="200" y1="30" x2="200" y2="280" stroke="rgba(16, 185, 129, 0.35)" strokeWidth="1.5" />
-            <line x1="200" y1="520" x2="200" y2="770" stroke="rgba(16, 185, 129, 0.35)" strokeWidth="1.5" />
-
-            {/* Center Kitchen Zone Tint */}
-            <rect x="24" y="280" width="352" height="240" fill="rgba(16, 185, 129, 0.03)" />
+            <rect x="24" y="30" width="352" height="740" rx="12" fill="none" stroke="#244434" strokeWidth="2" strokeDasharray="8 5" />
+            <line x1="24" y1="280" x2="376" y2="280" stroke="#263E50" strokeWidth="1.5" />
+            <line x1="24" y1="520" x2="376" y2="520" stroke="#263E50" strokeWidth="1.5" />
+            <line x1="24" y1="400" x2="376" y2="400" stroke="#244434" strokeWidth="2.5" />
+            <line x1="200" y1="30" x2="200" y2="280" stroke="#244434" strokeWidth="1.5" />
+            <line x1="200" y1="520" x2="200" y2="770" stroke="#244434" strokeWidth="1.5" />
+            <rect x="24" y="280" width="352" height="240" fill="rgba(36,68,52,0.04)" />
           </svg>
 
-          {/* 🌊 Gentle Sweeping Light Wave Shimmer */}
-          <motion.div 
-            animate={{
-              y: [-300, 850],
-              opacity: [0, 0.6, 0]
-            }}
-            transition={{
-              duration: 9,
-              repeat: Infinity,
-              ease: "easeInOut",
-              repeatDelay: 2
-            }}
-            className="absolute left-0 right-0 h-44 bg-gradient-to-b from-transparent via-emerald-400/10 to-transparent pointer-events-none -skew-y-12"
-          />
-
-          {/* Diagonal Light Streak Shimmer */}
-          <motion.div 
-            animate={{
-              x: [-250, 450],
-              opacity: [0, 0.4, 0]
-            }}
-            transition={{
-              duration: 12,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 3.5,
-              repeatDelay: 2.5
-            }}
-            className="absolute top-0 bottom-0 w-32 bg-gradient-to-r from-transparent via-cyan-400/10 to-transparent pointer-events-none -skew-x-12"
-          />
-
-          {/* Top Emerald/Mint Aurora Orb */}
-          <motion.div 
-            animate={{
-              x: [0, 35, -25, 0],
-              y: [0, -25, 20, 0],
-              scale: [1, 1.2, 0.95, 1],
-              opacity: [0.3, 0.5, 0.3]
-            }}
-            transition={{
-              duration: 18,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute -top-16 -left-16 w-80 h-80 rounded-full bg-emerald-500/20 blur-[85px]"
-          />
-
-          {/* Center-Right Deep Cyan/Sky Aurora Orb */}
-          <motion.div 
-            animate={{
-              x: [0, -35, 25, 0],
-              y: [0, 30, -25, 0],
-              scale: [1, 1.25, 0.9, 1],
-              opacity: [0.2, 0.4, 0.2]
-            }}
-            transition={{
-              duration: 22,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 2
-            }}
-            className="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-cyan-500/15 blur-[95px]"
-          />
-
-          {/* Lower Teal/Emerald Ambient Drift */}
-          <motion.div 
-            animate={{
-              x: [0, 25, -35, 0],
-              y: [0, -30, 25, 0],
-              scale: [0.95, 1.2, 1, 0.95],
-              opacity: [0.18, 0.35, 0.18]
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 4
-            }}
-            className="absolute -bottom-16 left-6 w-88 h-88 rounded-full bg-teal-600/18 blur-[105px]"
-          />
-
-          {/* Soft vignette overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60 pointer-events-none" />
+          {/* Gentle warm ambient lighting */}
+          <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-[#244434]/[0.05] blur-[90px]" />
+          <div className="absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-[#8C3B30]/[0.03] blur-[90px]" />
         </div>
 
         {/* Content View */}
@@ -142,9 +54,9 @@ export default function Layout() {
           <Outlet />
         </main>
         
-        {/* Fixed Anchored Floating Ultra-Slim Organic Pill Navigation Bar (Only on primary 1st pages for logged-in users) */}
+        {/* Fixed Anchored Floating Natural Pill Navigation Bar */}
         {isFirstPageTab && !isMatchView && Boolean(user) && (
-          <nav className="fixed bottom-3.5 inset-x-4 max-w-[390px] mx-auto bg-[#070b10]/95 backdrop-blur-2xl border border-white/10 rounded-full px-3 py-1.5 flex justify-between items-center shadow-[0_15px_40px_rgba(0,0,0,0.85)] z-50">
+          <nav className="fixed bottom-3.5 inset-x-4 max-w-[390px] mx-auto bg-white/95 backdrop-blur-2xl border border-[#E2DDD4] rounded-full px-3 py-1.5 flex justify-between items-center shadow-[0_8px_30px_rgba(24,40,30,0.08)] z-50">
             <NavItem to="/" icon={<Home className="w-5 h-5" />} label="Home" />
             <NavItem to="/history" icon={<History className="w-5 h-5" />} label="History" />
             <NavItem to="/play" isCenter icon={<Trophy className="w-6 h-6" />} label="Play" />
@@ -168,8 +80,8 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
             : cn(
                 "py-0.5 px-2.5 rounded-full min-w-[54px]",
                 isActive 
-                  ? "text-emerald-400 font-bold" 
-                  : "text-text-light/50 hover:text-white"
+                  ? "text-[#244434] font-bold" 
+                  : "text-[#7B8D82] hover:text-[#244434]"
               )
         )
       }
@@ -179,14 +91,14 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
           {/* Floating Elevated Center Button */}
           {isCenter ? (
             <div className="relative group flex flex-col items-center">
-              {/* The Elevated Center Circular Badge */}
+              {/* Elevated Center Circular Badge */}
               <div className={cn(
                 "relative w-[48px] h-[48px] rounded-full flex items-center justify-center transition-all duration-300 border active:scale-95",
                 isActive 
-                  ? "bg-gradient-to-b from-[#0f212c] via-[#09161e] to-[#050d12] text-emerald-300 border-emerald-400/50 shadow-[0_6px_20px_rgba(0,0,0,0.8)] scale-105" 
-                  : "bg-gradient-to-b from-[#0e1820] to-[#060c10] text-emerald-400/70 border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.7)] group-hover:scale-105 group-hover:border-emerald-400/40 group-hover:text-emerald-400"
+                  ? "bg-gradient-to-b from-[#244434] to-[#1A3326] text-white border-[#244434] shadow-[0_6px_18px_rgba(36,68,52,0.35)] scale-105" 
+                  : "bg-[#EBF2EC] text-[#244434] border-[#D1DDD3] shadow-sm group-hover:scale-105 group-hover:border-[#244434]/40"
               )}>
-                {/* 🎾 Bouncing Pickleball with Physics Squash & Stretch */}
+                {/* 🎾 Bouncing Pickleball in Crisp White */}
                 <motion.div
                   animate={{
                     y: [-4, 3.5, -4],
@@ -201,14 +113,14 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
                   className={cn(
                     "absolute top-1.5 w-[5px] h-[5px] rounded-full transition-all",
                     isActive 
-                      ? "bg-emerald-400" 
-                      : "bg-emerald-400/70"
+                      ? "bg-white" 
+                      : "bg-[#244434]"
                   )}
                 />
                 
                 <div className={cn(
                   "transition-all duration-300 mt-1", 
-                  isActive ? "scale-105 text-emerald-300" : "text-emerald-400/70"
+                  isActive ? "scale-105 text-white" : "text-[#244434]"
                 )}>
                   {icon}
                 </div>
@@ -220,8 +132,8 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
               <div className={cn(
                 "transition-all duration-200", 
                 isActive 
-                  ? "scale-110 text-emerald-400" 
-                  : "text-text-light/50 group-hover:text-white/80"
+                  ? "scale-110 text-[#244434]" 
+                  : "text-[#7B8D82] group-hover:text-[#244434]"
               )}>
                 {icon}
               </div>
@@ -229,7 +141,7 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
               {/* Label */}
               <span className={cn(
                 "text-[10px] tracking-tight mt-0.5 transition-colors duration-200",
-                isActive ? "font-black text-emerald-300" : "font-medium text-text-light/40"
+                isActive ? "font-black text-[#244434]" : "font-medium text-[#7B8D82]"
               )}>
                 {label}
               </span>
@@ -238,7 +150,7 @@ function NavItem({ to, icon, label, isCenter }: { to: string, icon: React.ReactN
               {isActive && (
                 <motion.div 
                   layoutId="activeNavDot"
-                  className="absolute -bottom-1 w-1.5 h-1.5 bg-emerald-400 rounded-full"
+                  className="absolute -bottom-1 w-1.5 h-1.5 bg-[#244434] rounded-full"
                   transition={{ type: "spring", stiffness: 450, damping: 35 }}
                 />
               )}

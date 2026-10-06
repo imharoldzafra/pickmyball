@@ -2,130 +2,104 @@
 
 @layer base {
   body {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-feature-settings: 'tnum' on, 'lnum' on;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-
   * {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
-
-  /* Smooth scrollbars */
-  ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 9999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(16, 185, 129, 0.4);
-  }
-
-  /* Mobile Button Physics */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(36, 68, 52, 0.2); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(36, 68, 52, 0.35); }
   button, .nav-btn {
     position: relative;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+    transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), background-color 0.18s ease, box-shadow 0.18s ease !important;
   }
-
   button:active, .nav-btn:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
     transition: transform 0.08s ease-out !important;
   }
 }
 
-@theme {
-  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --color-primary: #10b981;
-  --color-secondary: #34d399;
-  --color-background: #05080c;
-  --color-card: rgba(15, 23, 32, 0.55);
-  --color-accent-sand: #38bdf8;
-  --color-accent-terra: #f59e0b;
-  --color-text-main: #f8fafc;
-  --color-text-light: rgba(248, 250, 252, 0.65);
+:root {
+  --screen-padding-x: 1rem;
+  --screen-padding-top: 1rem;
+  --back-btn-size: 44px;
 }
 
-/* 🎥 Live Cinematic Background Animation */
-@keyframes cinematicMesh {
-  0% {
-    background-position: 0% 0%, 100% 100%, 50% 50%;
+@media (min-width: 640px) {
+  :root {
+    --screen-padding-x: 1.25rem;
+    --screen-padding-top: 1.25rem;
+    --back-btn-size: 44px;
   }
-  33% {
-    background-position: 50% 100%, 0% 50%, 100% 0%;
-  }
-  66% {
-    background-position: 100% 50%, 50% 0%, 0% 100%;
-  }
-  100% {
-    background-position: 0% 0%, 100% 100%, 50% 50%;
-  }
+}
+
+.app-header {
+  padding-left: var(--screen-padding-x);
+  padding-right: var(--screen-padding-x);
+  padding-top: var(--screen-padding-top);
+  width: 100%;
+}
+
+@theme {
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-primary:       #244434;
+  --color-primary-dark:  #1A3326;
+  --color-primary-light: #EBF2EC;
+  --color-secondary:     #3B6B50;
+  --color-clay:          #8C3B30;
+  --color-clay-light:    #F8EFEB;
+  --color-court-blue:    #2B4C6F;
+  --color-navy:          #263E50;
+  --color-navy-light:    #EDF3F7;
+  --color-background:    #F7F6F1;
+  --color-surface:       #FFFFFF;
+  --color-surface-alt:   #F3F1EB;
+  --color-border:        #E2DDD4;
+  --color-text-main:     #18281E;
+  --color-text-body:     #3A4C40;
+  --color-text-muted:    #6B7E72;
+  --color-text-light:    #94A49A;
+  --color-card:          rgba(255,255,255,0.98);
 }
 
 body {
-  background-color: #04070a;
-  background-image: 
-    radial-gradient(ellipse 90% 80% at 20% -10%, rgba(16, 185, 129, 0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 80% 70% at 85% 90%, rgba(6, 182, 212, 0.28) 0%, transparent 55%),
-    radial-gradient(circle 600px at 50% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
-  background-size: 180% 180%, 180% 180%, 180% 180%;
-  animation: cinematicMesh 18s ease-in-out infinite alternate;
-  background-attachment: fixed;
-  color: var(--color-text-main);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Inter", Roboto, sans-serif;
+  background-color: #EBE8E1;
+  color: #18281E;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
 }
 
-/* 💎 Premium Glass Container Class */
 .glass-card {
-  background: rgba(15, 23, 32, 0.45);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  background: #FFFFFF;
+  border: 1px solid #E2DDD4;
+  border-radius: 1.5rem;
+  box-shadow: 0 2px 10px rgba(24, 40, 30, 0.04), 0 1px 3px rgba(0,0,0,0.02);
 }
 
 .glass-card-accent {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 32, 0.55) 100%);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, #EBF2EC 0%, #F5F9F6 100%);
+  border: 1px solid rgba(36, 68, 52, 0.15);
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 16px rgba(36, 68, 52, 0.08);
 }
 
-/* 🚫 Invisible Smooth Scrollbar Utility */
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-.no-scrollbar {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
+.court-hero-card {
+  background: linear-gradient(145deg, #244434 0%, #1A3326 100%);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(26, 51, 38, 0.35);
 }
 
-/* 📷 Futuristic Scanner Viewfinder */
-#reader {
-  border: none !important;
-  background: transparent !important;
-}
-#reader video {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  border-radius: 1rem !important;
-}
-#reader__scan_region {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-height: auto !important;
-}
-#reader__dashboard_section {
-  display: none !important;
-}
+.no-scrollbar::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+.no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 
+#reader { border: none !important; background: transparent !important; }
+#reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 1rem !important; }
+#reader__scan_region { display: flex !important; align-items: center !important; justify-content: center !important; min-height: auto !important; }
+#reader__dashboard_section { display: none !important; }

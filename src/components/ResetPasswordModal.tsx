@@ -65,20 +65,20 @@ export default function ResetPasswordModal() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-lg flex items-center justify-center p-4 sm:p-6"
+        className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
       >
         <motion.div
-          initial={{ scale: 0.92, opacity: 0, y: 15 }}
+          initial={{ scale: 0.95, opacity: 0, y: 15 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.92, opacity: 0, y: 15 }}
-          className="w-full max-w-sm bg-[#080d12] border border-white/15 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] relative space-y-4 overflow-hidden"
+          exit={{ scale: 0.95, opacity: 0, y: 15 }}
+          className="w-full max-w-sm bg-white border border-[#E2DDD4] rounded-3xl p-6 shadow-2xl relative space-y-4 overflow-hidden"
         >
 
           {/* Close Button */}
           <button
             type="button"
             onClick={handleClose}
-            className="absolute top-4 right-4 text-text-light/60 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors z-10"
+            className="absolute top-4 right-4 text-[#6B7E72] hover:text-[#18281E] p-1.5 rounded-full hover:bg-[#F8F7F3] transition-colors z-10 cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -86,13 +86,13 @@ export default function ResetPasswordModal() {
 
           {/* Header */}
           <div className="text-center space-y-1.5 pt-2">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-[#EAF4ED] border border-[#C8DFD0] flex items-center justify-center mx-auto text-[#244434] shadow-xs">
               <ShieldCheck className="w-6 h-6" />
             </div>
-            <h2 className="text-lg font-black text-white tracking-tight">
+            <h2 className="text-lg font-black text-[#18281E] tracking-tight">
               Create New Password
             </h2>
-            <p className="text-xs text-text-light/70 max-w-[260px] mx-auto">
+            <p className="text-xs text-[#6B7E72] max-w-[260px] mx-auto">
               Choose a secure password for your PickMyBall account.
             </p>
           </div>
@@ -102,9 +102,9 @@ export default function ResetPasswordModal() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-2xl text-left"
+              className="p-3 bg-[#FDF3F1] border border-[#F2D2CC] rounded-xl text-left"
             >
-              <p className="text-xs text-rose-300 font-semibold">{errorMsg}</p>
+              <p className="text-xs text-[#8C3B30] font-semibold">{errorMsg}</p>
             </motion.div>
           )}
 
@@ -113,10 +113,10 @@ export default function ResetPasswordModal() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="p-3.5 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-left flex items-center gap-2.5"
+              className="p-3.5 bg-[#EAF4ED] border border-[#C8DFD0] rounded-xl text-left flex items-center gap-2.5"
             >
-              <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-              <p className="text-xs text-emerald-300 font-medium">{successMsg}</p>
+              <CheckCircle className="w-5 h-5 text-[#244434] shrink-0" />
+              <p className="text-xs text-[#244434] font-medium">{successMsg}</p>
             </motion.div>
           )}
 
@@ -124,7 +124,7 @@ export default function ResetPasswordModal() {
           {!successMsg && (
             <form onSubmit={handleSubmit} className="space-y-3.5 pt-1">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#6B7E72] mb-1 px-1">
                   New Password
                 </label>
                 <div className="relative flex items-center">
@@ -134,13 +134,13 @@ export default function ResetPasswordModal() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Min. 6 characters"
-                    className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-3 text-sm text-white placeholder:text-white/40 focus:border-emerald-500 focus:bg-black/70 transition-all outline-none"
+                    className="w-full bg-[#F8F7F3] border border-[#E2DDD4] focus:border-[#244434] focus:bg-white rounded-xl pl-11 pr-11 py-3 text-sm text-[#18281E] placeholder-[#9BAAA0] transition-all outline-none"
                   />
-                  <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
+                  <Lock className="w-4 h-4 text-[#244434]/70 absolute left-4 pointer-events-none" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 text-text-light/60 hover:text-white transition-colors p-1"
+                    className="absolute right-3.5 text-[#6B7E72] hover:text-[#18281E] transition-colors p-1"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -149,7 +149,7 @@ export default function ResetPasswordModal() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#6B7E72] mb-1 px-1">
                   Confirm New Password
                 </label>
                 <div className="relative flex items-center">
@@ -159,13 +159,13 @@ export default function ResetPasswordModal() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter password"
-                    className="w-full bg-black/50 border border-white/12 hover:border-white/25 rounded-2xl pl-11 pr-11 py-3 text-sm text-white placeholder:text-white/40 focus:border-emerald-500 focus:bg-black/70 transition-all outline-none"
+                    className="w-full bg-[#F8F7F3] border border-[#E2DDD4] focus:border-[#244434] focus:bg-white rounded-xl pl-11 pr-11 py-3 text-sm text-[#18281E] placeholder-[#9BAAA0] transition-all outline-none"
                   />
-                  <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
+                  <Lock className="w-4 h-4 text-[#244434]/70 absolute left-4 pointer-events-none" />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3.5 text-text-light/60 hover:text-white transition-colors p-1"
+                    className="absolute right-3.5 text-[#6B7E72] hover:text-[#18281E] transition-colors p-1"
                     aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                   >
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -176,7 +176,7 @@ export default function ResetPasswordModal() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full relative overflow-hidden bg-emerald-400 hover:bg-emerald-300 text-[#04080a] py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50 group"
+                className="w-full relative overflow-hidden bg-[#244434] hover:bg-[#1A3326] text-white py-3.5 rounded-xl font-bold uppercase tracking-wider text-xs shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50 group cursor-pointer"
               >
                 {/* Sweeping Light Shimmer Reflection */}
                 <motion.div

@@ -219,14 +219,14 @@ export default function AvatarCropperModal({
       <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-3 selection:bg-transparent">
         
         {/* Mobile Phone Mock Container */}
-        <div className="w-full max-w-md h-full sm:h-[92vh] bg-[#05080c] flex flex-col justify-between select-none overflow-hidden sm:rounded-3xl border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.9)] relative">
+        <div className="w-full max-w-md h-full sm:h-[92vh] bg-[#111A15] flex flex-col justify-between select-none overflow-hidden sm:rounded-3xl border border-[#244434]/40 shadow-2xl relative">
           
           {/* Top Header */}
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10 bg-[#070b10] z-20 shrink-0">
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#244434]/30 bg-[#16231C] z-20 shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 text-white/80 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+              className="p-1.5 text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer"
               aria-label="Close"
             >
               <X className="w-6 h-6" />
@@ -241,7 +241,7 @@ export default function AvatarCropperModal({
 
           {/* 📷 Viewport Frame / Crop Stage */}
           <div 
-            className="relative flex-1 bg-[#030609] flex items-center justify-center overflow-hidden touch-none cursor-grab active:cursor-grabbing"
+            className="relative flex-1 bg-[#0D1410] flex items-center justify-center overflow-hidden touch-none cursor-grab active:cursor-grabbing"
             ref={containerRef}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -277,42 +277,42 @@ export default function AvatarCropperModal({
 
             {/* 🔘 Circular Aperture Mask with Box-Shadow & Rule-of-Thirds Grid */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="relative w-[260px] h-[260px] rounded-full shadow-[0_0_0_9999px_rgba(0,0,0,0.85)] border-2 border-emerald-400/90 flex items-center justify-center overflow-hidden">
+              <div className="relative w-[260px] h-[260px] rounded-full shadow-[0_0_0_9999px_rgba(0,0,0,0.85)] border-2 border-white flex items-center justify-center overflow-hidden">
                 
-                {/* Subtle outer neon ring glow */}
-                <div className="absolute inset-0 rounded-full shadow-[inset_0_0_15px_rgba(16,185,129,0.3)] pointer-events-none" />
+                {/* Subtle outer ring glow */}
+                <div className="absolute inset-0 rounded-full shadow-[inset_0_0_15px_rgba(255,255,255,0.15)] pointer-events-none" />
 
-                {/* Instagram Rule-of-Thirds 3x3 Grid (Crisp Black Lines) */}
+                {/* Instagram Rule-of-Thirds 3x3 Grid */}
                 <div className="absolute inset-0 pointer-events-none">
-                  {/* Horizontal black lines */}
-                  <div className="absolute top-1/3 left-0 right-0 h-[1.5px] bg-black/85 shadow-[0_0_1px_rgba(255,255,255,0.25)]" />
-                  <div className="absolute top-2/3 left-0 right-0 h-[1.5px] bg-black/85 shadow-[0_0_1px_rgba(255,255,255,0.25)]" />
-                  {/* Vertical black lines */}
-                  <div className="absolute left-1/3 top-0 bottom-0 w-[1.5px] bg-black/85 shadow-[0_0_1px_rgba(255,255,255,0.25)]" />
-                  <div className="absolute left-2/3 top-0 bottom-0 w-[1.5px] bg-black/85 shadow-[0_0_1px_rgba(255,255,255,0.25)]" />
+                  {/* Horizontal lines */}
+                  <div className="absolute top-1/3 left-0 right-0 h-[1px] bg-white/30" />
+                  <div className="absolute top-2/3 left-0 right-0 h-[1px] bg-white/30" />
+                  {/* Vertical lines */}
+                  <div className="absolute left-1/3 top-0 bottom-0 w-[1px] bg-white/30" />
+                  <div className="absolute left-2/3 top-0 bottom-0 w-[1px] bg-white/30" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* 🎛️ Bottom Control Bar */}
-          <div className="bg-[#070b10] border-t border-white/10 p-4 sm:p-5 space-y-2.5 z-20 shrink-0">
+          <div className="bg-[#16231C] border-t border-[#244434]/30 p-4 sm:p-5 space-y-2.5 z-20 shrink-0">
             {/* Primary Finished Button */}
             <button
               type="button"
               onClick={handleFinish}
-              className="w-full py-3.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-[#050a0a] rounded-2xl text-xs font-black uppercase tracking-wider shadow-sm active:scale-96 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-[#244434] hover:bg-[#1A3326] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/10"
             >
-              <Check className="w-4 h-4 text-[#050a0a]" /> Finished
+              <Check className="w-4 h-4 text-white" /> Finished
             </button>
 
             {/* Change Photo Option */}
             <button
               type="button"
               onClick={onChangePhoto}
-              className="w-full py-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-xs font-bold transition-all active:scale-96 flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white text-xs font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
             >
-              <FolderOpen className="w-4 h-4 text-emerald-400" />
+              <FolderOpen className="w-4 h-4 text-white" />
               <span>Choose Different Photo from Gallery</span>
             </button>
           </div>

@@ -23,7 +23,6 @@ export default function Profile() {
     setErrorMsg(null);
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type (Images only: JPEG, PNG, WebP)
       const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
       if (!validTypes.includes(file.type) && !file.type.startsWith('image/')) {
         setErrorMsg('Please select a valid image file (JPEG, PNG, WebP).');
@@ -31,7 +30,6 @@ export default function Profile() {
         return;
       }
 
-      // Restrict file size (Max 2.5 MB)
       const MAX_SIZE_BYTES = 2.5 * 1024 * 1024;
       if (file.size > MAX_SIZE_BYTES) {
         setErrorMsg('Image size must be less than 2.5MB.');
@@ -48,7 +46,6 @@ export default function Profile() {
       };
       reader.readAsDataURL(file);
     }
-    // Reset file input so selecting the same photo triggers onChange
     e.target.value = '';
   };
 
@@ -86,37 +83,14 @@ export default function Profile() {
     }
   };
 
-  const [isResetting, setIsResetting] = useState(false);
-
-  const handleResetStats = async () => {
-    if (!window.confirm('Reset all match stats, CR rating, and match history to fresh Level 1?')) return;
-    setIsResetting(true);
-    localStorage.removeItem('matchHistory');
-    localStorage.removeItem('mockProfile');
-    await updateProfileMock({
-      wins: 0,
-      losses: 0,
-      battles: 0,
-      xp: 0,
-      level: 1,
-      rating: 0,
-      rank: 'Rookie',
-      currentStreak: 0,
-      longestStreak: 0,
-      highestRating: 0,
-    });
-    setIsResetting(false);
-    navigate('/');
-  };
-
-  const handleLogout = () => {
-    logoutMock();
+  const handleLogout = async () => {
+    await logoutMock();
     navigate('/login');
   };
 
   return (
     <div className="p-5 space-y-6">
-      {/* Hidden File Input (Opens Native Phone Gallery / Camera Roll directly) */}
+      {/* Hidden File Input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -134,11 +108,11 @@ export default function Profile() {
       >
         <button 
           onClick={() => navigate(-1)}
-          className="p-2.5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 text-white transition-all active:scale-95"
+          className="p-2.5 rounded-2xl bg-white border border-[#E2DDD4] hover:bg-[#F3F1EB] text-[#18281E] transition-all active:scale-95 shadow-sm"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-bold tracking-tight text-white">Edit Profile</h1>
+        <h1 className="text-xl font-black tracking-tight text-[#18281E]">Edit Profile</h1>
         <div className="w-10" />
       </motion.div>
 
@@ -153,34 +127,34 @@ export default function Profile() {
           onClick={handleAvatarClick}
           className="relative cursor-pointer group"
         >
-          <div className="w-28 h-28 rounded-full border-2 border-primary/50 overflow-hidden bg-white/[0.03] shadow-md flex items-center justify-center transition-all group-hover:border-primary">
+          <div className="w-28 h-28 rounded-full border-2 border-[#244434] overflow-hidden bg-[#EBF2EC] shadow-md flex items-center justify-center transition-all group-hover:scale-105">
             {photoURL ? (
               <img src={photoURL} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <User className="w-12 h-12 text-text-light/50" />
+              <User className="w-12 h-12 text-[#3B6B50]" />
             )}
           </div>
-          <div className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-[#050a0a] shadow-lg group-hover:scale-110 transition-transform">
+          <div className="absolute bottom-0 right-0 p-2 rounded-full bg-[#244434] text-white shadow-md group-hover:scale-110 transition-transform">
             <Camera className="w-4 h-4" />
           </div>
         </div>
-        <p className="text-xs text-text-light font-medium">Tap photo to choose & crop with camera/gallery</p>
+        <p className="text-xs text-[#6B7E72] font-medium">Tap photo to choose & crop with camera/gallery</p>
       </motion.div>
 
       {/* Form Fields */}
       <div className="space-y-4">
         {errorMsg && (
-          <div className="w-[84%] max-w-[290px] mx-auto p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold text-center">
+          <div className="w-[84%] max-w-[290px] mx-auto p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold text-center">
             {errorMsg}
           </div>
         )}
 
         <div className="w-[84%] max-w-[290px] mx-auto space-y-1.5">
           <div className="flex items-center justify-between px-1">
-            <label className="text-xs font-bold text-text-light uppercase tracking-wider">
+            <label className="text-xs font-bold text-[#3A4C40] uppercase tracking-wider">
               Display Name
             </label>
-            <span className="text-[10px] text-text-light/60 font-medium">
+            <span className="text-[10px] text-[#6B7E72] font-medium">
               {displayName.length}/25
             </span>
           </div>
@@ -190,7 +164,7 @@ export default function Profile() {
             maxLength={25}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="Enter your username"
-            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-4 py-3 text-white font-medium focus:outline-none focus:border-primary/50 transition-all text-sm"
+            className="w-full bg-[#F8F7F3] border border-[#E2DDD4] rounded-2xl px-4 py-3 text-[#18281E] font-medium focus:outline-none focus:border-[#244434] focus:bg-white transition-all text-sm"
           />
         </div>
 
@@ -206,7 +180,7 @@ export default function Profile() {
             whileTap={{ scale: 0.96 }}
             onClick={handleSave}
             disabled={isSaving}
-            className="w-[68%] max-w-[240px] flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-[#050a0a] py-3 rounded-2xl font-extrabold uppercase tracking-wider text-xs shadow-sm transition-all disabled:opacity-70"
+            className="w-[72%] max-w-[250px] flex items-center justify-center gap-2 bg-[#244434] hover:bg-[#1A3326] text-white py-3.5 rounded-2xl font-black uppercase tracking-wider text-xs shadow-md transition-all disabled:opacity-70"
           >
             <Save className="w-4 h-4" />
             {isSaving ? 'Saving Changes...' : 'Save Profile'}
@@ -216,7 +190,7 @@ export default function Profile() {
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             onClick={handleLogout}
-            className="flex items-center justify-center gap-1.5 text-red-400 hover:text-red-300 font-bold uppercase tracking-wider text-xs py-2 px-4 transition-colors"
+            className="flex items-center justify-center gap-1.5 text-[#8C3B30] hover:text-[#743128] font-bold uppercase tracking-wider text-xs py-2 px-4 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
@@ -224,7 +198,7 @@ export default function Profile() {
         </motion.div>
       </div>
 
-      {/* Instagram-style Avatar Cropper Modal (Opens immediately with chosen photo) */}
+      {/* Avatar Cropper Modal */}
       <AvatarCropperModal
         isOpen={showCropperModal}
         imageSrc={rawImageToCrop}

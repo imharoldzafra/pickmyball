@@ -1,20 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Trophy, 
-  Users, 
-  MapPin, 
-  Flame, 
-  ArrowLeft, 
-  Sparkles, 
-  Crown, 
-  Medal, 
-  ShieldCheck, 
-  UserPlus, 
-  Swords,
-  ChevronRight,
-  TrendingUp
-} from 'lucide-react';
+import { Users, MapPin, Flame, ArrowLeft, Crown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -40,7 +26,7 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
 
-  // Fetch real community players who have played at least 1 match (Active Players Only)
+  // Fetch real community players who have played at least 1 match
   const fetchRankings = async () => {
     try {
       setLoading(true);
@@ -84,19 +70,17 @@ export default function Leaderboard() {
           isCurrentUser: true,
         };
 
-        if (userIndex !== -1) {
-          realList[userIndex] = currentUserData;
-        } else {
+        if (userIndex === -1) {
           realList.push(currentUserData);
+          realList.sort((a, b) => b.rating - a.rating);
+        } else {
+          realList[userIndex] = currentUserData;
         }
       }
 
-      // Sort descending by CR
-      realList.sort((a, b) => (b.rating || 0) - (a.rating || 0));
       setLeaderboard(realList);
     } catch (err) {
-      console.error('Failed to load leaderboard:', err);
-      setLeaderboard([]);
+      console.warn('Leaderboard fetch warning:', err);
     } finally {
       setLoading(false);
     }
@@ -104,28 +88,16 @@ export default function Leaderboard() {
 
   useEffect(() => {
     fetchRankings();
-
-    // ⚡ Supabase Realtime Subscription: Update immediately when any match finishes
-    const channel = supabase
-      .channel('public:profiles:leaderboard')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchRankings();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [profile?.rating, profile?.rank, profile?.battles]);
+  }, [profile?.uid, profile?.rating, profile?.battles]);
 
   // Determine current user rank index
   const currentUserIndex = leaderboard.findIndex((u) => u.isCurrentUser || u.id === profile?.uid);
   const myRank = currentUserIndex !== -1 ? currentUserIndex + 1 : '-';
 
-  // Filtered leaderboard (Strictly Top 50 Players)
+  // Filtered leaderboard
   const fullList = activeTab === 'global' 
     ? leaderboard 
-    : leaderboard.filter((u, idx) => u.isCurrentUser || idx === 1 || idx === 3); // Sample friends filter
+    : leaderboard.filter((u, idx) => u.isCurrentUser || idx === 1 || idx === 3);
 
   const displayedList = fullList.slice(0, 50);
 
@@ -144,27 +116,27 @@ export default function Leaderboard() {
         >
           <button
             onClick={() => navigate('/play')}
-            className="flex items-center gap-1.5 text-xs font-bold text-text-light/70 hover:text-white bg-white/[0.04] border border-white/10 px-3 py-1.5 rounded-full transition-all active:scale-95 shrink-0"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#3A4C40] hover:text-[#18281E] bg-white border border-[#E2DDD4] px-3.5 py-1.5 rounded-full transition-all active:scale-95 shrink-0 shadow-sm"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Play Arena</span>
           </button>
 
-          {/* Glass Dual Tab Selector (Local vs Friends) with Sliding Spring Pill */}
-          <div className="flex items-center bg-white/[0.04] backdrop-blur-2xl p-0.5 rounded-full border border-white/10 shadow-sm shrink-0 relative">
+          {/* Dual Tab Selector */}
+          <div className="flex items-center bg-[#EBF2EC] p-0.5 rounded-full border border-[#D1DDD3] shadow-sm shrink-0 relative">
             <button
               type="button"
               onClick={() => setActiveTab('global')}
               className={`relative px-3.5 py-1 text-xs font-bold rounded-full transition-colors duration-200 flex items-center justify-center gap-1.5 active:scale-95 z-10 select-none ${
                 activeTab === 'global'
-                  ? 'text-slate-950 font-black'
-                  : 'text-text-light/70 hover:text-white'
+                  ? 'text-white font-black'
+                  : 'text-[#6B7E72] hover:text-[#18281E]'
               }`}
             >
               {activeTab === 'global' && (
                 <motion.div
                   layoutId="activeLeaderboardTab"
-                  className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-sm -z-10"
+                  className="absolute inset-0 bg-[#244434] rounded-full shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -176,14 +148,14 @@ export default function Leaderboard() {
               onClick={() => setActiveTab('friends')}
               className={`relative px-3.5 py-1 text-xs font-bold rounded-full transition-colors duration-200 flex items-center justify-center gap-1.5 active:scale-95 z-10 select-none ${
                 activeTab === 'friends'
-                  ? 'text-slate-950 font-black'
-                  : 'text-text-light/70 hover:text-white'
+                  ? 'text-white font-black'
+                  : 'text-[#6B7E72] hover:text-[#18281E]'
               }`}
             >
               {activeTab === 'friends' && (
                 <motion.div
                   layoutId="activeLeaderboardTab"
-                  className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-sm -z-10"
+                  className="absolute inset-0 bg-[#244434] rounded-full shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -193,7 +165,7 @@ export default function Leaderboard() {
           </div>
         </motion.div>
 
-        {/* 🏆 3D TOP 3 PODIUM */}
+        {/* 🏆 TOP 3 PODIUM */}
         {topThree.length > 0 ? (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
@@ -208,14 +180,14 @@ export default function Leaderboard() {
                   user={topThree[1]}
                   rankNum={2}
                   height="h-26 sm:h-28"
-                  crownColor="text-slate-300"
-                  pedestalBg="bg-gradient-to-b from-slate-300/20 to-slate-500/5 border-slate-300/30"
+                  crownColor="text-slate-400"
+                  pedestalBg="bg-gradient-to-b from-slate-100 to-slate-50 border-slate-300"
                   medalBadge="🥈"
                 />
               ) : (
-                <div className="h-24 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center opacity-40">
+                <div className="h-24 rounded-2xl border border-dashed border-[#E2DDD4] flex flex-col items-center justify-center opacity-40">
                   <span className="text-lg">🥈</span>
-                  <span className="text-[9px] font-bold text-text-light mt-1">#2 Open</span>
+                  <span className="text-[9px] font-bold text-[#6B7E72] mt-1">#2 Open</span>
                 </div>
               )}
 
@@ -225,15 +197,15 @@ export default function Leaderboard() {
                   user={topThree[0]}
                   rankNum={1}
                   height="h-34 sm:h-36"
-                  crownColor="text-amber-400"
-                  pedestalBg="bg-gradient-to-b from-amber-400/25 to-yellow-500/5 border-amber-400/40 shadow-md"
+                  crownColor="text-amber-500"
+                  pedestalBg="bg-gradient-to-b from-amber-100 to-amber-50 border-amber-300 shadow-sm"
                   medalBadge="🥇"
                   isFirstPlace
                 />
               ) : (
-                <div className="h-32 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center opacity-40">
+                <div className="h-32 rounded-2xl border border-dashed border-[#E2DDD4] flex flex-col items-center justify-center opacity-40">
                   <span className="text-xl">🥇</span>
-                  <span className="text-[10px] font-bold text-amber-400 mt-1">#1 Open</span>
+                  <span className="text-[10px] font-bold text-amber-600 mt-1">#1 Open</span>
                 </div>
               )}
 
@@ -243,29 +215,29 @@ export default function Leaderboard() {
                   user={topThree[2]}
                   rankNum={3}
                   height="h-22 sm:h-24"
-                  crownColor="text-orange-400"
-                  pedestalBg="bg-gradient-to-b from-amber-700/20 to-orange-900/5 border-amber-600/30"
+                  crownColor="text-[#8C3B30]"
+                  pedestalBg="bg-gradient-to-b from-orange-100 to-orange-50 border-orange-300"
                   medalBadge="🥉"
                 />
               ) : (
-                <div className="h-20 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center opacity-40">
+                <div className="h-20 rounded-2xl border border-dashed border-[#E2DDD4] flex flex-col items-center justify-center opacity-40">
                   <span className="text-base">🥉</span>
-                  <span className="text-[9px] font-bold text-text-light mt-1">#3 Open</span>
+                  <span className="text-[9px] font-bold text-[#6B7E72] mt-1">#3 Open</span>
                 </div>
               )}
             </div>
           </motion.div>
         ) : (
-          <div className="text-center py-6 px-4 rounded-3xl bg-white/[0.02] border border-white/5 space-y-1 max-w-sm mx-auto">
-            <p className="text-xs font-black text-white">No active rankings yet</p>
-            <p className="text-[10px] text-text-light/60">Play your first match on court to claim the #1 championship stand!</p>
+          <div className="text-center py-6 px-4 rounded-3xl bg-white border border-[#E2DDD4] space-y-1 max-w-sm mx-auto shadow-sm">
+            <p className="text-xs font-black text-[#18281E]">No active rankings yet</p>
+            <p className="text-[10px] text-[#6B7E72]">Play your first match on court to claim the #1 championship stand!</p>
           </div>
         )}
       </div>
 
-      {/* 📜 DEDICATED SCROLLABLE LADDER LIST (#4 to #50+) */}
+      {/* 📜 LADDER LIST (#4 to #50+) */}
       <div className="flex-1 min-h-0 flex flex-col space-y-2 pt-2">
-        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-text-light/50 px-3 flex-shrink-0">
+        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#6B7E72] px-3 flex-shrink-0">
           <span>Rank & Player</span>
           <span>Competitive Rating</span>
         </div>
@@ -284,13 +256,13 @@ export default function Leaderboard() {
                   transition={{ duration: 0.2, delay: idx * 0.03 }}
                   className={`flex items-center justify-between p-2.5 sm:p-3 rounded-2xl border transition-all ${
                     isMe
-                      ? 'bg-emerald-500/15 border-emerald-400/50 shadow-sm'
-                      : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]'
+                      ? 'bg-[#EBF2EC] border-[#244434] shadow-sm'
+                      : 'bg-white border-[#E2DDD4] hover:border-[#C6D8CB]'
                   }`}
                 >
                   {/* Left: Rank #, Avatar, Name & Emblem */}
                   <div className="flex items-center gap-2.5">
-                    <span className={`w-6 text-center font-mono font-black text-xs ${isMe ? 'text-emerald-400' : 'text-text-light/50'}`}>
+                    <span className={`w-6 text-center font-mono font-black text-xs ${isMe ? 'text-[#244434]' : 'text-[#6B7E72]'}`}>
                       #{rankPosition}
                     </span>
 
@@ -298,41 +270,46 @@ export default function Leaderboard() {
                       <img
                         src={player.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
                         alt={player.display_name}
-                        className="w-9 h-9 rounded-full object-cover border border-white/10"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border border-[#E2DDD4]"
                       />
+                      {isMe && (
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#244434] ring-2 ring-white" />
+                      )}
                     </div>
 
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className={`text-xs font-black tracking-tight ${isMe ? 'text-emerald-300' : 'text-white'}`}>
+                        <span className={`text-xs font-black truncate max-w-[110px] sm:max-w-[130px] ${isMe ? 'text-[#244434]' : 'text-[#18281E]'}`}>
                           {player.display_name}
                         </span>
                         {isMe && (
-                          <span className="text-[8px] font-black uppercase bg-emerald-400 text-slate-950 px-1.5 py-0.2 rounded-full">
+                          <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-[#244434] text-white">
                             You
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-[10px] text-text-light/60">
-                        <span>{player.rank}</span>
-                        {player.current_streak && player.current_streak > 1 && (
-                          <span className="text-amber-400 font-bold flex items-center gap-0.5">
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] font-semibold text-[#6B7E72]">
+                          {player.wins}W - {player.losses}L
+                        </span>
+                        {(player.current_streak || 0) >= 3 && (
+                          <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-[#8C3B30] bg-[#F8EFEB] px-1 rounded">
                             <Flame className="w-2.5 h-2.5" />
-                            {player.current_streak}W
+                            {player.current_streak}
                           </span>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Tier Emblem & CR */}
-                  <div className="flex items-center gap-2">
+                  {/* Right: Emblem + CR Rating */}
+                  <div className="flex items-center gap-2 shrink-0">
                     <TierEmblem rank={player.rank} size="sm" animated={false} />
-                    <div className="text-right">
-                      <span className="text-sm font-mono font-black text-white block">
+                    <div className="text-right min-w-[54px]">
+                      <span className="text-xs font-mono font-black text-[#18281E] block">
                         {player.rating}
                       </span>
-                      <span className="text-[9px] font-bold text-text-light/50 uppercase">
+                      <span className="text-[9px] font-bold text-[#6B7E72] uppercase block -mt-0.5">
                         CR
                       </span>
                     </div>
@@ -341,37 +318,35 @@ export default function Leaderboard() {
               );
             })
           ) : (
-            <div className="text-center py-6 px-4 rounded-2xl bg-white/[0.015] border border-white/5 text-text-light/50 text-[11px] font-medium">
-              {topThree.length > 0
-                ? 'Ranks #4 to #50 will open as more players complete matches.'
-                : 'No players in the ladder yet.'}
+            <div className="text-center py-6 text-xs text-[#6B7E72]">
+              No additional players in ladder yet.
             </div>
           )}
         </div>
       </div>
 
-      {/* 📌 STICKY "YOUR STANDING" FOOTER (Only displayed if player is ranked #9 or lower, or unranked) */}
+      {/* 📌 STICKY "YOUR STANDING" FOOTER */}
       {profile && (myRank === '-' || (typeof myRank === 'number' && myRank > 8)) && (
         <div className="fixed bottom-3.5 inset-x-4 max-w-md mx-auto z-40">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="flex items-center justify-between p-3 rounded-2xl bg-[#09151c]/95 backdrop-blur-2xl border border-emerald-400/40 shadow-[0_10px_30px_rgba(0,0,0,0.8),0_0_20px_rgba(16,185,129,0.25)]"
+            className="flex items-center justify-between p-3 rounded-2xl bg-white/95 backdrop-blur-2xl border border-[#244434]/40 shadow-[0_10px_30px_rgba(24,40,30,0.12)]"
           >
             <div className="flex items-center gap-2.5">
-              <span className="w-6 text-center font-mono font-black text-xs text-emerald-400">
+              <span className="w-6 text-center font-mono font-black text-xs text-[#244434]">
                 {myRank === '-' ? '—' : `#${myRank}`}
               </span>
               <img
                 src={profile.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
                 alt="You"
-                className="w-8 h-8 rounded-full object-cover border border-emerald-400/40"
+                className="w-8 h-8 rounded-full object-cover border border-[#244434]"
               />
               <div>
-                <span className="text-xs font-black text-white block">
+                <span className="text-xs font-black text-[#18281E] block">
                   {myRank === '-' ? 'Unranked Player' : 'Your Local Standing'}
                 </span>
-                <span className="text-[10px] text-emerald-300 font-bold">
+                <span className="text-[10px] text-[#244434] font-bold">
                   {myRank === '-' ? 'Play 1 match to enter ladder' : `${profile.rank || 'Rookie'} Division`}
                 </span>
               </div>
@@ -380,10 +355,10 @@ export default function Leaderboard() {
             <div className="flex items-center gap-2">
               <TierEmblem rank={profile.rank || 'Rookie'} size="sm" animated={true} />
               <div className="text-right">
-                <span className="text-sm font-mono font-black text-white block">
+                <span className="text-sm font-mono font-black text-[#18281E] block">
                   {profile.rating || 0}
                 </span>
-                <span className="text-[9px] font-bold text-emerald-400 uppercase">
+                <span className="text-[9px] font-bold text-[#244434] uppercase">
                   CR
                 </span>
               </div>
@@ -395,9 +370,7 @@ export default function Leaderboard() {
   );
 }
 
-// -----------------------------------------------------------------------------
-// 🥇 3D Podium Stand Sub-Component
-// -----------------------------------------------------------------------------
+// 🥇 Podium Stand Sub-Component
 function PodiumStand({
   user,
   rankNum,
@@ -422,7 +395,7 @@ function PodiumStand({
         {isFirstPlace && (
           <Crown className={`w-5 h-5 absolute -top-4 left-1/2 -translate-x-1/2 ${crownColor} animate-bounce`} />
         )}
-        <div className={`relative p-0.5 rounded-full border-2 ${isFirstPlace ? 'border-amber-400 shadow-md' : 'border-white/20'}`}>
+        <div className={`relative p-0.5 rounded-full border-2 ${isFirstPlace ? 'border-amber-400 shadow-md' : 'border-[#E2DDD4]'}`}>
           <img
             src={user.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
             alt={user.display_name}
@@ -434,17 +407,17 @@ function PodiumStand({
 
       {/* Name and CR */}
       <div className="text-center mb-1.5 w-full px-1">
-        <span className="text-[11px] font-black text-white truncate block max-w-[90px] mx-auto">
+        <span className="text-[11px] font-black text-[#18281E] truncate block max-w-[90px] mx-auto">
           {user.display_name}
         </span>
-        <span className="text-[10px] font-mono font-black text-emerald-400 block">
+        <span className="text-[10px] font-mono font-black text-[#244434] block">
           {user.rating} CR
         </span>
       </div>
 
       {/* The Stand Box */}
-      <div className={`w-full ${height} rounded-2xl border ${pedestalBg} flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md`}>
-        <span className="text-2xl font-black font-mono text-white/40">
+      <div className={`w-full ${height} rounded-2xl border ${pedestalBg} flex flex-col items-center justify-center relative overflow-hidden shadow-sm`}>
+        <span className="text-2xl font-black font-mono text-[#18281E]/20">
           {rankNum}
         </span>
         <div className="mt-1">

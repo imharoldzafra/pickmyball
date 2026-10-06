@@ -15,12 +15,12 @@ export default function Pickleball3DSphere({ className = '', size = 72 }: Pickle
     if (!ctx) return;
 
     // Generate 3D points evenly on a sphere (Fibonacci sphere algorithm)
-    const numHoles = 24;
+    const numHoles = 26;
     const points: { x: number; y: number; z: number }[] = [];
     const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
 
     for (let i = 0; i < numHoles; i++) {
-      const y = 1 - (i / (numHoles - 1)) * 2; // y goes from 1 to -1
+      const y = 1 - (i / (numHoles - 1)) * 2; // y from 1 to -1
       const radiusAtY = Math.sqrt(1 - y * y);
       const theta = phi * i;
       const x = Math.cos(theta) * radiusAtY;
@@ -28,16 +28,16 @@ export default function Pickleball3DSphere({ className = '', size = 72 }: Pickle
       points.push({ x, y, z });
     }
 
-    let rotX = 0.3;
+    let rotX = 0.35;
     let rotY = 0;
-    let rotZ = 0.15;
+    let rotZ = 0.2;
     let animId: number;
 
     const render = () => {
       // Smooth continuous multi-axis 3D rotation
-      rotY += 0.018;
-      rotX += 0.008;
-      rotZ += 0.005;
+      rotY += 0.016;
+      rotX += 0.007;
+      rotZ += 0.004;
 
       const cosX = Math.cos(rotX);
       const sinX = Math.sin(rotX);
@@ -58,54 +58,70 @@ export default function Pickleball3DSphere({ className = '', size = 72 }: Pickle
 
       const cx = w / 2;
       const cy = h / 2;
-      const r = (w / 2) - 4; // Sphere radius
+      const r = (w / 2) - 2; // Sphere radius
 
-      // 1. Draw outer sphere silhouette
+      // Base Sphere with realistic optic lime/yellow gradient shading
+      const lightX = cx - r * 0.35;
+      const lightY = cy - r * 0.35;
+      const sphereGrad = ctx.createRadialGradient(lightX, lightY, r * 0.1, cx, cy, r);
+      sphereGrad.addColorStop(0, '#F5FB8B');    // Sunlight hot spot
+      sphereGrad.addColorStop(0.35, '#DBEC38'); // Vibrant optic yellow-lime (tournament standard)
+      sphereGrad.addColorStop(0.75, '#BFD423'); // Midtone court lime
+      sphereGrad.addColorStop(1, '#819914');    // Soft spherical ambient shadow
+
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = '#10B981';
-      ctx.lineWidth = 2.5;
+      ctx.fillStyle = sphereGrad;
+      ctx.fill();
+
+      // Subtle crisp rim outline
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(100, 120, 15, 0.25)';
       ctx.stroke();
 
-      // 2. Project and draw holes on the 3D surface
+      // 3. Project and draw realistic drilled pickleball holes
       for (const p of points) {
         // Rotate around Y
-        let x1 = p.x * cosY - p.z * sinY;
-        let z1 = p.x * sinY + p.z * cosY;
-        let y1 = p.y;
+        const x1 = p.x * cosY - p.z * sinY;
+        const z1 = p.x * sinY + p.z * cosY;
+        const y1 = p.y;
 
         // Rotate around X
-        let y2 = y1 * cosX - z1 * sinX;
-        let z2 = y1 * sinX + z1 * cosX;
-        let x2 = x1;
+        const y2 = y1 * cosX - z1 * sinX;
+        const z2 = y1 * sinX + z1 * cosX;
+        const x2 = x1;
 
         // Rotate around Z
-        let x3 = x2 * cosZ - y2 * sinZ;
-        let y3 = x2 * sinZ + y2 * cosZ;
-        let z3 = z2;
+        const x3 = x2 * cosZ - y2 * sinZ;
+        const y3 = x2 * sinZ + y2 * cosZ;
+        const z3 = z2;
 
-        // Only draw holes on the front hemisphere (facing camera)
-        if (z3 > 0.02) {
+        // Only draw holes on the front hemisphere facing camera
+        if (z3 > 0.04) {
           const screenX = cx + x3 * r;
           const screenY = cy + y3 * r;
 
-          // Perspective scaling & oval foreshortening based on spherical curve
-          const baseHoleRadius = 4.2;
+          // Perspective foreshortening
+          const baseHoleRadius = Math.max(2.2, r * 0.13);
           const zDepth = z3; // 0 to 1
-          const holeRx = baseHoleRadius * (0.85 + zDepth * 0.35);
-          const holeRy = baseHoleRadius * Math.max(0.2, zDepth);
+          const holeRx = baseHoleRadius * (0.8 + zDepth * 0.3);
+          const holeRy = baseHoleRadius * Math.max(0.22, zDepth);
 
-          // Calculate rotation angle of the hole ellipse along sphere normal
           const angle = Math.atan2(y3, x3);
 
           ctx.save();
           ctx.translate(screenX, screenY);
           ctx.rotate(angle);
 
+          // Deep hole cavity
           ctx.beginPath();
           ctx.ellipse(0, 0, holeRy, holeRx, 0, 0, Math.PI * 2);
-          ctx.strokeStyle = '#10B981';
-          ctx.lineWidth = 1.8;
+          ctx.fillStyle = 'rgba(40, 52, 8, 0.85)';
+          ctx.fill();
+
+          // Hole rim edge bevel highlight
+          ctx.lineWidth = 0.8;
+          ctx.strokeStyle = 'rgba(245, 251, 140, 0.45)';
           ctx.stroke();
 
           ctx.restore();

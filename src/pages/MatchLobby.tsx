@@ -4,7 +4,7 @@ import { Match, LobbyPlayer } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import QRCode from 'react-qr-code';
-import { Users, User, Shield, ArrowRight, ArrowLeft, Copy, Check, LogOut, RefreshCw, Trophy, Sparkles } from 'lucide-react';
+import { Users, User, Shield, ArrowRight, ArrowLeft, Copy, Check, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function MatchLobby() {
@@ -146,8 +146,8 @@ export default function MatchLobby() {
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-3 text-center">
-        <div className="w-10 h-10 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
-        <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Connecting to Match Room...</p>
+        <div className="w-10 h-10 rounded-full border-2 border-[#244434] border-t-transparent animate-spin" />
+        <p className="text-xs font-bold text-[#244434] uppercase tracking-widest">Connecting to Match Room...</p>
       </div>
     );
   }
@@ -257,33 +257,30 @@ export default function MatchLobby() {
       >
         {/* Top Header Row with Back Button and Centered Specs */}
         <div className="w-full flex items-center justify-between relative min-h-[32px]">
-          {/* Sleek Minimal Circular Back Button */}
           <button
             type="button"
             onClick={() => navigate('/play')}
-            className="w-8 h-8 flex items-center justify-center text-text-light hover:text-white transition-all bg-white/[0.04] hover:bg-white/[0.08] rounded-full border border-white/10 active:scale-95 shadow-sm z-20 shrink-0"
+            className="w-8 h-8 flex items-center justify-center text-[#3A4C40] hover:text-[#18281E] transition-all bg-white hover:bg-[#EBF2EC] rounded-full border border-[#E2DDD4] active:scale-95 shadow-sm z-20 shrink-0"
             title="Back to Arena"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
           </button>
 
-          {/* Centered Specs Pill (Trophy removed, perfectly centered) */}
-          <div className="absolute left-1/2 -translate-x-1/2 inline-flex items-center gap-2 bg-white/[0.05] border border-white/10 px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 backdrop-blur-md whitespace-nowrap shadow-sm">
+          {/* Centered Specs Pill */}
+          <div className="absolute left-1/2 -translate-x-1/2 inline-flex items-center gap-2 bg-white border border-[#E2DDD4] px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-[#244434] shadow-sm whitespace-nowrap">
             <span>{match.matchType === '2v2' ? 'Doubles (2v2)' : 'Singles (1v1)'}</span>
-            <span className="text-white/30">•</span>
+            <span className="text-[#94A49A]">•</span>
             <span>{match.gameFormat === 'best_of_3' ? 'Best of 3 Sets' : `${match.targetPoints} Pts Game`}</span>
           </div>
 
-          {/* Spacer to guarantee horizontal balance */}
           <div className="w-8 h-8 pointer-events-none shrink-0" />
         </div>
 
-        {/* QR Code & Room Code Group (Equal Spacing Above & Below) */}
+        {/* QR Code & Room Code Group */}
         <div className="flex flex-col items-center space-y-2 pt-3.5 pb-1">
-          {/* Floating QR Code with Neon Halo */}
+          {/* QR Code Container */}
           <div className="relative">
-            <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20 rounded-2xl blur-lg opacity-80 pointer-events-none" />
-            <div className="bg-white p-2 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.8)] relative z-10 border border-white/30">
+            <div className="bg-white p-2.5 rounded-2xl shadow-[0_4px_20px_rgba(24,40,30,0.06)] relative z-10 border border-[#E2DDD4]">
               <QRCode 
                 value={typeof window !== 'undefined' ? `${window.location.origin}/match/${match.id}/lobby` : match.id} 
                 size={120} 
@@ -295,28 +292,28 @@ export default function MatchLobby() {
           <button
             type="button"
             onClick={handleCopyCode}
-            className="inline-flex items-center gap-1.5 bg-black/40 hover:bg-black/60 border border-emerald-400/40 hover:border-emerald-400 px-3 py-1 rounded-full text-[11px] font-mono font-black text-emerald-400 tracking-wider shadow-sm active:scale-95 transition-all"
+            className="inline-flex items-center gap-1.5 bg-[#EBF2EC] hover:bg-[#DFEAE0] border border-[#D1DDD3] px-3.5 py-1 rounded-full text-[11px] font-mono font-black text-[#244434] tracking-wider shadow-sm active:scale-95 transition-all"
           >
             <span>ROOM: {match.id}</span>
-            {copied ? <Check className="w-3 h-3 text-emerald-300" /> : <Copy className="w-3 h-3 text-emerald-400/70" />}
+            {copied ? <Check className="w-3 h-3 text-[#244434]" /> : <Copy className="w-3 h-3 text-[#3B6B50]" />}
           </button>
         </div>
       </motion.div>
 
       {/* 👥 Dynamic Team Slots Grid */}
-      <div className="w-full space-y-2 -mt-6">
+      <div className="w-full space-y-2.5 -mt-6">
         
-        {/* TEAM ALPHA (Cyan) */}
+        {/* TEAM ALPHA (Court Navy Slate) */}
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/[0.03] backdrop-blur-md p-3 rounded-2xl border-t border-t-cyan-400/40 border-x border-x-cyan-500/20 border-b border-b-white/5 relative overflow-hidden shadow-sm space-y-1.5"
+          className="bg-white p-3.5 rounded-2xl border border-[#C8D6E0] shadow-[0_2px_10px_rgba(38,62,80,0.05)] space-y-2"
         >
           <div className="flex justify-between items-center">
-            <h3 className="text-xs uppercase tracking-widest font-black flex items-center text-cyan-300">
-              <Users className="w-3.5 h-3.5 mr-1.5 text-cyan-400" /> Team Alpha
+            <h3 className="text-xs uppercase tracking-widest font-black flex items-center text-[#263E50]">
+              <Users className="w-3.5 h-3.5 mr-1.5 text-[#263E50]" /> Team Alpha
             </h3>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-400/20">
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#EDF3F7] text-[#263E50] border border-[#C8D6E0]">
               {match.teamA.length} / {maxPerTeam} Slots
             </span>
           </div>
@@ -330,26 +327,26 @@ export default function MatchLobby() {
                   key={idx}
                   className={`flex items-center justify-between py-1.5 px-2.5 rounded-xl border transition-all ${
                     player 
-                      ? 'bg-cyan-500/10 border-cyan-400/30 text-white' 
-                      : 'bg-black/30 border-white/5 text-text-light/40 border-dashed'
+                      ? 'bg-[#EDF3F7] border-[#C8D6E0] text-[#18281E]' 
+                      : 'bg-[#F8F7F3] border-[#E2DDD4] text-[#94A49A] border-dashed'
                   }`}
                 >
                   {player ? (
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-cyan-400/20 border border-cyan-400/50 overflow-hidden flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-[#263E50]/15 border border-[#263E50]/40 overflow-hidden flex items-center justify-center shrink-0">
                         {player.photoURL ? (
                           <img src={player.photoURL} alt={player.displayName} className="w-full h-full object-cover" />
                         ) : (
-                          <User className="w-4 h-4 text-cyan-300" />
+                          <User className="w-4 h-4 text-[#263E50]" />
                         )}
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-white">{player.displayName}</p>
-                        <p className="text-[10px] text-cyan-300 font-medium">{player.rank || 'Rookie'} • {player.rating || 0} CR</p>
+                        <p className="text-xs font-black text-[#18281E]">{player.displayName}</p>
+                        <p className="text-[10px] text-[#263E50] font-bold">{player.rank || 'Rookie'} • {player.rating || 0} CR</p>
                       </div>
                     </div>
                   ) : (
-                    <span className="text-xs italic text-text-light/40 pl-2">Open Slot {idx + 1}...</span>
+                    <span className="text-xs italic text-[#94A49A] pl-2">Open Slot {idx + 1}...</span>
                   )}
                 </div>
               );
@@ -365,14 +362,14 @@ export default function MatchLobby() {
                     type="button"
                     onClick={() => handleJoinTeam('B')}
                     disabled={teamBFull}
-                    className="flex-1 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all disabled:opacity-40"
+                    className="flex-1 py-1.5 rounded-xl bg-[#FDF3F1] hover:bg-[#FBEBE8] text-[#8C3B30] border border-[#F2D2CC] text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all disabled:opacity-40 cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" /> Switch to Team Beta
                   </button>
                   <button
                     type="button"
                     onClick={handleLeaveTeam}
-                    className="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-[11px] font-bold"
+                    className="px-3 py-1.5 rounded-xl bg-[#F8EFEB] hover:bg-[#F0E4E0] text-[#8C3B30] border border-[#EACFC9] text-[11px] font-bold cursor-pointer"
                   >
                     Leave
                   </button>
@@ -382,12 +379,12 @@ export default function MatchLobby() {
                   type="button"
                   onClick={() => handleJoinTeam('A')}
                   disabled={teamAFull || inTeamB}
-                  className={`w-full py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                  className={`w-full py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     teamAFull 
-                      ? 'bg-white/[0.04] text-text-light/40 border border-white/5 cursor-not-allowed'
+                      ? 'bg-[#F8F7F3] text-[#94A49A] border border-[#E2DDD4] cursor-not-allowed'
                       : inTeamB
                         ? 'hidden'
-                        : 'bg-cyan-400 text-slate-950 shadow-sm active:scale-96'
+                        : 'bg-[#2B4C6F] hover:bg-[#203954] text-white shadow-sm active:scale-96'
                   }`}
                 >
                   {teamAFull ? 'Team Alpha Full' : 'Join Team Alpha'}
@@ -397,18 +394,18 @@ export default function MatchLobby() {
           )}
         </motion.div>
 
-        {/* TEAM BETA (Emerald) */}
+        {/* TEAM BETA (Terracotta Clay Red #8C3B30) */}
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="bg-white/[0.03] backdrop-blur-md p-3 rounded-2xl border-t border-t-emerald-400/40 border-x border-x-emerald-500/20 border-b border-b-white/5 relative overflow-hidden shadow-sm space-y-1.5"
+          className="bg-white p-3.5 rounded-2xl border border-[#F2D2CC] shadow-[0_2px_10px_rgba(140,59,48,0.05)] space-y-2"
         >
           <div className="flex justify-between items-center">
-            <h3 className="text-xs uppercase tracking-widest font-black flex items-center text-emerald-300">
-              <Users className="w-3.5 h-3.5 mr-1.5 text-emerald-400" /> Team Beta
+            <h3 className="text-xs uppercase tracking-widest font-black flex items-center text-[#8C3B30]">
+              <Users className="w-3.5 h-3.5 mr-1.5 text-[#8C3B30]" /> Team Beta
             </h3>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-400/20">
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FDF3F1] text-[#8C3B30] border border-[#F2D2CC]">
               {match.teamB.length} / {maxPerTeam} Slots
             </span>
           </div>
@@ -422,26 +419,26 @@ export default function MatchLobby() {
                   key={idx}
                   className={`flex items-center justify-between py-1.5 px-2.5 rounded-xl border transition-all ${
                     player 
-                      ? 'bg-emerald-500/10 border-emerald-400/30 text-white' 
-                      : 'bg-black/30 border-white/5 text-text-light/40 border-dashed'
+                      ? 'bg-[#FDF3F1] border-[#F2D2CC] text-[#18281E]' 
+                      : 'bg-[#F8F7F3] border-[#E2DDD4] text-[#94A49A] border-dashed'
                   }`}
                 >
                   {player ? (
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-emerald-400/20 border border-emerald-400/50 overflow-hidden flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-[#8C3B30]/15 border border-[#8C3B30]/40 overflow-hidden flex items-center justify-center shrink-0">
                         {player.photoURL ? (
                           <img src={player.photoURL} alt={player.displayName} className="w-full h-full object-cover" />
                         ) : (
-                          <User className="w-4 h-4 text-emerald-300" />
+                          <User className="w-4 h-4 text-[#8C3B30]" />
                         )}
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-white">{player.displayName}</p>
-                        <p className="text-[10px] text-emerald-300 font-medium">{player.rank || 'Rookie'} • {player.rating || 0} CR</p>
+                        <p className="text-xs font-black text-[#18281E]">{player.displayName}</p>
+                        <p className="text-[10px] text-[#8C3B30] font-bold">{player.rank || 'Rookie'} • {player.rating || 0} CR</p>
                       </div>
                     </div>
                   ) : (
-                    <span className="text-xs italic text-text-light/40 pl-2">Open Slot {idx + 1}...</span>
+                    <span className="text-xs italic text-[#94A49A] pl-2">Open Slot {idx + 1}...</span>
                   )}
                 </div>
               );
@@ -457,14 +454,14 @@ export default function MatchLobby() {
                     type="button"
                     onClick={() => handleJoinTeam('A')}
                     disabled={teamAFull}
-                    className="flex-1 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all disabled:opacity-40"
+                    className="flex-1 py-1.5 rounded-xl bg-[#EDF3F7] hover:bg-[#DFE8EF] text-[#2B4C6F] border border-[#C8D6E0] text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all disabled:opacity-40 cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" /> Switch to Team Alpha
                   </button>
                   <button
                     type="button"
                     onClick={handleLeaveTeam}
-                    className="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-[11px] font-bold"
+                    className="px-3 py-1.5 rounded-xl bg-[#F8EFEB] hover:bg-[#F0E4E0] text-[#8C3B30] border border-[#EACFC9] text-[11px] font-bold cursor-pointer"
                   >
                     Leave
                   </button>
@@ -474,12 +471,12 @@ export default function MatchLobby() {
                   type="button"
                   onClick={() => handleJoinTeam('B')}
                   disabled={teamBFull || inTeamA}
-                  className={`w-full py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                  className={`w-full py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     teamBFull 
-                      ? 'bg-white/[0.04] text-text-light/40 border border-white/5 cursor-not-allowed'
+                      ? 'bg-[#F8F7F3] text-[#94A49A] border border-[#E2DDD4] cursor-not-allowed'
                       : inTeamA
                         ? 'hidden'
-                        : 'bg-emerald-400 text-slate-950 shadow-sm active:scale-96'
+                        : 'bg-[#8C3B30] hover:bg-[#793127] text-white shadow-sm active:scale-96'
                   }`}
                 >
                   {teamBFull ? 'Team Beta Full' : 'Join Team Beta'}
@@ -490,25 +487,25 @@ export default function MatchLobby() {
         </motion.div>
 
         {/* 📋 Official Referee Card (Host) */}
-        <div className="bg-white/[0.02] py-2 px-3 rounded-2xl border border-white/10 flex items-center justify-between">
+        <div className="bg-white py-2 px-3 rounded-2xl border border-[#E2DDD4] flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/40 overflow-hidden flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-full bg-[#EBF2EC] border border-[#D1DDD3] overflow-hidden flex items-center justify-center shrink-0">
               {match.hostAvatar ? (
                 <img src={match.hostAvatar} alt={match.hostName || 'Host'} className="w-full h-full object-cover" />
               ) : (
-                <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                <Shield className="w-3.5 h-3.5 text-[#244434]" />
               )}
             </div>
             <div>
-              <p className="text-xs font-bold text-white flex items-center gap-1.5">
+              <p className="text-xs font-bold text-[#18281E] flex items-center gap-1.5">
                 <span>{match.hostName || 'Referee'}</span>
-                <span className="text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-md">Host</span>
+                <span className="text-[9px] font-black uppercase bg-[#EBF2EC] text-[#244434] px-1.5 py-0.2 rounded-md">Host</span>
               </p>
-              <p className="text-[10px] text-text-light/60">Official Court Referee</p>
+              <p className="text-[10px] text-[#6B7E72]">Official Court Referee</p>
             </div>
           </div>
 
-          <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-mono text-[#244434] font-bold bg-[#EBF2EC] border border-[#C6D8CB] px-2 py-0.5 rounded-full">
             Active
           </span>
         </div>
@@ -521,18 +518,18 @@ export default function MatchLobby() {
             type="button"
             onClick={handleStartMatch}
             disabled={!canStartMatch}
-            className={`w-full py-3 rounded-xl font-black uppercase tracking-wider text-xs shadow-sm transition-all flex items-center justify-center gap-2 ${
+            className={`w-full py-3.5 rounded-2xl font-black uppercase tracking-wider text-xs shadow-md transition-all flex items-center justify-center gap-2 ${
               canStartMatch
-                ? 'bg-gradient-to-r from-primary via-emerald-400 to-secondary text-[#050a0a] active:scale-96'
-                : 'bg-white/[0.05] text-text-light/40 border border-white/10 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-[#244434] to-[#1A3326] text-white active:scale-96 hover:opacity-95'
+                : 'bg-[#F8F7F3] text-[#94A49A] border border-[#E2DDD4] cursor-not-allowed'
             }`}
           >
             <span>{canStartMatch ? 'Start Live Match' : `Waiting for Players (${totalInMatch}/${totalRequired})...`}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         ) : (
-          <div className="text-center py-2 px-3 bg-white/[0.03] border border-white/10 rounded-xl">
-            <p className="text-xs text-text-light">
+          <div className="text-center py-2.5 px-3 bg-white border border-[#E2DDD4] rounded-2xl shadow-xs">
+            <p className="text-xs text-[#3A4C40] font-medium">
               {inTeamA || inTeamB 
                 ? '✅ You are ready! Waiting for the Host to start the match...' 
                 : '👈 Choose Team Alpha or Team Beta to join the match!'}

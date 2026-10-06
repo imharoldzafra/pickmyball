@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { UserPlus, LogIn, ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, User, Lock, ShieldAlert } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Mail, CheckCircle, X, User, Lock, ShieldAlert } from 'lucide-react';
 import Pickleball3DSphere from '../components/Pickleball3DSphere';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -286,45 +286,30 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#040709] flex justify-center selection:bg-primary/30 relative overflow-hidden">
+    <div className="min-h-screen bg-[#EBE8E1] flex justify-center selection:bg-[#244434]/20 relative overflow-hidden">
       {/* Phone Mock Container */}
-      <div className="w-full max-w-md min-h-screen flex flex-col bg-[#05080c] relative shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:border-x border-white/5 sm:rounded-3xl overflow-hidden my-0 sm:my-3 sm:max-h-[96vh]">
+      <div className="w-full max-w-md min-h-screen flex flex-col bg-[#F7F6F1] relative shadow-[0_10px_40px_rgba(24,40,30,0.08)] sm:border-x border-[#E2DDD4] sm:rounded-3xl overflow-hidden my-0 sm:my-3 sm:max-h-[96vh]">
 
-        {/* 🎾 Relaxing Pickleball Court & Floating Aurora Background */}
+        {/* 🎾 Gentle Court Lines & Natural Ambient Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           <svg
-            className="absolute inset-0 w-full h-full opacity-25"
+            className="absolute inset-0 w-full h-full opacity-[0.06]"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 400 800"
             preserveAspectRatio="none"
           >
-            <rect x="24" y="30" width="352" height="740" rx="12" fill="none" stroke="rgba(16, 185, 129, 0.45)" strokeWidth="1.5" strokeDasharray="8 5" />
-            <line x1="24" y1="280" x2="376" y2="280" stroke="rgba(6, 182, 212, 0.55)" strokeWidth="1.5" />
-            <line x1="24" y1="520" x2="376" y2="520" stroke="rgba(6, 182, 212, 0.55)" strokeWidth="1.5" />
-            <line x1="24" y1="400" x2="376" y2="400" stroke="rgba(255, 255, 255, 0.7)" strokeWidth="2.5" />
-            <line x1="200" y1="30" x2="200" y2="280" stroke="rgba(16, 185, 129, 0.35)" strokeWidth="1.5" />
-            <line x1="200" y1="520" x2="200" y2="770" stroke="rgba(16, 185, 129, 0.35)" strokeWidth="1.5" />
-            <rect x="24" y="280" width="352" height="240" fill="rgba(16, 185, 129, 0.03)" />
+            <rect x="24" y="30" width="352" height="740" rx="12" fill="none" stroke="#244434" strokeWidth="2" strokeDasharray="8 5" />
+            <line x1="24" y1="280" x2="376" y2="280" stroke="#263E50" strokeWidth="1.5" />
+            <line x1="24" y1="520" x2="376" y2="520" stroke="#263E50" strokeWidth="1.5" />
+            <line x1="24" y1="400" x2="376" y2="400" stroke="#244434" strokeWidth="2.5" />
+            <line x1="200" y1="30" x2="200" y2="280" stroke="#244434" strokeWidth="1.5" />
+            <line x1="200" y1="520" x2="200" y2="770" stroke="#244434" strokeWidth="1.5" />
+            <rect x="24" y="280" width="352" height="240" fill="rgba(36, 68, 52, 0.04)" />
           </svg>
 
-          {/* Sweeping Light Waves */}
-          <motion.div
-            animate={{ y: [-300, 850], opacity: [0, 0.6, 0] }}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
-            className="absolute left-0 right-0 h-44 bg-gradient-to-b from-transparent via-emerald-400/10 to-transparent pointer-events-none -skew-y-12"
-          />
-
-          {/* Aurora Orbs */}
-          <motion.div
-            animate={{ x: [0, 35, -25, 0], y: [0, -25, 20, 0], scale: [1, 1.2, 0.95, 1], opacity: [0.35, 0.55, 0.35] }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-16 -left-16 w-80 h-80 rounded-full bg-emerald-500/25 blur-[85px]"
-          />
-          <motion.div
-            animate={{ x: [0, -35, 25, 0], y: [0, 30, -25, 0], scale: [1, 1.25, 0.9, 1], opacity: [0.25, 0.45, 0.25] }}
-            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            className="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-cyan-500/20 blur-[95px]"
-          />
+          {/* Soft Court Ambient Lighting */}
+          <div className="absolute -top-16 -left-16 w-80 h-80 rounded-full bg-[#244434]/[0.06] blur-[85px]" />
+          <div className="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-[#8C3B30]/[0.04] blur-[95px]" />
         </div>
 
         {/* Main Content Area */}
@@ -338,19 +323,19 @@ export default function Login() {
               transition={{ duration: 0.35 }}
               className="text-center space-y-2"
             >
-              {/* 🎾 True 3D Rotating Pickleball Sphere (Mobile-Optimized) */}
+              {/* 🎾 True 3D Rotating Pickleball Sphere in Tournament Optic Lime */}
               <div className="relative flex items-center justify-center py-1">
-                <Pickleball3DSphere size={72} />
+                <Pickleball3DSphere size={74} />
               </div>
 
               <div>
-                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-                  Pick<span className="text-emerald-400">MyBall</span>
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#244434]">
+                  PickMyBall
                 </h1>
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mt-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-[#3B6B50] mt-1">
                   {authMode === 'signin' ? 'Ready to Serve.' : 'Join the Arena.'}
                 </p>
-                <p className="text-[11px] text-text-light/70 font-medium">
+                <p className="text-[11px] text-[#6B7E72] font-medium">
                   {authMode === 'signin'
                     ? 'Sign in to track your matches & climb the ranks.'
                     : 'Create your player profile & compete on live courts.'}
@@ -358,23 +343,23 @@ export default function Login() {
               </div>
             </motion.div>
 
-            {/* Smoked Glass Arena Shield Card */}
+            {/* Elevated Crisp Court Card */}
             <motion.div
               key={authMode}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-[#070e14]/90 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl border-t border-t-white/20 border-x border-x-white/10 border-b border-b-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.75)] space-y-3.5"
+              className="bg-white/95 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-[#E2DDD4] shadow-[0_12px_40px_rgba(24,40,30,0.06)] space-y-3.5"
             >
 
               {infoMsg && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="p-3.5 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-left backdrop-blur-md flex items-start gap-2.5"
+                  className="p-3.5 bg-[#EBF2EC] border border-[#C6D8CB] rounded-2xl text-left flex items-start gap-2.5"
                 >
-                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-xs text-emerald-300 font-medium leading-relaxed">{infoMsg}</p>
+                  <CheckCircle className="w-4 h-4 text-[#244434] shrink-0 mt-0.5" />
+                  <p className="text-xs text-[#244434] font-medium leading-relaxed">{infoMsg}</p>
                 </motion.div>
               )}
 
@@ -393,7 +378,7 @@ export default function Login() {
 
                 {authMode === 'signup' && (
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#3A4C40] mb-1 px-1">
                       Player Username
                     </label>
                     <div className="relative flex items-center">
@@ -409,19 +394,19 @@ export default function Login() {
                           }
                         }}
                         placeholder="e.g. kakarotbomba"
-                        className={`w-full bg-black/50 border rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:bg-black/70 transition-all outline-none font-medium ${
+                        className={`w-full bg-[#F8F7F3] border rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-[#18281E] placeholder:text-[#94A49A] focus:bg-white transition-all outline-none font-medium ${
                           errorField === 'username'
                             ? 'border-rose-500 focus:border-rose-400'
-                            : 'border-white/12 hover:border-white/25 focus:border-emerald-500'
+                            : 'border-[#E2DDD4] hover:border-[#C6D8CB] focus:border-[#244434]'
                         }`}
                       />
-                      <User className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
+                      <User className="w-4 h-4 text-[#3B6B50] absolute left-4 pointer-events-none" />
                     </div>
                     {errorField === 'username' && errorMsg && (
                       <motion.p
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-[11px] font-semibold text-rose-400 mt-1.5 px-1 leading-tight"
+                        className="text-[11px] font-semibold text-rose-500 mt-1.5 px-1 leading-tight"
                       >
                         {formatErrorWithExclamation(errorMsg)}
                       </motion.p>
@@ -430,7 +415,7 @@ export default function Login() {
                 )}
 
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#3A4C40] mb-1 px-1">
                     {authMode === 'signup' ? 'Email Address' : 'Username'}
                   </label>
                   <div className="relative flex items-center">
@@ -455,23 +440,23 @@ export default function Login() {
                         }
                       }}
                       placeholder={authMode === 'signup' ? 'player@email.com' : 'e.g. imharoldzafra'}
-                      className={`w-full bg-black/50 border rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:bg-black/70 transition-all outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`w-full bg-[#F8F7F3] border rounded-2xl pl-11 pr-4 py-2.5 sm:py-3 text-sm text-[#18281E] placeholder:text-[#94A49A] focus:bg-white transition-all outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
                         ((authMode === 'signin' && errorField === 'identifier') || (authMode === 'signup' && errorField === 'email')) && lockoutSecondsLeft === 0
                           ? 'border-rose-500 focus:border-rose-400'
-                          : 'border-white/12 hover:border-white/25 focus:border-emerald-500'
+                          : 'border-[#E2DDD4] hover:border-[#C6D8CB] focus:border-[#244434]'
                       }`}
                     />
                     {authMode === 'signup' ? (
-                      <Mail className="w-4 h-4 text-cyan-400/80 absolute left-4 pointer-events-none" />
+                      <Mail className="w-4 h-4 text-[#263E50] absolute left-4 pointer-events-none" />
                     ) : (
-                      <User className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
+                      <User className="w-4 h-4 text-[#3B6B50] absolute left-4 pointer-events-none" />
                     )}
                   </div>
                   {lockoutSecondsLeft === 0 && ((authMode === 'signin' && errorField === 'identifier') || (authMode === 'signup' && errorField === 'email')) && errorMsg && (
                     <motion.p
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-[11px] font-semibold text-rose-400 mt-1.5 px-1 leading-tight"
+                      className="text-[11px] font-semibold text-rose-500 mt-1.5 px-1 leading-tight"
                     >
                       {formatErrorWithExclamation(errorMsg)}
                     </motion.p>
@@ -480,7 +465,7 @@ export default function Login() {
 
                 <div>
                   <div className="flex items-center justify-between mb-1 px-1">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#3A4C40]">
                       Password
                     </label>
                     {authMode === 'signin' && (
@@ -492,7 +477,7 @@ export default function Login() {
                           setForgotMsg(null);
                           setForgotSuccess(false);
                         }}
-                        className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-wider active:scale-95"
+                        className="text-[10px] font-bold text-[#244434] hover:text-[#1A3326] transition-colors uppercase tracking-wider active:scale-95"
                       >
                         Forgot?
                       </button>
@@ -511,17 +496,17 @@ export default function Login() {
                         }
                       }}
                       placeholder="••••••••"
-                      className={`w-full bg-black/50 border rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:bg-black/70 transition-all outline-none font-mono disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`w-full bg-[#F8F7F3] border rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-[#18281E] placeholder:text-[#94A49A] focus:bg-white transition-all outline-none font-mono disabled:opacity-50 disabled:cursor-not-allowed ${
                         errorField === 'password' && lockoutSecondsLeft === 0
                           ? 'border-rose-500 focus:border-rose-400'
-                          : 'border-white/12 hover:border-white/25 focus:border-emerald-500'
+                          : 'border-[#E2DDD4] hover:border-[#C6D8CB] focus:border-[#244434]'
                       }`}
                     />
-                    <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
+                    <Lock className="w-4 h-4 text-[#3B6B50] absolute left-4 pointer-events-none" />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 text-text-light/60 hover:text-white transition-colors p-1"
+                      className="absolute right-3.5 text-[#7B8D82] hover:text-[#18281E] transition-colors p-1"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -531,7 +516,7 @@ export default function Login() {
                     <motion.p
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-[11px] font-semibold text-rose-400 mt-1.5 px-1 leading-tight"
+                      className="text-[11px] font-semibold text-rose-500 mt-1.5 px-1 leading-tight"
                     >
                       {formatErrorWithExclamation(errorMsg)}
                     </motion.p>
@@ -540,7 +525,7 @@ export default function Login() {
 
                 {authMode === 'signup' && (
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light/90 mb-1 px-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#3A4C40] mb-1 px-1">
                       Confirm Password
                     </label>
                     <div className="relative flex items-center">
@@ -555,17 +540,17 @@ export default function Login() {
                           }
                         }}
                         placeholder="••••••••"
-                        className={`w-full bg-black/50 border rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-white placeholder:text-white/40 focus:bg-black/70 transition-all outline-none font-mono ${
+                        className={`w-full bg-[#F8F7F3] border rounded-2xl pl-11 pr-11 py-2.5 sm:py-3 text-sm text-[#18281E] placeholder:text-[#94A49A] focus:bg-white transition-all outline-none font-mono ${
                           errorField === 'confirmPassword'
                             ? 'border-rose-500 focus:border-rose-400'
-                            : 'border-white/12 hover:border-white/25 focus:border-emerald-500'
+                            : 'border-[#E2DDD4] hover:border-[#C6D8CB] focus:border-[#244434]'
                         }`}
                       />
-                      <Lock className="w-4 h-4 text-emerald-400/80 absolute left-4 pointer-events-none" />
+                      <Lock className="w-4 h-4 text-[#3B6B50] absolute left-4 pointer-events-none" />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3.5 text-text-light/60 hover:text-white transition-colors p-1"
+                        className="absolute right-3.5 text-[#7B8D82] hover:text-[#18281E] transition-colors p-1"
                         aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                       >
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -575,7 +560,7 @@ export default function Login() {
                       <motion.p
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-[11px] font-semibold text-rose-400 mt-1.5 px-1 leading-tight"
+                        className="text-[11px] font-semibold text-rose-500 mt-1.5 px-1 leading-tight"
                       >
                         {formatErrorWithExclamation(errorMsg)}
                       </motion.p>
@@ -588,7 +573,7 @@ export default function Login() {
                   <motion.p
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-[11px] font-semibold text-rose-400 text-center px-1 leading-tight"
+                    className="text-[11px] font-semibold text-rose-500 text-center px-1 leading-tight"
                   >
                     {formatErrorWithExclamation(errorMsg)}
                   </motion.p>
@@ -600,9 +585,9 @@ export default function Login() {
                     disabled
                     aria-disabled="true"
                     tabIndex={-1}
-                    className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 mt-3 bg-rose-950/20 border border-rose-500/25 text-rose-300/70 shadow-none cursor-not-allowed select-none transition-none"
+                    className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 mt-3 bg-rose-50 border border-rose-200 text-rose-600 shadow-none cursor-not-allowed select-none transition-none"
                   >
-                    <ShieldAlert className="w-4 h-4 text-rose-400/80 shrink-0" />
+                    <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0" />
                     <span className="font-mono font-bold tracking-wider">LOCKED ({formatCooldown(lockoutSecondsLeft)})</span>
                   </button>
                 ) : (
@@ -611,17 +596,10 @@ export default function Login() {
                     disabled={isSubmitting}
                     className={`w-full relative overflow-hidden py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 mt-3 group ${
                       isSubmitting
-                        ? 'bg-emerald-400/60 text-[#04080a] cursor-not-allowed'
-                        : 'bg-emerald-400 hover:bg-emerald-300 text-[#04080a] shadow-sm active:scale-[0.98]'
+                        ? 'bg-[#244434]/70 text-white cursor-not-allowed'
+                        : 'bg-gradient-to-r from-[#244434] to-[#1A3326] hover:from-[#1A3326] hover:to-[#244434] text-white shadow-[0_4px_16px_rgba(36,68,52,0.25)] active:scale-[0.98]'
                     }`}
                   >
-                    {/* Sweeping Light Shimmer Reflection */}
-                    <motion.div
-                      animate={{ x: ['-100%', '200%'] }}
-                      transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut", repeatDelay: 1.5 }}
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -skew-x-12 pointer-events-none"
-                    />
-
                     <span className="relative z-10 font-black">
                       {isSubmitting ? 'Connecting Arena...' : (authMode === 'signup' ? 'Create Account' : 'Sign In')}
                     </span>
@@ -633,15 +611,15 @@ export default function Login() {
               </form>
 
               {/* Bottom Switcher Toggle Link inside Card */}
-              <div className="pt-2 text-center border-t border-white/5">
-                <p className="text-xs text-text-light/70">
+              <div className="pt-2 text-center border-t border-[#E2DDD4]">
+                <p className="text-xs text-[#6B7E72]">
                   {authMode === 'signin' ? (
                     <>
                       <span>New to PickMyBall?</span>
                       <button
                         type="button"
                         onClick={() => handleModeSwitch('signup')}
-                        className="text-emerald-400 hover:text-emerald-300 font-bold hover:underline transition-colors ml-1.5 focus:outline-none focus:underline"
+                        className="text-[#244434] hover:text-[#1A3326] font-bold hover:underline transition-colors ml-1.5 focus:outline-none focus:underline"
                       >
                         Create Account
                       </button>
@@ -652,7 +630,7 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => handleModeSwitch('signin')}
-                        className="text-emerald-400 hover:text-emerald-300 font-bold hover:underline transition-colors ml-1.5 focus:outline-none focus:underline"
+                        className="text-[#244434] hover:text-[#1A3326] font-bold hover:underline transition-colors ml-1.5 focus:outline-none focus:underline"
                       >
                         Sign In
                       </button>
@@ -662,11 +640,11 @@ export default function Login() {
               </div>
 
               {/* ⚡ Quick Offline Scoreboard (Court Utility without Login) */}
-              <div className="pt-2 text-center border-t border-white/5">
+              <div className="pt-2 text-center border-t border-[#E2DDD4]">
                 <button
                   type="button"
                   onClick={handleQuickOfflineScoreboard}
-                  className="w-full py-2.5 px-3 rounded-xl border border-white/10 hover:border-emerald-500/40 bg-white/[0.03] hover:bg-emerald-500/[0.08] text-white/80 hover:text-white transition-all text-xs font-bold flex items-center justify-center active:scale-[0.98]"
+                  className="w-full py-2.5 px-3 rounded-xl border border-[#D1DDD3] hover:border-[#244434]/40 bg-[#EBF2EC] hover:bg-[#E0EBE2] text-[#244434] transition-all text-xs font-bold flex items-center justify-center active:scale-[0.98]"
                 >
                   Quick Offline Scoreboard
                 </button>
@@ -677,27 +655,21 @@ export default function Login() {
         </div>
 
 
-        {/* 🔒 Fixed Pinned Footer (Exact Identical Position on Both Sign In & Sign Up) */}
-        <div className="relative z-10 text-center py-2.5 flex-shrink-0">
-          <p className="text-[10px] text-text-light/35 font-mono tracking-wider">
-            PickMyBall Arena Engine • v1.0
-          </p>
-        </div>
 
-        {/* 🔒 Reset Password Modal (Standard Email Link Flow) */}
+        {/* 🔒 Reset Password Modal */}
         <AnimatePresence>
           {showForgotModal && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-5"
+              className="absolute inset-0 z-50 bg-[#18281E]/60 backdrop-blur-sm flex items-center justify-center p-5"
             >
               <motion.div
                 initial={{ scale: 0.92, opacity: 0, y: 10 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.92, opacity: 0, y: 10 }}
-                className="w-full max-w-sm bg-[#0a1015] border border-white/15 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.9)] relative space-y-4"
+                className="w-full max-w-sm bg-white border border-[#E2DDD4] rounded-3xl p-6 shadow-[0_20px_60px_rgba(24,40,30,0.2)] relative space-y-4"
               >
                 {/* Close Button */}
                 <button
@@ -707,7 +679,7 @@ export default function Login() {
                     setForgotMsg(null);
                     setForgotSuccess(false);
                   }}
-                  className="absolute top-4 right-4 text-text-light/60 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors z-10"
+                  className="absolute top-4 right-4 text-[#7B8D82] hover:text-[#18281E] p-1 rounded-full hover:bg-[#F3F1EB] transition-colors z-10"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" />
@@ -715,12 +687,12 @@ export default function Login() {
 
                 {/* Header */}
                 <div>
-                  <h3 className="text-base font-black text-white">Reset Password</h3>
-                  <p className="text-[11px] text-text-light/70">PickMyBall Account Recovery</p>
+                  <h3 className="text-base font-black text-[#18281E]">Reset Password</h3>
+                  <p className="text-[11px] text-[#6B7E72]">PickMyBall Account Recovery</p>
                 </div>
 
                 {!forgotSuccess && (
-                  <p className="text-xs text-text-light/80 leading-relaxed">
+                  <p className="text-xs text-[#3A4C40] leading-relaxed">
                     Enter your registered email address and we'll send you a secure link to choose a new password.
                   </p>
                 )}
@@ -730,11 +702,11 @@ export default function Login() {
                   <div
                     className={`p-3 rounded-2xl text-xs flex items-start gap-2 ${
                       forgotSuccess
-                        ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-                        : 'bg-red-500/15 border border-red-500/30 text-red-300'
+                        ? 'bg-[#EBF2EC] border border-[#C6D8CB] text-[#244434]'
+                        : 'bg-rose-50 border border-rose-200 text-rose-600'
                     }`}
                   >
-                    {forgotSuccess && <CheckCircle className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" />}
+                    {forgotSuccess && <CheckCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#244434]" />}
                     <p className="font-medium leading-tight">{forgotMsg}</p>
                   </div>
                 )}
@@ -742,7 +714,7 @@ export default function Login() {
                 {!forgotSuccess ? (
                   <form onSubmit={handleForgotPassword} className="space-y-3 pt-1">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-text-light mb-1 px-1">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#3A4C40] mb-1 px-1">
                         Your Email Address
                       </label>
                       <div className="relative flex items-center">
@@ -752,9 +724,9 @@ export default function Login() {
                           value={forgotEmail}
                           onChange={(e) => setForgotEmail(e.target.value)}
                           placeholder="player@email.com"
-                          className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:bg-white/[0.06] transition-all outline-none"
+                          className="w-full bg-[#F8F7F3] border border-[#E2DDD4] rounded-2xl pl-10 pr-4 py-3 text-sm text-[#18281E] placeholder:text-[#94A49A] focus:border-[#244434] focus:bg-white transition-all outline-none"
                         />
-                        <Mail className="w-4 h-4 text-emerald-400/80 absolute left-3.5 pointer-events-none" />
+                        <Mail className="w-4 h-4 text-[#3B6B50] absolute left-3.5 pointer-events-none" />
                       </div>
                     </div>
 
@@ -762,14 +734,14 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => setShowForgotModal(false)}
-                        className="flex-1 py-3 rounded-2xl bg-white/[0.06] hover:bg-white/[0.1] text-text-light hover:text-white text-xs font-bold transition-all active:scale-96"
+                        className="flex-1 py-3 rounded-2xl bg-[#F3F1EB] hover:bg-[#EAE6DE] text-[#3A4C40] text-xs font-bold transition-all active:scale-96"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={isResetting}
-                        className="flex-1 py-3 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-[#04080a] text-xs font-black uppercase tracking-wider shadow-sm transition-transform active:scale-96 disabled:opacity-50"
+                        className="flex-1 py-3 rounded-2xl bg-[#244434] hover:bg-[#1A3326] text-white text-xs font-black uppercase tracking-wider shadow-sm transition-transform active:scale-96 disabled:opacity-50"
                       >
                         {isResetting ? 'Sending...' : 'Send Reset Link'}
                       </button>
@@ -784,7 +756,7 @@ export default function Login() {
                         setForgotSuccess(false);
                         setForgotMsg(null);
                       }}
-                      className="w-full py-3 rounded-2xl bg-white/[0.08] hover:bg-white/[0.12] text-white text-xs font-bold transition-all active:scale-96"
+                      className="w-full py-3 rounded-2xl bg-[#244434] hover:bg-[#1A3326] text-white text-xs font-bold transition-all active:scale-96"
                     >
                       Back to Sign In
                     </button>
